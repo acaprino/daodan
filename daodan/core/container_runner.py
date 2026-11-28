@@ -20,7 +20,8 @@ command that fails reaching one has the `approval_required` gap of the run. The 
 not reach (`TOOLS`' `named`: the repositories a Gradle build declares, `gradle.retry`; a preset the project's Renovate
 config extends, `renovate.asked`) are requests with a gap on the answer, its result standing, until the user decides
 (`reach`); an approved one the proxy opens in the run itself. A host of the tool
-that nobody decided stops the run before it starts (`egress.preflight`): the source is not run, with that gap. A run
+that nobody decided stops the run before it starts (`egress.preflight`): the source is not run, with that gap; in the
+app the run waits for the answer instead, as each of its connections does (`container.Asked`). A run
 that does not happen (no engine, too little memory) or a setup that fails raises: the source states nothing and
 its gap says why. Each run's record lands in `premap-runs/<tool>/` beside the manifest.
 """

@@ -20,6 +20,12 @@ temporary file and `os.replace`, under an OS lock
 `end` its answers when it ends (`analysis`), so "once" lasts for the analysis the answer is used by. `PENDING` is this
 process's copy of the requests; the answers are read from their file each time, so one that an analysis ended
 elsewhere has forgotten is never kept here.
+
+Where a person can answer (`answerable`: the analyses the app starts), a run asks as a PC's firewall does: its proxy holds
+each connection to a host that asks (`container.PROXY_SCRIPT`, `ASKED`), the request is pending at once, and the
+connection waits for the answer, with no time limit (`container.Asked`); a run that has not started waits for its
+tool's hosts the same way (`preflight`). Elsewhere (MCP, the command line) nobody answers: the proxy refuses at once and
+the request stays (`approval_required`).
 """
 from __future__ import annotations
 
@@ -35,6 +41,7 @@ import socket
 import sqlite3
 import sys
 import tempfile
+import threading
 import time
 from pathlib import Path
 
@@ -50,6 +57,10 @@ LOCK_SECONDS = 5  # past it the file is read and written without the lock: a stu
 PENDING: dict[str, dict] = {}  # project -> its requests still to answer, by (host, port): the analysis's register
 WHERE: dict[str, dict] = {}  # project -> {host: [files that declare it]}, from `declare`
 MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each refusal
+ASKED = "@@daodan-asked "  # ... for a connection it holds until the answer (`answerable`)
+GONE = "@@daodan-gone "  # ... for a held connection whose client gave up before the answer
+ANSWERS = "DAODAN_ANSWERS"  # "app" in the processes the app starts, where a person answers (`answerable`)
+POLL = 0.5  # how often a run that waits for an answer reads the answers again, in seconds
 LOOKUPS = 16  # the names one analysis looks up at most, counted in its row of `SESSION_FILE` ("looked")
 LOOKUP_SECONDS = 5  # how long the names of one run's refusals are looked up, all together
 REPLIES = ("always", "once", "no", "block")
@@ -301,14 +312,30 @@ def answer(state: dict, session: dict, host: str, project: str, reply: str) -> t
     return {"always": always, "block": block}, {"allow": allow, "deny": deny}
 
 
-def refused(log: str) -> list[dict]:
-    """The `{host, port}` of each refusal in a proxy's log, in order and once each."""
+def answerable() -> bool:
+    """Whether a person answers this process's requests: the app's analyses (`ANSWERS`, set by the app for the processes
+    it starts). There a held connection waits for the answer; MCP and the command line have nobody, and refuse at once."""
+    return os.environ.get(ANSWERS) == "app"
+
+
+def wait(project: str, hosts, stop=None) -> None:
+    """Until the user has answered for each of `hosts` (none decides "ask" any more), read again every `POLL` seconds,
+    with no time limit: the app's analysis stops there for the person. `stop`, an Event, ends the wait sooner."""
+    stop = stop or threading.Event()
+    while any(decide(host, project, load(project), session(project)) == "ask" for host in hosts):
+        if stop.wait(POLL):
+            return
+
+
+def refused(log: str, mark: str = MARK) -> list[dict]:
+    """The `{host, port}` of each refusal in a proxy's log, in order and once each; with `mark`, of each line it marks
+    (`ASKED`, `GONE`)."""
     found = []
     for line in log.splitlines():
-        if not line.startswith(MARK):
+        if not line.startswith(mark):
             continue
         try:
-            row = json.loads(line[len(MARK):])
+            row = json.loads(line[len(mark):])
             host, port = row["host"], row["port"]
         except (ValueError, KeyError, TypeError):
             continue
@@ -383,15 +410,18 @@ def requests(refused: list[dict], project: str, state: dict, session: dict, wher
                    for row, decision in decided if decision == "deny" or decision == "allow" and row["port"] != "443"]
 
 
-def collect(project: str, refused: list[dict], where: dict | None = None) -> tuple[list[dict], list[dict]]:
+def collect(project: str, refused: list[dict], where: dict | None = None,
+            waits: bool = False) -> tuple[list[dict], list[dict]]:
     """The refusals of a run (`container.run_in_container`): the requests join the project's pending ones, in this
     process and in the shared file, and come back with the `host_denied` gaps, `(asked, gaps)`. A request already
-    pending is not looked up again, and one analysis looks up `LOOKUPS` names in all (`_looked`)."""
+    pending is not looked up again, and one analysis looks up `LOOKUPS` names in all (`_looked`). `waits`: the
+    connections of a running step wait for the answer (`container.Asked`), and its new requests say so (`held`)."""
     known = {(row["host"], row["port"]): row for row in pending(project)}
     state, answers, budget = load(project), session(project), max(LOOKUPS - _looked(project), 0)
     asks, gaps = requests(refused, project, state, answers, WHERE.get(project) if where is None else where, budget,
                           known)
-    asks = [{**row, "tool": (known.get((row["host"], row["port"])) or {}).get("tool", ASKER.get())} for row in asks]
+    asks = [{**row, "tool": (known.get((row["host"], row["port"])) or {}).get("tool", ASKER.get()),
+             **({"held": True} if waits else {})} for row in asks]
     looked =min(len({_name(row["host"]) for row in asks if (row["host"], row["port"]) not in known} - {None}),
                  budget)
     held = PENDING.setdefault(project, {})
@@ -420,11 +450,15 @@ def declare(project: str, where: dict) -> None:
 def preflight(project: str, hosts: tuple[str, ...]) -> tuple[list[dict], list[dict]]:
     """The hosts a run is about to open that the user has not decided, before it starts: `(asked, gaps)`, the requests
     (now pending) and the `approval_required` gap of the step that does not start. A host that is allowed, or that the
-    user refused, does not stop it: the proxy refuses the latter and says `host_denied` if the run reaches it."""
+    user refused, does not stop it: the proxy refuses the latter and says `host_denied` if the run reaches it. Where a
+    person answers (`answerable`), the run waits for the answers instead (`wait`) and starts after them: nothing stops it."""
     state, answers = load(project), session(project)
-    ask =[{"host": host.removeprefix("http://"), "port": "80" if host.startswith("http://") else "443"}
+    ask = [{"host": host.removeprefix("http://"), "port": "80" if host.startswith("http://") else "443"}
            for host in dict.fromkeys(name.lower() for name in hosts) if decide(host, project, state, answers) == "ask"]
-    asked, _ = collect(project, ask)
+    asked, _ = collect(project, ask, waits=answerable())
+    if asked and answerable():
+        wait(project, [row["host"] for row in asked])
+        return [], []
     return asked, approval_gap(asked, "before")
 
 

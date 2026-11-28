@@ -8,7 +8,8 @@ proxy's container resolves two approved names to internal addresses (`--add-host
 installs git as `preparation.NEEDS["git"]` does (row d); the proxy's start, memory and image size are measured (row g).
 Beside the runs it keeps the marks a way out would leave on this VM:
 every DNS query on the wire (`tcpdump`, with its interface) and every connection to two listeners, one on all the VM's
-addresses (8099) and one on its loopback (8098). Writes `/runs/result.json`.
+addresses (8099) and one on its loopback (8098). Then, with the script, the execution's rows (`execute`, `T1.F.3`),
+answered by a thread as the app's page answers. Writes `/runs/result.json`.
 """
 import json
 import os
@@ -52,9 +53,10 @@ def cli(engine, *args, **options):
     return CLI(engine, *args, **options)
 
 
-def start_smokescreen(engine, box, network, registries, project):
+def start_smokescreen(engine, box, network, registries, project, ask=False):
     """`container.start_proxy` with Smokescreen: the same hosts, filtered by `egress.decide` as it filters them, in an
-    ACL with `action: enforce`; the role is missing (no client certificate), so its `default` rule decides."""
+    ACL with `action: enforce`; the role is missing (no client certificate), so its `default` rule decides. It holds
+    no connection (`ask`): the rows of the execution run with `PROXY_SCRIPT` only."""
     state, answers = egress.load(project), egress.session(project)
     hosts = [host.removeprefix("http://") for host in dict.fromkeys([*registries, *state["always"],
                                                                      *answers["allow"]])
@@ -213,6 +215,63 @@ egress.respond(OUTSIDE, str(blocked), "block")
 block_run, _, block_log = run(blocked, {**common, "mode": "fetch", "url": f"https://{OUTSIDE}/approval-block"})
 block_pending = egress.pending(str(blocked))
 
+
+# The execution behind the firewall, as a PC's firewall asks (`T1.F.3`): the command is the execution of a run with no
+# preparation, in a process where a person answers (`egress.ANSWERS`); the person is a thread that answers as the app's
+# page does (`egress.reply`), what it saw kept. The rows above ran with nobody to answer: the proxy refused at once.
+def execute(folder, url, timeout=60, reply=None, after=0.0):
+    """`url` fetched by the execution within `timeout` seconds of its own; with `reply`, the person answers it `after`
+    seconds once the request waits. The result, the seconds, the executions on record and what the person saw."""
+    out, name, seen = Path("/runs") / folder.name, str(folder), {}
+    box = {}
+    worker = threading.Thread(target=lambda: box.update(result=container.run_in_container(
+        folder, ["python3", "/work/rows.py", json.dumps({**common, "mode": "fetch", "url": url})],
+        image=container.PROXY_IMAGE, out_dir=out, timeout=timeout, memory=512 * 2**20)))
+    began = time.monotonic()
+    worker.start()
+    if reply:
+        while worker.is_alive() and not [row for row in egress.pending(name) if row["host"] == urlhost(url)]:
+            time.sleep(0.2)
+        seen.update(asked_after=round(time.monotonic() - began, 1),
+                    held=[row.get("held") for row in egress.pending(name) if row["host"] == urlhost(url)])
+        time.sleep(after)
+        seen.update(alive=worker.is_alive(), answered_at=round(time.monotonic() - began, 1))
+        try:
+            egress.reply(name, [urlhost(url)], reply)
+        except ValueError as error:  # nothing waits: the row says so
+            seen["reply_refused"] = str(error)
+    worker.join(900)
+    result = box.get("result") or {"state": "no result"}
+    record = out / container.RECORD_NAME
+    rows = [json.loads(line) for line in record.read_text(encoding="utf-8").splitlines()] if record.is_file() else []
+    log = (out / "execute.log").read_text(encoding="utf-8", errors="replace") if (out / "execute.log").is_file() else ""
+    return {"run": {key: result.get(key) for key in ("state", "exit_code", "cause", "refused", "asked", "gaps")},
+            "seconds": round(time.monotonic() - began, 1), "executions": sum(row.get("phase") == "execute" for row in rows),
+            "pending": egress.pending(name), "seen": seen, "log": log[-1500:]}
+
+
+def urlhost(url):
+    return url.split("/")[2].lower()
+
+
+executed = {}
+if PROXY == "script":
+    os.environ[egress.ANSWERS] = "app"
+    executed = {
+        "canonical": execute(project("exec-canonical"), "https://pypi.org/simple/"),
+        # the command's own limit is 5 s; the person answers 8 s after the request, within urllib's 15 s: it passes
+        "yes": execute(project("exec-yes"), f"https://{ALLOWED}/exec-yes", timeout=5, reply="once", after=8),
+        # nobody answers for 30 s: urllib gives up at 15 s and the run waits for the answer; then a "no" ends it
+        "waiting": execute(project("exec-waiting"), f"https://{OUTSIDE}/exec-waiting", timeout=5, reply="no",
+                           after=30),
+        # beyond the four: the tool gave up (urllib, 15 s) before the yes (25 s): the run goes once more, reaching it
+        "rerun": execute(project("exec-rerun"), f"https://{ALLOWED}/exec-rerun", timeout=5, reply="once", after=25),
+    }
+    blocked_exec = project("exec-blocked")
+    egress.respond(OUTSIDE, str(blocked_exec), "block")
+    executed["blocked"] = execute(blocked_exec, f"https://{OUTSIDE}/exec-blocked")
+    os.environ.pop(egress.ANSWERS, None)
+
 time.sleep(2)
 capture.terminate()
 Path("/runs/result.json").write_text(json.dumps({
@@ -220,7 +279,7 @@ Path("/runs/result.json").write_text(json.dumps({
     "ways": {"run": ways_run, "rows": ways_rows, "log": ways_log},
     "ask": {"run": ask_run, "pending": pending, "log": ask_log},
     "yes": {"run": yes_run, "log": yes_log},
-    "block": {"run": block_run, "pending": block_pending, "log": block_log},
+    "block": {"run": block_run, "pending": block_pending, "log": block_log}, "exec": executed,
     "proxy_logs": PROXY_LOGS, "listener_hits": HITS, "dns_wire": [line.rstrip() for line in wire if TOKEN in line],
     "dns_wire_lines": len(wire), "dns_wire_sample": [line.rstrip() for line in wire[:40]],
     "egress_state": egress.load(str(blocked)), "seconds": round(time.monotonic() - started, 1)}, default=str),

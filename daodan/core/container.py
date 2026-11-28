@@ -70,6 +70,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import threading
 import time
 import uuid
 from datetime import datetime, timezone
@@ -236,14 +237,19 @@ if os.environ.get("DAODAN_PUBLIC"):
 # `http://<host>` (the apt sources a base image names over plain HTTP) is reached by plain HTTP at its port 80, only
 # for a GET or HEAD of apt's archive (`dists/`, `pool/`: apt checks the signed Release files and each package's
 # hash), one request a connection. Prints "ready <port>", and for each refusal a line `@@daodan-refused {"host","port"}`
-# that `run_in_container` reads from its log (`egress.refused`). It resolves no refused host: a container the project
+# that `run_in_container` reads from its log (`egress.refused`). With DAODAN_ASK, the folder the host copies each
+# answer into (`ANSWER_DIR`, `Asked`: a person answers), a CONNECT at 443 to a host it does not open is held, with no time
+# limit, until a file named by the sha256 of the host says "allow" (the connection goes on as an allowed one) or "deny"
+# (refused); it says `@@daodan-asked` once a connection, unless the answer is there, and `@@daodan-gone` when the client
+# leaves first. Without it, it refuses at once. It resolves no refused host: a container the project
 # runs in must not open a DNS channel through it. Proxies evaluated for `T3.A`: Smokescreen v1.0.1 (an attested image;
 # measured by `benchmarks/egress/modal_probe.py --proxy smokescreen`, it opens other ports of an allowed host and its
 # plain HTTP at any path: out), squid (ACLs and logs, but no apt exception by path), mitmproxy (it intercepts TLS: not
 # needed). This script stays, with the address an allowed host resolves to checked (`is_global`) and connected to.
 PROXY_SCRIPT = r'''
-import ipaddress, json, re, select, socket, sys, threading
+import hashlib, ipaddress, json, os, re, select, socket, sys, threading, time
 from urllib.parse import urlsplit
+ASK = os.environ.get("DAODAN_ASK", "")
 allowed = {host.lower() for host in sys.argv[2:] if not host.startswith("http://")}
 archives = {host[len("http://"):].lower() for host in sys.argv[2:] if host.startswith("http://")}
 ARCHIVE = re.compile(r"(?:/[^/?#\s]+)*/(?:dists|pool)/[^?#\s]*")
@@ -302,6 +308,32 @@ def refuse(client, words):
             host, port = target, ""
     print("@@daodan-refused " + json.dumps({"host": host[:255], "port": port[:5]}), flush=True)
     client.sendall(b"HTTP/1.1 403 Forbidden\r\n\r\n"); client.close()
+def answer(host):
+    """What the host copied in for `host`: "allow", "deny", or anything else while there is no answer."""
+    try:
+        with open(os.path.join(ASK, hashlib.sha256(host.encode("utf-8")).hexdigest()), encoding="ascii") as said:
+            return said.read().strip()
+    except (OSError, ValueError):
+        return ""
+def held(client, host):
+    """A connection to a host nobody answered for yet, held until the answer: True to open it, False to refuse it, None
+    when the client left first."""
+    said = answer(host)
+    if said not in ("allow", "deny"):
+        print("@@daodan-asked " + json.dumps({"host": host[:255], "port": "443"}), flush=True)
+    while said not in ("allow", "deny"):
+        ready, _, _ = select.select([client], [], [], 0.25)
+        if ready:
+            try:
+                left = not client.recv(1, socket.MSG_PEEK)
+            except OSError:
+                left = True
+            if left:
+                print("@@daodan-gone " + json.dumps({"host": host[:255], "port": "443"}), flush=True)
+                client.close(); return None
+            time.sleep(0.25)  # a client that spoke before its tunnel: what it sent waits with it
+        said = answer(host)
+    return said == "allow"
 def serve(client):
     head = b""
     while b"\r\n\r\n" not in head and len(head) < 8192:
@@ -317,7 +349,13 @@ def serve(client):
             return fetch(client, words[0], place.lower(), path, head)
     host, _, port = words[1].decode("latin-1").rpartition(":") if len(words) == 3 and words[0] == b"CONNECT" else ("", "", "")
     if host.lower() not in allowed or port != "443":
-        return refuse(client, words)
+        if not ASK or not host or port != "443":
+            return refuse(client, words)
+        opened = held(client, host.lower())
+        if opened is None:
+            return
+        if not opened:
+            return refuse(client, words)
     try:  # the address it is opened at, checked: an approved name that resolves into the user's network is refused
         address = next((found[4][:2] for found in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
                         if public(found[4][0])), None)
@@ -332,8 +370,12 @@ server = socket.create_server(("0.0.0.0", int(sys.argv[1])))
 print("ready", server.getsockname()[1], flush=True)
 while True:
     connection, _ = server.accept()
-    threading.Thread(target=serve, args=(connection,), daemon=True).start()
+    try:
+        threading.Thread(target=serve, args=(connection,), daemon=True).start()
+    except RuntimeError:  # no thread left under its pids limit (held connections count): this one is closed
+        connection.close()
 '''
+ANSWER_DIR = "/tmp/daodan-answers"  # in the proxy's container: where `Asked` copies each answer (`PROXY_SCRIPT`)
 
 KIRI_VERSION = "0.2.0"
 # The full package of the release, for the docker CLI that `kiri-lite` leaves out: (asset, sha256 of SHA256SUMS).
@@ -1155,11 +1197,12 @@ def sweep(engine: Engine) -> None:
 def phase(engine: Engine, name: str, *, image: str, command: list[str], network: str, env: dict[str, str],
           limits: dict, timeout: float, copy: Path | None, outputs: list[str], out_dir: Path,
           volumes: list[str] = (), commit: str | None = None, flags: tuple[str, ...] = (),
-          log: str | None = None) -> dict:
+          log: str | None = None, paused: Callable[[], bool] | None = None) -> dict:
     """One container from create to rm, with the `name:path` volumes mounted and `flags` (its user and
     capabilities) after its name: its record, with the outputs brought back; with `commit`, a container that exited
     with 0 is first committed as that image (`committed` in the record, or `commit_failed` with the engine's
-    answer). Its log is `<name>.log`, or with `log` the end of `<log>.log`, which an earlier phase began."""
+    answer). Its log is `<name>.log`, or with `log` the end of `<log>.log`, which an earlier phase began. `paused`:
+    while it holds, the time does not count against `timeout` (`attached`)."""
     box = f"daodan-{uuid.uuid4().hex[:12]}"
     args = ["create", "--name", box, *flags, "--network", network, "--memory", str(limits["memory"]),
             "--memory-swap", str(limits["memory"]), "--pids-limit", str(limits["pids"]),
@@ -1184,8 +1227,7 @@ def phase(engine: Engine, name: str, *, image: str, command: list[str], network:
         row["log"] = str(path)
         with path.open("ab" if log else "wb") as handle:
             try:
-                row["exit_code"] = cli(engine, "start", "-a", box, stdout=handle, stderr=subprocess.STDOUT,
-                                       timeout=timeout).returncode
+                row["exit_code"] = attached(engine, box, handle, timeout, paused)
                 row["outcome"] = "exited"
             except subprocess.TimeoutExpired:
                 cli(engine, "kill", box)
@@ -1207,6 +1249,27 @@ def phase(engine: Engine, name: str, *, image: str, command: list[str], network:
         cli(engine, "rm", "-f", box)
         row["duration_seconds"] = round(time.monotonic() - started, 3)
     return row
+
+
+def attached(engine: Engine, box: str, handle, timeout: float, paused: Callable[[], bool] | None = None) -> int:
+    """`start -a` of the created `box`, what it prints into `handle`, within `timeout` seconds: with `paused`, the
+    seconds while it holds (a connection waits for the user's answer, `Asked.waiting`) do not count, so the person's
+    time is never the command's. Its exit code; TimeoutExpired once the time is spent, the CLI's process ended."""
+    if paused is None:
+        return cli(engine, "start", "-a", box, stdout=handle, stderr=subprocess.STDOUT, timeout=timeout).returncode
+    argv = [*engine.argv, "start", "-a", box]
+    process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=handle, stderr=subprocess.STDOUT)
+    spent, last = 0.0, time.monotonic()
+    while True:
+        try:
+            return process.wait(timeout=egress.POLL)
+        except subprocess.TimeoutExpired:
+            now = time.monotonic()
+            spent, last = spent + (0.0 if paused() else now - last), now
+            if spent >= timeout:
+                process.kill()
+                process.wait()
+                raise subprocess.TimeoutExpired(argv, timeout) from None
 
 
 class Header(tarfile.TarInfo):
@@ -1326,17 +1389,21 @@ def internal_network(engine: Engine, network: str) -> list[dict]:
         "remedy": "run the preparation with Docker Engine 28.0 or later, or with a Kiri that supports the option"}]
 
 
-def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, ...], project: str) -> None:
+def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, ...], project: str,
+                ask: bool = False) -> None:
     """The proxy of a run, open to the `registries` that `egress.decide` allows the project (`egress.name`):
     any other host is refused, and what it was asked is in the proxy's log (`PROXY_SCRIPT`), where the host reads it
     as a request or a `host_denied` gap. The hosts the user approved for the project, always or for this analysis,
     are open too: the run that asked for one, run again after the answer, reaches it. Every host the proxy gets is one
-    `egress.decide` allows: a blocked host is never open, whatever list holds it."""
+    `egress.decide` allows: a blocked host is never open, whatever list holds it. With `ask` (a person answers,
+    `egress.answerable`), a host it does not open is held for the answer `Asked` copies in, not refused."""
     state, answers = egress.load(project), egress.session(project)
-    registries = tuple(host for host in dict.fromkeys([*registries, *state["always"], *answers["allow"]])
+    registries = tuple(host for host in dict.fromkeys([*registries, *state["always"],
+                                                       *answers["allow"]])
                        if egress.decide(host, project, state, answers) == "allow")
     source = base64.b64encode(PROXY_SCRIPT.encode("utf-8")).decode("ascii")
     checked(cli(engine, "create", "--name", box, *UNPRIVILEGED, "--memory", str(128 * 2**20), "--pids-limit", "64",
+                *(("-e", f"DAODAN_ASK={ANSWER_DIR}") if ask else ()),
                 PROXY_IMAGE, "python", "-c", f"import base64;exec(base64.b64decode('{source}'))",
                 str(PROXY_PORT), *registries), "create of the proxy")
     checked(cli(engine, "network", "connect", "--alias", "proxy", network, box), "network connect of the proxy")
@@ -1346,6 +1413,100 @@ def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, .
             return
         time.sleep(0.2)
     raise RuntimeError("the registry proxy did not start")
+
+
+class Asked:
+    """The connections a run's proxy holds for the user's answer (`start_proxy` with `ask`), answered while the run
+    goes, as a PC's firewall answers: a thread reads the proxy's log every `egress.POLL` seconds; a host it holds
+    (`egress.ASKED`) is a request of the project's at once (`egress.collect`, `held`: the popup in the app), and once
+    `egress.decide` no longer says "ask" for it (the user answered, `egress.reply`) the answer is copied into the proxy's
+    container (`ANSWER_DIR`, with `cp`, the one way into a container every engine has), where the proxy reads it. The
+    channel is the engine's own CLI: `logs` out, `cp` in. `waiting` holds while a client still waits (the phase's time
+    limit is paused, `attached`); `settle`, once the run ended, waits for the answers its tool left behind when it gave
+    up (`egress.GONE`) and says whether one of those was allowed: the run then goes once more (`run_in_container`)."""
+
+    def __init__(self, engine: Engine, box: str, project: str):
+        self.engine, self.box, self.project = engine, box, project
+        self.rows: dict[str, dict] = {}  # host -> its request, as the proxy asked it
+        self.said: dict[str, str] = {}  # host -> "allow" or "deny", copied into the proxy
+        self.gone: set[str] = set()  # the hosts a client stopped waiting for
+        self.lock, self.stop = threading.Lock(), threading.Event()
+        # the context of the run: the tool its requests are asked under (`egress.asking`)
+        self.thread = threading.Thread(target=contextvars.copy_context().run, args=(self.loop,), daemon=True)
+
+    def loop(self) -> None:
+        while not self.stop.wait(egress.POLL):
+            try:
+                self.turn()
+            except (OSError, ValueError):  # a shared file that cannot be read now: the next turn reads it again
+                pass
+
+    def turn(self) -> None:
+        """One read of the proxy's log and of the user's answers."""
+        try:
+            log = cli(self.engine, "logs", self.box, timeout=60).stdout.decode("utf-8", "replace")
+        except (OSError, subprocess.TimeoutExpired):
+            return
+        with self.lock:
+            fresh = [row for row in egress.refused(log, egress.ASKED) if row["host"] not in self.rows]
+            self.rows.update((row["host"], row) for row in fresh)
+            self.gone |= {row["host"] for row in egress.refused(log, egress.GONE)}
+        if fresh:  # the requests, at once: the app shows them while the connection waits
+            egress.collect(self.project, fresh, waits=True)
+        state, answers = egress.load(self.project), egress.session(self.project)
+        for host in [host for host in list(self.rows) if host not in self.said]:
+            now = egress.decide(host, self.project, state, answers)
+            if now != "ask":
+                self.answer(host, now)
+
+    def answer(self, host: str, now: str) -> None:
+        """`now` ("allow" or "deny") for `host`, into the proxy's container: a tar with the one file, through `cp -`;
+        said once the engine took it (a copy that fails is tried again at the next turn)."""
+        with tempfile.TemporaryFile() as handle:
+            with tarfile.open(fileobj=handle, mode="w") as bundle:
+                folder = tarfile.TarInfo(ANSWER_DIR.lstrip("/"))
+                folder.type, folder.mode = tarfile.DIRTYPE, 0o755
+                bundle.addfile(folder)
+                data = now.encode("ascii")
+                entry = tarfile.TarInfo(f"{folder.name}/{hashlib.sha256(host.encode('utf-8')).hexdigest()}")
+                entry.size, entry.mode = len(data), 0o644
+                bundle.addfile(entry, io.BytesIO(data))
+            handle.seek(0)
+            try:
+                copied = cli(self.engine, "cp", "-", f"{self.box}:/", stdin=handle, timeout=60).returncode == 0
+            except (OSError, subprocess.TimeoutExpired):
+                copied = False
+        if copied:
+            with self.lock:
+                self.said[host] = now
+
+    def waiting(self) -> bool:
+        with self.lock:
+            return any(host not in self.said and host not in self.gone for host in self.rows)
+
+    def start(self) -> None:
+        self.thread.start()
+
+    def end(self) -> None:
+        """The thread ends, after one last read while the proxy is there."""
+        self.stop.set()
+        self.thread.join()
+        try:
+            self.turn()
+        except (OSError, ValueError):
+            pass
+
+    def settle(self) -> tuple[list[dict], bool]:
+        """Once the run ended: the answers it had not got, waited for (`egress.wait`, no time limit); then the hosts
+        whose client did not get its answer (it gave up, or its run ended first) that the user refused, which the proxy
+        never said it refused, and whether one of them was allowed."""
+        left = [host for host in self.rows if host not in self.said]
+        egress.wait(self.project, left)
+        state, answers = egress.load(self.project), egress.session(self.project)
+        unanswered = [host for host in self.rows if host in self.gone or host in left]
+        final = {host: self.said.get(host) or egress.decide(host, self.project, state, answers) for host in unanswered}
+        return ([self.rows[host] for host in unanswered if final[host] == "deny"],
+                any(now == "allow" for now in final.values()))
 
 
 class Said(NamedTuple):
@@ -1677,14 +1838,17 @@ def tool_script(tools: dict) -> str:
 
 
 def tool_phase(engine: Engine, image: str, tools: dict, network: str, env: dict[str, str], state: str,
-               limits: dict, timeout: float, out_dir: Path, log: str = "prepare") -> dict:
+               limits: dict, timeout: float, out_dir: Path, log: str = "prepare",
+               paused: Callable[[], bool] | None = None) -> dict:
     """The recipes of `preparation.NEEDS` (`tools`' `lines`) as root, with the state volume (`state`, `name:path`)
     and without /work, with no capability but those their recipes need (`tools`' `caps`) and `CHOWN`, which then
-    gives the state volume back to `NOBODY`; on `network`, the proxy's. Its log begins `<log>.log`; its row."""
+    gives the state volume back to `NOBODY`; on `network`, the proxy's (`paused`: `phase`'s). Its log begins
+    `<log>.log`; its row."""
     caps = sorted({"CHOWN", *tools.get("caps", ())})
     return phase(engine, "tools", image=image, command=["sh", "-c", tool_script(tools)], network=network, env=env,
                  limits=limits, timeout=timeout, copy=None, outputs=[], out_dir=out_dir, volumes=[state],
-                 flags=("--cap-drop", "ALL", *(word for cap in caps for word in ("--cap-add", cap))), log=log)
+                 flags=("--cap-drop", "ALL", *(word for cap in caps for word in ("--cap-add", cap))), log=log,
+                 paused=paused)
 
 
 def declared(record: Path, image: str, command: list[str], gap: Gap) -> dict:
@@ -1696,17 +1860,40 @@ def declared(record: Path, image: str, command: list[str], gap: Gap) -> dict:
             "record": str(record)}
 
 
-def run_in_container(project: Path, command: list[str], *, image: str, out_dir: Path, prepare: list[str] | None = None,
-                     outputs: list[str] = (), env: dict[str, str] | None = None, timeout: float = 600,
-                     prepare_timeout: float = 1800, memory: int = 2 * 2**30, pids: int = 1024,
-                     cpus: float | None = None, registries: tuple[str, ...] = REGISTRIES,
-                     engine: Engine | str | None = None,
-                     inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None,
-                     keep_root: bool = False, dotenv_env: list[tuple[str, str]] = (), blind: bool = False,
-                     node_restore: dict | None = None, tools: dict | None = None,
-                     generate: str | None = None) -> dict:
+def run_in_container(project: Path, command: list[str], **options) -> dict:
+    """`run_once` (its arguments and its result), and once more when its tool gave up waiting for a host that the user
+    then allowed (`Asked.settle`, the owner's decision of 28 November 2026): the second run opens it from the start,
+    and its result is the one; the outputs of the first are removed first, as `fetch` never writes over a file."""
+    result = run_once(project, command, **options)
+    if not result.pop("again", False):
+        return result
+    out_dir = Path(options["out_dir"]).resolve()
+    for path in options.get("outputs") or ():
+        target = out_dir / posixpath.basename(path.rstrip("/"))
+        if target.name in RUN_FILES or target == out_dir:  # never an output (`fetch`): the run's own
+            continue
+        if target.is_dir() and not target.is_symlink():
+            shutil.rmtree(target)
+        else:
+            target.unlink(missing_ok=True)
+    result = run_once(project, command, **options)
+    result.pop("again", None)
+    return result
+
+
+def run_once(project: Path, command: list[str], *, image: str, out_dir: Path, prepare: list[str] | None = None,
+             outputs: list[str] = (), env: dict[str, str] | None = None, timeout: float = 600,
+             prepare_timeout: float = 1800, memory: int = 2 * 2**30, pids: int = 1024,
+             cpus: float | None = None, registries: tuple[str, ...] = REGISTRIES,
+             engine: Engine | str | None = None,
+             inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None,
+             keep_root: bool = False, dotenv_env: list[tuple[str, str]] = (), blind: bool = False,
+             node_restore: dict | None = None, tools: dict | None = None,
+             generate: str | None = None) -> dict:
     """Run `command` in a container over a copy of `project`; `prepare` first. Both, and every phase between them that
-    runs the project's code, reach out only through the run's proxy, which opens the hosts `egress` allows.
+    runs the project's code, reach out only through the run's proxy, which opens the hosts `egress` allows. Where a
+    person answers (`egress.answerable`), a connection to a host that asks waits for the answer (`Asked`), and that
+    time does not count against `timeout` or `prepare_timeout`; elsewhere the proxy refuses it at once.
 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
     called once an engine answers, which may raise Gap. With `prepare`, inputs lie under /work or /daodan/state
@@ -1761,6 +1948,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     token = uuid.uuid4().hex[:12]
     cleanup: list[tuple[str, ...]] = []
     walled: list[str] = []  # the run's network, once `firewall` made it with its proxy
+    asking: list[Asked] = []  # where a person answers, what answers its proxy's held connections
+    interrupted = False  # an interruption does not wait for the person (`Asked.settle`)
     held: tuple[Path, list[str]] | None = None
     kept_image: str | None = None  # `keep_root`'s image, on record with the volumes
     hide: Callable[[str], str] | None = None  # the masks of the tracked .env files' values (`masker`)
@@ -1817,8 +2006,14 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 if opened := internal_network(found, network):  # a note, not a stop: the run goes on
                     result["gaps"] = [*(result.get("gaps") or ()), *opened]
                 cleanup.extend([("rm", "-f", proxy), ("network", "rm", network)])
-                start_proxy(found, proxy, network, tuple(registries), egress.name(project))
+                start_proxy(found, proxy, network, tuple(registries), egress.name(project), egress.answerable())
                 logged.append(proxy)
+                if egress.answerable():  # a person answers: each connection waits for the answer (`Asked`)
+                    asking.append(Asked(found, proxy, egress.name(project)))
+                    asking[0].start()
+
+            def paused() -> Callable[[], bool] | None:
+                return asking[0].waiting if asking else None
 
             def hidden(row: dict) -> dict:  # what the run printed, masked in its log, its outputs and its row
                 mask_file(row.get("log"), hide)
@@ -1885,7 +2080,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 firewall()
                 if split and tools.get("lines"):
                     made = tool_phase(found, image, tools, network, proxied, mounts[1], limits, prepare_timeout,
-                                      out_dir)
+                                      out_dir, paused=paused())
                     append_record(record, hidden(made))
                     if made["outcome"] != "exited" or made["exit_code"] != 0:
                         result["cause"] = made.get("cause") or f"the tools did not install; see {made['log']}"
@@ -1905,7 +2100,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                             command=["sh", "-c", steps_script(steps, timeout, token), "sh", *prepare] if inside
                             else prepare, env=proxied, limits=limits,
                             timeout=prepare_timeout + (timeout if inside else 0), copy=prepare_copy, outputs=[],
-                            out_dir=out_dir, volumes=mounts, commit=kept_image, flags=user, log="prepare")
+                            out_dir=out_dir, volumes=mounts, commit=kept_image, flags=user, log="prepare",
+                            paused=paused())
                 append_record(record, {**hidden(row), "copy": digest})
                 last = row  # the row of the container committed as `kept_image`
                 if generate and row["outcome"] == "exited" and row["exit_code"] == 0 and (
@@ -1917,7 +2113,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         row = phase(found, name, image=kept_image or image, network=net, command=argv, env=given,
                                     limits=limits, timeout=seconds, copy=None, outputs=[], out_dir=out_dir,
                                     volumes=mounts, commit=kept_image if name == "steps" else None, flags=user,
-                                    log="prepare")
+                                    log="prepare", paused=paused())
                         append_record(record, hidden(row))
                         last = row if name == "steps" else last
                         if row["outcome"] != "exited" or row["exit_code"] != 0:
@@ -1946,7 +2142,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             report()
             row = phase(found, "execute", image=image, command=command, network=joined or network, env=proxied,
                         limits=limits, timeout=timeout, copy=run_copy, outputs=list(outputs), out_dir=out_dir,
-                        volumes=mounts)
+                        volumes=mounts, paused=paused())
             append_record(record, {**hidden(row), "copy": digest, **({"from": based} if kept_image else {})})
             result.update(exit_code=row.get("exit_code"), outputs=row["outputs"],
                           state={"exited": "done", "timeout": "timeout"}.get(row["outcome"], "failed"))
@@ -1960,7 +2156,12 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
         result["cause"] = str(error)
         return result
+    except BaseException:  # an interruption, or an error no caller foresees: no wait for the person
+        interrupted = True
+        raise
     finally:
+        if asking:  # its last read while the proxy is there
+            asking[0].end()
         try:  # a run stopped during its preparation still says what its proxy refused
             read_refusals()
         except (OSError, subprocess.TimeoutExpired):
@@ -1976,6 +2177,11 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             except (OSError, subprocess.TimeoutExpired):
                 pass
         found.stop()
+        if asking and not interrupted:  # the run stops here for the answers its tool did not wait for
+            denied_late, result["again"] = asking[0].settle()
+            said_refused = result.get("refused") or []
+            if late := [row for row in denied_late if row not in said_refused]:
+                result["refused"] = [*said_refused, *late]
         if result.get("refused"):  # the requests to answer and the denials, in the gaps of every caller
             result["asked"], denied = egress.collect(egress.name(project), result["refused"])
             result["gaps"] = [*(result.get("gaps") or ()), *denied,

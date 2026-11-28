@@ -259,11 +259,13 @@ def test_ensure_with_a_runner_runs_the_model_commands_a_fresh_premap_left_not_ru
     assert premap.ensure(manifest, runner=lambda commands: pytest.fail("ran twice")) == again
 
 
-def test_a_premap_whose_run_asked_the_user_about_a_host_runs_again_with_the_answer(tmp_path, monkeypatch):
-    """With a runner the pre-map is stale while a source waits on the user about a host: a request (`approval_required`),
-    whatever its answer, and a host refused for one analysis ("no") once that analysis has ended; a host the user
-    blocked, and an allowed one the proxy refused at a port other than 443, keep it fresh (`egress`). Without a runner
-    it stays as it is."""
+def test_a_premap_whose_run_asked_the_user_about_a_host_is_stale_only_when_the_answer_changes(tmp_path, monkeypatch):
+    """`T0.C.10`, the owner's decision of 28 November 2026: the record keeps what `egress` says of each host its sources
+    asked about (`egress`, `premap.egress_state`), and with a runner it is stale only when that changes. A request that
+    waits keeps it fresh (MCP and the command line, where nobody answers, do not run it again at each analysis), and
+    the user's answer makes it stale, so the next analysis runs with it; a host refused for one analysis ("no") is
+    stale once that analysis has ended (it asks again) and fresh again once blocked; an allowed host the proxy refused
+    at a port other than 443 stays fresh. Without a runner it stays as it is."""
     import egress
     monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
     monkeypatch.setattr(egress, "project_file_of", lambda project: tmp_path / "project.daodan")  # the project's lists
@@ -272,19 +274,47 @@ def test_a_premap_whose_run_asked_the_user_about_a_host_runs_again_with_the_answ
                       ("port", {"kind": "host_denied", "host": "pypi.org", "port": "80", "detail": "443 only"}),
                       ("refused", {"kind": "host_denied", "host": "api.github.com", "port": "443", "detail": "no"})):
         sources = [fake("asker", "reader", lambda context, gap=gap: {"facts": {}, "gaps": [gap]})]
-        project, manifest, _ = build(tmp_path / case, "mixed", sources=sources)
-        name = str(project.resolve())
+        name = str((tmp_path / case / "proj").resolve())  # `build`'s project
+        if case == "refused":
+            egress.respond("api.github.com", name, "no")  # refused in this analysis, before its record is written
+        project, manifest, record = build(tmp_path / case, "mixed", sources=sources)
+        assert str(project.resolve()) == name
         assert premap.state(manifest, sources=sources)["state"] == "fresh"
-        if case != "refused":  # a request waits; an allowed host the proxy opens at 443 only stays refused at 80
-            assert premap.state(manifest, sources=sources, runner=runner)["state"] == ("stale" if case == "asked"
-                                                                                       else "fresh")
+        if case == "asked":
+            assert record["egress"] == {"api.github.com": "ask"}
+            assert premap.state(manifest, sources=sources, runner=runner)["state"] == "fresh"  # it waits
+            egress.respond("api.github.com", name, "always")
+            assert premap.state(manifest, sources=sources, runner=runner)["state"] == "stale"  # answered
             continue
-        egress.respond("api.github.com", name, "no")  # refused in this analysis: what it said stands
-        assert premap.state(manifest, sources=sources, runner=runner)["state"] == "fresh"
+        if case == "port":  # an allowed host the proxy opens at 443 only stays refused at 80
+            assert premap.state(manifest, sources=sources, runner=runner)["state"] == "fresh"
+            continue
+        assert record["egress"] == {"api.github.com": "deny"}
+        assert premap.state(manifest, sources=sources, runner=runner)["state"] == "fresh"  # what it said stands
         egress.end(name)  # the analysis ended, and its "no" with it: the next one asks again
         assert premap.state(manifest, sources=sources, runner=runner)["state"] == "stale"
         egress.respond("api.github.com", name, "block")
         assert premap.state(manifest, sources=sources, runner=runner)["state"] == "fresh"
+
+
+def test_a_premap_kept_with_a_request_that_waits_asks_it_again_in_the_next_analysis(tmp_path, monkeypatch):
+    """`egress.begin` empties the requests when an analysis starts, and a pre-map whose request still waits is kept as it
+    is: `ensure` with a runner makes the request pending again, under the tool of the source that asked, so MCP and the
+    app show it until the user answers."""
+    import egress
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    monkeypatch.setattr(egress, "resolve", lambda rows, *_: [{**row, "address": None, "network": False} for row in rows])
+    gap = {"kind": "approval_required", "hosts": ["api.github.com"], "detail": "asked"}
+    sources = [fake("asker", "reader", lambda context: {"facts": {}, "gaps": [gap]})]
+    project, manifest, record = build(tmp_path, "mixed", sources=sources)
+    name = str(project.resolve())
+    egress.begin(name)  # the next analysis
+    assert egress.pending(name) == []
+    kept = premap.ensure(manifest, sources=sources, runner=lambda commands: pytest.fail("ran again"))
+    assert kept == record
+    assert [row["host"] for row in egress.pending(name)] == ["api.github.com"]
+    assert premap.ensure(manifest, sources=sources) == record  # without a runner nothing is asked
+    assert len(egress.pending(name)) == 1
 
 
 def test_every_command_is_data_with_its_network():

@@ -13,7 +13,12 @@ its `start_proxy` with `PROXY_SCRIPT` (or Smokescreen in its place, `--proxy smo
 `measure-` row (the proxy's start, memory, image) when measured. Any other row is as expected when its way out is `blocked` and has
 left no mark: no request on a canary for its path, no connection to the VM's listeners, no query with the run's token
 on the wire outside the host's own lookup of refused names (`egress.resolve`, on the VM's `eth0`). The approval rows
-check the result's `gaps` and the pending requests. Writes `results/<date>.json` and exits 1 on any unexpected row.
+check the result's `gaps` and the pending requests, with nobody to answer (MCP, the command line: refused at once).
+The `exec-` rows (`T1.F.3`, the proxy script only) run the fetch as the execution of a run with no preparation, where
+a person answers (`egress.ANSWERS`, a thread of the driver as the app's page): a canonical host passes; one outside
+the list is held past the command's own limit and passes after the yes; one nobody answers keeps the run and its held
+request waiting, until a no; a blocked one is refused at once; and a tool that gave up waiting runs once more after
+the yes. Writes `results/<date>.json` and exits 1 on any unexpected row.
 """
 from __future__ import annotations
 
@@ -62,7 +67,8 @@ app = modal.App("daodan-egress-probe", image=image)
 
 
 BRIDGES = ("veth", "br-", "docker")  # the engine's interfaces on the VM: what a container sends passes there
-EXPECTED_ALLOWED = {"/control-approved", "/r301", "/r302", "/approval-yes"}  # the canary paths a row may reach
+EXPECTED_ALLOWED = {"/control-approved", "/r301", "/r302", "/approval-yes",  # the canary paths a row may reach
+                    "/exec-yes", "/exec-rerun"}
 
 
 def marks(paths: list[str], hits: list[str]) -> list[str]:
@@ -105,7 +111,46 @@ def judge(result: dict, hits: list[str]) -> list[dict]:
                   "marks": marks(["/approval-block"], hits),
                   "ok": block["run"]["state"] != "done" and kinds(block["run"]) == ["host_denied"]
                   and not block["pending"] and not marks(["/approval-block"], hits)})
+    lines += judge_execution(result.get("exec") or {}, hits, kinds)
     return lines
+
+
+def judge_execution(done: dict, hits: list[str], kinds) -> list[dict]:
+    """The execution behind the firewall where a person answers (`T1.F.3`): one line a case of the step, and the run
+    again after a tool gave up. None with Smokescreen, which holds no connection."""
+    if not done:
+        return []
+    code = lambda case: (done[case]["run"]["state"], done[case]["run"]["exit_code"])  # noqa: E731
+    canonical, yes, waiting, rerun, blocked = (done[case] for case in ("canonical", "yes", "waiting", "rerun", "blocked"))
+    return [
+        {"row": "exec-canonical-passes", "expected": "done, exit 0, nothing asked, one execution",
+         "outcome": [code("canonical"), canonical["run"]["asked"], canonical["executions"]],
+         "ok": code("canonical") == ("done", 0) and not canonical["run"]["asked"] and canonical["executions"] == 1},
+        {"row": "exec-waits-then-passes-after-yes",
+         "expected": "held while it waits longer than the command's own limit (5 s), then done, exit 0, the canary "
+                     "reached once, one execution",
+         "outcome": [code("yes"), yes["seen"], yes["executions"], yes["seconds"]], "marks": marks(["/exec-yes"], hits),
+         "ok": code("yes") == ("done", 0) and yes["seen"].get("held") == [True] and yes["seen"].get("alive") is True
+         and yes["executions"] == 1 and len(marks(["/exec-yes"], hits)) == 1 and yes["seconds"] >= 8},
+        {"row": "exec-no-answer-keeps-waiting",
+         "expected": "the run still there and the request held 30 s on (the plan's awaiting_approval), then after a no "
+                     "host_denied, nothing pending, no mark",
+         "outcome": [code("waiting"), waiting["seen"], kinds(waiting["run"]), waiting["pending"]],
+         "marks": marks(["/exec-waiting"], hits),
+         "ok": waiting["seen"].get("alive") is True and waiting["seen"].get("held") == [True]
+         and "host_denied" in kinds(waiting["run"]) and not waiting["pending"] and not marks(["/exec-waiting"], hits)},
+        {"row": "exec-blocked-refused-at-once",
+         "expected": "refused within urllib's own 15 s, host_denied, nothing pending, no mark",
+         "outcome": [code("blocked"), kinds(blocked["run"]), blocked["pending"], blocked["seconds"]],
+         "marks": marks(["/exec-blocked"], hits),
+         "ok": code("blocked")[1] not in (0, None) and "host_denied" in kinds(blocked["run"]) and not blocked["pending"]
+         and blocked["seconds"] < 15 and not marks(["/exec-blocked"], hits)},
+        {"row": "exec-gave-up-runs-again-after-yes",
+         "expected": "the tool gave up (15 s) before the yes (25 s): done, exit 0, two executions, the canary reached "
+                     "once",
+         "outcome": [code("rerun"), rerun["seen"], rerun["executions"]], "marks": marks(["/exec-rerun"], hits),
+         "ok": code("rerun") == ("done", 0) and rerun["executions"] == 2 and len(marks(["/exec-rerun"], hits)) == 1},
+    ]
 
 
 @app.local_entrypoint()

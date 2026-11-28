@@ -1026,6 +1026,140 @@ class FakeEngineTest(unittest.TestCase):
             {"host": "10.0.0.1", "port": "8080"}, {"host": "[::1]", "port": "443"},
             {"host": "http://[::1:80/x", "port": ""}, {"host": "", "port": "80"}])
 
+    def test_with_an_answer_folder_the_proxy_holds_a_host_to_ask_until_the_answer(self):
+        """`T1.F.3`, as a PC's firewall: with DAODAN_ASK (a person answers) a CONNECT at 443 to a host the proxy does
+        not open is held, said once (`@@daodan-asked`), until the file named by the sha256 of the host says "deny"
+        (refused) or "allow" (it goes on as an allowed host: here a private address, refused at its check); a client
+        that leaves first is said (`@@daodan-gone`); another port is refused at once, as without the folder."""
+        folder = self.scratch / "answers"
+        folder.mkdir()
+        named = lambda host: folder / hashlib.sha256(host.encode("utf-8")).hexdigest()  # noqa: E731
+        server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org"],
+                                  stdout=subprocess.PIPE, text=True, env={**os.environ, "DAODAN_ASK": str(folder)})
+        self.addCleanup(server.wait)
+        self.addCleanup(server.kill)
+        port = int(server.stdout.readline().split()[1])
+        line = lambda: (server.stdout.readline().split(" ", 1) + [""])[:2]  # noqa: E731
+
+        held = socket.create_connection(("127.0.0.1", port), timeout=5)
+        self.addCleanup(held.close)
+        held.sendall(b"CONNECT held.example:443 HTTP/1.1\r\n\r\n")
+        mark, row = line()
+        self.assertEqual((mark, json.loads(row)), ("@@daodan-asked", {"host": "held.example", "port": "443"}))
+        held.settimeout(1.5)
+        with self.assertRaises(socket.timeout):  # no answer yet: it waits
+            held.recv(1024)
+        named("held.example").write_text("deny", encoding="ascii")
+        held.settimeout(5)
+        self.assertTrue(held.recv(1024).startswith(b"HTTP/1.1 403"))
+        mark, row = line()
+        self.assertEqual((mark, json.loads(row)), ("@@daodan-refused", {"host": "held.example", "port": "443"}))
+
+        with socket.create_connection(("127.0.0.1", port), timeout=5) as gone:
+            gone.sendall(b"CONNECT gone.example:443 HTTP/1.1\r\n\r\n")
+            self.assertEqual(line()[0], "@@daodan-asked")
+        mark, row = line()
+        self.assertEqual((mark, json.loads(row)), ("@@daodan-gone", {"host": "gone.example", "port": "443"}))
+
+        named("10.255.255.1").write_text("allow", encoding="ascii")  # answered before: no line, no wait
+        with socket.create_connection(("127.0.0.1", port), timeout=5) as opened:
+            opened.sendall(b"CONNECT 10.255.255.1:443 HTTP/1.1\r\n\r\n")
+            self.assertTrue(opened.recv(1024).startswith(b"HTTP/1.1 403"))  # allowed, then refused at its address
+        mark, row = line()
+        self.assertEqual((mark, json.loads(row)), ("@@daodan-refused", {"host": "10.255.255.1", "port": "443"}))
+        with socket.create_connection(("127.0.0.1", port), timeout=5) as other:
+            other.sendall(b"CONNECT held.example:8443 HTTP/1.1\r\n\r\n")
+            self.assertTrue(other.recv(1024).startswith(b"HTTP/1.1 403"))  # at once
+        mark, row = line()
+        self.assertEqual((mark, json.loads(row)), ("@@daodan-refused", {"host": "held.example", "port": "8443"}))
+
+    def test_the_time_a_connection_waits_for_the_person_does_not_count_against_the_limit(self):
+        """`attached`: with `paused`, the seconds while it holds are not the command's; without, its limit stops it."""
+        for paused, ends in ((lambda: time.monotonic() < until, "exited"), (lambda: False, "timeout"),
+                             (None, "timeout")):
+            with self.subTest(paused=paused):
+                box = f"daodan-{os.urandom(6).hex()}"
+                container.checked(container.cli(self.engine, "create", "--name", box, "fake/runtime:1", "sleep", "2"),
+                                  "create")
+                until = time.monotonic() + 3  # a connection waits for the first 3 s, longer than the command
+                with (self.scratch / f"{box}.log").open("wb") as handle:
+                    try:
+                        code, said = container.attached(self.engine, box, handle, 1, paused), "exited"
+                    except subprocess.TimeoutExpired:
+                        code, said = None, "timeout"
+                self.assertEqual(said, ends)
+                if said == "exited":
+                    self.assertEqual(code, 0)
+
+    def answering(self, reply: str, held: list | None = None) -> threading.Thread:
+        """The person in the app: once a request of the project waits, `reply` to it (`egress.reply`)."""
+        project = str(self.project.resolve())
+
+        def person():
+            deadline = time.monotonic() + 30
+            while not egress.pending(project) and time.monotonic() < deadline:
+                time.sleep(0.05)
+            if held is not None:
+                held.extend((row["host"], row.get("held")) for row in egress.pending(project))
+            egress.reply(project, [row["host"] for row in egress.pending(project)], reply)
+        thread = threading.Thread(target=person, daemon=True)
+        thread.start()
+        return thread
+
+    def test_in_the_app_a_held_connection_is_a_request_at_once_and_its_answer_goes_into_the_proxy(self):
+        """`T1.F.3`: where a person answers (`DAODAN_ANSWERS=app`) the proxy holds the host (`DAODAN_ASK`), the request
+        is pending while the run goes, marked `held` (the plan's `awaiting_approval`), and the user's answer is copied
+        into the proxy's container, through the engine's `cp`, where the proxy reads it; the run goes on, once. Without
+        a person (MCP, the command line) the proxy has no folder: it refuses at once."""
+        (self.state / "refused.log").write_text('@@daodan-asked {"host": "git.example.com", "port": "443"}\n',
+                                                encoding="utf-8")
+        self.assertEqual(self.run_operation(["exit", "0"])["state"], "done")
+        self.assertFalse(any(f"DAODAN_ASK={container.ANSWER_DIR}" in call for call in self.created()))
+        (self.state / "calls.jsonl").unlink()
+        held = []
+        with mock.patch.dict(os.environ, {egress.ANSWERS: "app"}), mock.patch.object(egress, "POLL", 0.1):
+            person = self.answering("once", held)
+            result = self.run_operation(["sleep", "3"])
+            person.join(30)
+        self.assertEqual(result["state"], "done", result)
+        self.assertNotIn("again", result)
+        self.assertEqual(held, [("git.example.com", True)])
+        proxy, execute = self.created()
+        self.assertIn(f"DAODAN_ASK={container.ANSWER_DIR}", proxy)
+        said = (self.state / "containers" / proxy[proxy.index("--name") + 1] / "fs" / container.ANSWER_DIR.lstrip("/")
+                / hashlib.sha256(b"git.example.com").hexdigest())
+        self.assertEqual(said.read_text(encoding="ascii"), "allow")
+        self.assertEqual(egress.pending(str(self.project)), [])
+        self.assertEqual(len(self.ran()), 1)  # answered while it waited: no second run
+
+    def test_in_the_app_a_tool_that_gave_up_waiting_runs_once_more_after_the_yes_and_after_a_no_is_denied(self):
+        """A tool whose own timeout gave up the held connection (`@@daodan-gone`): the run waits, once ended, for the
+        answer; after "once" it runs once more, with the host open from the start (`run_in_container`), its outputs
+        of the first go removed; after "no" it does not, and the host is a `host_denied` gap."""
+        (self.state / "refused.log").write_text('@@daodan-asked {"host": "git.example.com", "port": "443"}\n'
+                                                '@@daodan-gone {"host": "git.example.com", "port": "443"}\n',
+                                                encoding="utf-8")
+        with mock.patch.dict(os.environ, {egress.ANSWERS: "app"}), mock.patch.object(egress, "POLL", 0.1):
+            person = self.answering("once")
+            result = self.run_operation(["emit", "/out/result.txt", "hello"], outputs=["/out/result.txt"])
+            person.join(30)
+        self.assertEqual(result["state"], "done", result)
+        self.assertNotIn("again", result)
+        self.assertEqual(len(self.ran()), 2)  # once more, and only once
+        second = [call for call in self.created() if container.PROXY_IMAGE in call][-1]
+        self.assertIn("git.example.com", second[second.index("3128") + 1:])  # open from the start
+        self.assertEqual((self.out / "result.txt").read_text(), "hello")
+        shutil.rmtree(self.out)
+        (self.state / "calls.jsonl").unlink()
+        egress.end(str(self.project))  # a new analysis: "once" is forgotten
+        with mock.patch.dict(os.environ, {egress.ANSWERS: "app"}), mock.patch.object(egress, "POLL", 0.1):
+            person = self.answering("no")
+            result = self.run_operation(["exit", "0"])
+            person.join(30)
+        self.assertEqual(len(self.ran()), 1)
+        self.assertEqual([(gap["kind"], gap["host"]) for gap in result["gaps"] if gap["kind"] == "host_denied"],
+                         [("host_denied", "git.example.com")])
+
     def test_proxy_forwards_plain_http_to_an_apt_host_only_for_its_archive(self):
         """A base image's apt sources name their archive over plain HTTP, and apt checks the signed Release files and
         each package's hash: for a host given as `http://<host>` the proxy forwards a GET or HEAD of a `dists/` or

@@ -326,6 +326,53 @@ def test_preflight_asks_for_the_hosts_nobody_decided_and_names_the_files_that_de
     assert egress.preflight("/work/other", ("github.com",))[0][0]["declared_in"] == []  # declared for another project
 
 
+def test_only_the_app_s_processes_answer_and_there_preflight_waits_for_the_person(monkeypatch):
+    """`T1.F.3`: as a PC's firewall, where a person answers (`DAODAN_ANSWERS=app`, set by the app for the analyses it
+    starts) a run does not start without its tool's hosts and does not stop either: it waits, with no time limit,
+    until the user has answered, and then starts; the requests it waits on are `held`. Elsewhere it stops at once."""
+    import threading
+    monkeypatch.setattr(egress, "resolve", lambda rows, *_: [{**row, "address": None, "network": False} for row in rows])
+    monkeypatch.setattr(egress, "POLL", 0.05)
+    monkeypatch.delenv(egress.ANSWERS, raising=False)
+    assert not egress.answerable()
+    assert egress.preflight(PROJECT, ("github.com",))[1][0]["kind"] == "approval_required"  # MCP, the command line
+    egress.begin(PROJECT)
+    monkeypatch.setenv(egress.ANSWERS, "app")
+    assert egress.answerable()
+    seen = []
+
+    def person():  # the app's page, once the request is there
+        while not egress.pending(PROJECT):
+            threading.Event().wait(0.02)
+        seen.append([(row["host"], row.get("held")) for row in egress.pending(PROJECT)])
+        egress.reply(PROJECT, ["github.com"], "once")
+    answering = threading.Thread(target=person)
+    answering.start()
+    assert egress.preflight(PROJECT, ("github.com",)) == ([], [])  # it waited, then nothing stops it
+    answering.join(10)
+    assert seen == [[("github.com", True)]] and egress.pending(PROJECT) == []
+
+
+def test_wait_ends_with_the_answers_and_with_its_stop():
+    import threading
+    stop = threading.Event()
+    stop.set()
+    egress.wait(PROJECT, ["github.com"], stop)  # it returns: stopped
+    egress.wait(PROJECT, ["pypi.org"])  # canonical: nothing to wait for
+    egress.respond("github.com", PROJECT, "no")
+    egress.wait(PROJECT, ["github.com"])  # answered
+
+
+def test_the_held_and_the_gone_lines_of_a_proxy_log_are_read_as_its_refusals():
+    log = ('@@daodan-asked {"host": "Git.Example.com", "port": "443"}\nnoise\n'
+           '@@daodan-asked {"host": "git.example.com", "port": "443"}\n'
+           '@@daodan-gone {"host": "git.example.com", "port": "443"}\n'
+           '@@daodan-refused {"host": "other.example.com", "port": "443"}\n')
+    assert egress.refused(log, egress.ASKED) == [{"host": "git.example.com", "port": "443"}]
+    assert egress.refused(log, egress.GONE) == [{"host": "git.example.com", "port": "443"}]
+    assert egress.refused(log) == [{"host": "other.example.com", "port": "443"}]
+
+
 def test_an_approval_gap_says_whether_the_step_failed_did_not_start_or_ran():
     row = [{"host": "a.example.com", "port": "443", "declared_in": []}]
     assert egress.approval_gap(row)[0]["detail"].startswith("the step failed and asked for hosts")

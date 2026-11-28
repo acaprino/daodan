@@ -1006,6 +1006,8 @@ def main(argv=None) -> int:
                         help="for Daodan's window: end when the standard input ends, print the address and nothing "
                              "else, and take a free port when the one asked for cannot be had")
     args = parser.parse_args(argv)
+    # The analyses this process starts are answered here (`egress.answerable`): their connections wait for the person
+    os.environ[egress.ANSWERS] = "app"
     held = _held_input() if args.desktop else None
     app, token = App(args.work), secrets.token_urlsafe(24)
     try:

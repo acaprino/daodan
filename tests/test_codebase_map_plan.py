@@ -443,6 +443,29 @@ def test_a_request_of_gradle_waits_for_its_model_action_alone_and_a_no_makes_it_
     assert refused["cause"] and refused["remedy"]
 
 
+def test_a_running_step_whose_connection_waits_for_the_person_is_awaiting_approval(tmp_path, shared):
+    """`T1.F.3`: in the app a run stops at a held connection (`container.Asked`). While its step runs and has no record
+    yet, the step's own action is `awaiting_approval` with the hosts its held requests name (`egress.collect`'s `waits`);
+    a request of before, not held, does not stop it, and the answer takes it out."""
+    import egress
+    planning = _planning()
+    root = _project(tmp_path / "project", {"settings.gradle": "rootProject.name = 'shop'\n"})
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(root, manifest)
+    project = egress.project_of(manifest)
+    events.Bus(manifest.with_name(events.JOURNAL)).emit("step.started", "find_modules", step="find_modules")
+    looked = lambda rows, *args, **kwargs: [{**row, "address": None, "network": False} for row in rows]  # noqa: E731
+    with mock.patch.object(egress, "resolve", side_effect=looked), egress.asking("gradle"):
+        egress.collect(project, [{"host": "old.example.com", "port": "443"}])  # asked before, not held
+        action = {a["id"]: a for a in planning.current(manifest)["actions"]}["find_modules"]
+        assert action["state"] == "running" and "hosts" not in action
+        egress.collect(project, [{"host": "repo.example.com", "port": "443"}], waits=True)
+    action = {a["id"]: a for a in planning.current(manifest)["actions"]}["find_modules"]
+    assert (action["state"], action["hosts"]) == ("awaiting_approval", ["repo.example.com"])
+    egress.reply(project, ["repo.example.com"], "once")
+    assert {a["id"]: a for a in planning.current(manifest)["actions"]}["find_modules"]["state"] == "running"
+
+
 def test_a_request_of_the_exploration_waits_for_its_explore_action_alone(tmp_path, shared):
     """The exploration's run asks under its own name (`dynamic.APP`, as an observer's under its own, `egress.asking`): a
     host the proxy refused it and nobody answered puts the `explore` action of the app in `awaiting_approval`, with the

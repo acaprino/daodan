@@ -213,7 +213,8 @@ def current(manifest) -> dict:
       app), else one for the step. The state, one of `ACTION_STATES`, comes from the step's `analyzer.*` events since
       it began (`fresh` is `skipped`) or the record; `not_possible`, with `cause` and `remedy`, from
       `analyzer.unavailable`, a need that failed (`blocked`) or a host the user refused (`host_denied`);
-      `awaiting_approval`, with `hosts`, while a request of one of its tools waits for an answer (`_asked`).
+      `awaiting_approval`, with `hosts`, while a request of one of its tools waits for an answer (`_asked`), and a
+      running step's own action while a connection of its run waits for the person (`held`).
     - `gaps`: the plan's, and the size of the downloads, which no source gives."""
     from pathlib import Path
     from pipeline import events
@@ -244,8 +245,10 @@ def current(manifest) -> dict:
             continue
         step = by_step[KINDS[kind][0]]
         container = step["executes"] == "container"
-        actions.append(_action(step["id"], step["id"], kind, {}, KINDS[kind][1] and container, container,
-                               {key: step[key] for key in ("state", "cause", "remedy") if key in step}))
+        state = {key: step[key] for key in ("state", "cause", "remedy") if key in step}
+        if step["state"] == "running":  # no record yet: a connection of its run that waits for the person stops it
+            state = asked((), held=True) or state
+        actions.append(_action(step["id"], step["id"], kind, {}, KINDS[kind][1] and container, container, state))
     actions.extend(found.get("explore") or ())
     return {"steps": steps, "policy": _policy(project), "actions": actions, "gaps": [*planned["gaps"], DOWNLOADS]}
 
@@ -254,15 +257,16 @@ def _asked(project: str | None):
     """The state of an action that asked for hosts, from `egress`: `awaiting_approval` with the `hosts` a request of one of
     its `tools` waits for (`egress.pending`: the tool `egress.asking` named), else `not_possible` with `host_denied` for
     the hosts of its gaps the user refused (`egress.decide`), else None. The requests' ports, addresses and declaring
-    files stay in `egress.groups`."""
+    files stay in `egress.groups`. With `held`, also a request a running step's connection waits on (its `held`, from
+    `egress.collect`'s `waits`: in the app the run stops there for the person), whichever tool asked it."""
     import egress
     waiting = egress.pending(project) if project else []
     state, answers = (egress.load(project), egress.session(project)) if project else (None, None)
 
-    def asked(tools, hosts=()) -> dict | None:
-        held = sorted({row["host"] for row in waiting if row.get("tool") in tools})
-        if held:
-            return {"state": "awaiting_approval", "hosts": held}
+    def asked(tools, hosts=(), held=False) -> dict | None:
+        found = sorted({row["host"] for row in waiting if row.get("tool") in tools or held and row.get("held")})
+        if found:
+            return {"state": "awaiting_approval", "hosts": found}
         refused = sorted({host for host in hosts if project and egress.decide(host, project, state, answers) == "deny"})
         if refused:
             return {"state": "not_possible", "gap": "host_denied", "hosts": refused,

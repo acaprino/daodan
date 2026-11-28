@@ -596,6 +596,7 @@ def write(manifest: Path, sources=None, runner=None, report=None) -> dict:
         if inventory_digest(store) != record["binding"]["inventory_digest"] or _snapshot_stamp(manifest) != stamp:
             raise ValueError("snapshot changed during the pre-map; retry")
         record["binding"]["snapshot_stamp"] = stamp
+    record["egress"] = egress_state(record)  # stale for a request only when its answer changes (`_asked`)
     descriptor, name = tempfile.mkstemp(prefix=".premap-", dir=target.parent)
     with os.fdopen(descriptor, "wb") as stream:
         stream.write(json.dumps(record, indent=1, ensure_ascii=False, sort_keys=True).encode("utf-8"))
@@ -625,29 +626,57 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
     return {**report, **freshness(record, runner)}
 
 
-def _asked(record: dict) -> bool:
-    """Whether a source of the record waits on the user about a host (`egress`): a request (`approval_required`), or a
-    host refused that is no longer (a "no" lasts one analysis: it asks again, or the user approved it since; a host
-    the proxy opens at 443 only and was asked at another port stays refused). The run that asked runs again with the
-    answer, as `engine_pass._keep` keeps no contract that waited."""
-    told = [gap for gap in record.get("gaps", ()) if gap.get("kind") in ("approval_required", "host_denied")]
-    if any(gap["kind"] == "approval_required" for gap in told):
-        return True
-    if not told or not (record.get("binding") or {}).get("root"):
-        return False
+def _told(record: dict) -> list[dict]:
+    return [gap for gap in record.get("gaps", ()) if gap.get("kind") in ("approval_required", "host_denied")]
+
+
+def egress_state(record: dict) -> dict:
+    """What `egress.decide` says now of each host the record's sources asked about (the hosts its `approval_required`
+    and `host_denied` gaps name): "ask", "allow" or "deny". The record keeps it when written (`egress`, its fingerprint
+    of the answers)."""
+    hosts = sorted({host for gap in _told(record) for host in (gap.get("hosts") or [gap.get("host")]) if host})
+    root = (record.get("binding") or {}).get("root")
+    if not hosts or not root:
+        return {}
     import egress
-    project = str(Path(record["binding"]["root"]).resolve())  # `egress.project_of`: the store's root
-    state, answers = egress.load(project), egress.session(project)
-    decided = [(gap, egress.decide(gap["host"], project, state, answers)) for gap in told if gap.get("host")]
-    return any(now == "ask" or now == "allow" and gap.get("port", "443") == "443" for gap, now in decided)
+    project = str(Path(root).resolve())  # `egress.project_of`: the store's root
+    state, said = egress.load(project), egress.session(project)
+    return {host: egress.decide(host, project, state, said) for host in hosts}
+
+
+def _asked(record: dict) -> bool:
+    """Whether the answer about a host a source of the record asked for changed since it was written (`egress_state`
+    against the record's `egress`; the owner's decision of 28 November 2026, `T0.C.10`): a request still waiting keeps it as it
+    is, the user's answer makes it run again with it; a "no" lasts one analysis, so the next asks again; a host the
+    proxy opens at 443 only and was asked at another port stays refused, its answer unchanged. As
+    `engine_pass._keep` keeps no contract that waited."""
+    return (record.get("egress") or {}) != egress_state(record)
+
+
+def ask_again(record: dict) -> None:
+    """The requests of a record kept as it is that still wait for an answer, pending again under the tool of the source
+    that asked (`egress.begin` emptied them when the analysis began): the app shows them, and MCP and the command line
+    read them, until the user answers."""
+    root = (record.get("binding") or {}).get("root")
+    if not root:
+        return
+    import egress
+    project = str(Path(root).resolve())
+    tools = {status.get("source"): status.get("tools") or [""] for status in record.get("sources", ())}
+    state, said = egress.load(project), egress.session(project)
+    for gap in _told(record):
+        hosts = [host for host in gap.get("hosts") or () if egress.decide(host, project, state, said) == "ask"]
+        if hosts:  # an `approval_required` gap's (a `host_denied` one names its `host` alone)
+            with egress.asking((tools.get(gap.get("source")) or [""])[0]):
+                egress.collect(project, [{"host": host, "port": "443"} for host in hosts])
 
 
 def freshness(record: dict, runner) -> dict:
     """The state of a record already bound to the present snapshot and sources (the pre-map, or another record `_run` made):
     with a runner, stale while model commands are left `not_run`, unless an explicitly disabled container is their recorded
-    cause, and while a source waits on the user's answer about a host (`_asked`)."""
+    cause, and once the answer about a host a source asked for changed (`_asked`)."""
     if runner is not None and _asked(record):
-        return {"state": "stale", "reason": "a run asked the user about a host: it runs again with the answer"}
+        return {"state": "stale", "reason": "the answer about a host a run asked for changed: it runs again with it"}
     unrun = [s for s in record.get("sources", []) if s.get("state") == "not_run"]
     if runner is not None and unrun:
         from container import OFF_CAUSE
@@ -668,7 +697,11 @@ def freshness(record: dict, runner) -> dict:
 
 def ensure(manifest: Path, sources=None, runner=None, report=None) -> dict:
     """The pre-map of `manifest`, derived again when it is not fresh; with a runner, also when model commands were
-    left `not_run` (the whole pre-map again: the join needs every source's part)."""
+    left `not_run` (the whole pre-map again: the join needs every source's part). One kept with a runner asks again what
+    still waits for an answer (`ask_again`)."""
     if state(manifest, sources, runner)["state"] == "fresh":
-        return json.loads(path(manifest).read_text(encoding="utf-8"))
+        record = json.loads(path(manifest).read_text(encoding="utf-8"))
+        if runner is not None:
+            ask_again(record)
+        return record
     return write(manifest, sources, runner, report)

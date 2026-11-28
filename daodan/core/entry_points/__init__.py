@@ -213,6 +213,7 @@ def write(manifest: Path, sources=None, runner=None, report=None, stated: dict |
         if inventory_digest(store) != record["binding"]["inventory_digest"] or premap._snapshot_stamp(manifest) != stamp:
             raise ValueError("snapshot changed during the entry points; retry")
         record["binding"]["snapshot_stamp"] = stamp
+    record["egress"] = premap.egress_state(record)  # stale for a request only when its answer changes
     descriptor, name = tempfile.mkstemp(prefix=".entry-points-", dir=target.parent)
     with os.fdopen(descriptor, "wb") as stream:
         stream.write(json.dumps(record, indent=1, ensure_ascii=False, sort_keys=True).encode("utf-8"))
@@ -260,7 +261,10 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
 
 def ensure(manifest: Path, sources=None, runner=None, report=None) -> dict:
     """The record of `manifest`, derived again when it is not fresh; with a runner, also when model commands were left
-    `not_run`."""
+    `not_run`; one kept with a runner asks again what still waits for an answer (`premap.ask_again`)."""
     if state(manifest, sources, runner)["state"] == "fresh":
-        return json.loads(path(manifest).read_text(encoding="utf-8"))
+        record = json.loads(path(manifest).read_text(encoding="utf-8"))
+        if runner is not None:
+            premap.ask_again(record)
+        return record
     return write(manifest, sources, runner, report)
