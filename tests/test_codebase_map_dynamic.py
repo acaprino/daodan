@@ -462,6 +462,9 @@ def test_off_or_with_nothing_chosen_the_step_runs_nothing_and_says_why(tmp_path,
     assert asked.call_count == 0 and seen == []
     assert result["languages"] == {} and said in result["skipped"] and "the graph stays static" in result["skipped"]
     assert "run_commands=preselected" in result["remedy"] and "App" in result["remedy"]
+    # planning runs nothing: the alternatives are written all the same, for the plan and the App
+    found = dynamic.offered_of(manifest)[observer.NAME]
+    assert {(one["kind"], one["runner"]) for one in found} == {("tests", "pytest")}
     with pytest.raises(ValueError, match="run_commands"):
         dynamic.run(manifest, pipeline.events.Bus(), "all")
 
@@ -925,4 +928,99 @@ def test_a_slot_is_the_folder_as_the_pre_map_names_it_and_the_runner_or_the_buil
     assert dynamic.slot({"root": "./svc/", "runner": "go test"}) == ("svc", "go test")
     assert [dynamic.source(entry) for entry in (USER, ASSISTANT, CI, PROJECT, {"root": "", "tool": "maven"})] == [
         "user", "assistant", "ci", "project", "convention"]
+
+
+def chooser(tmp_path: Path) -> tuple[Path, str, SimpleNamespace, list]:
+    """A project whose Go modules `.`, `lib` and `svc` each hold tests (`GO_FILES`), and an observer of its Python
+    graph that plans them as the Go observer does and runs, finished, what it is given (`ran`, per container run)."""
+    from dynamic import go
+    project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
+    static_store(manifest)
+    ran: list = []
+    stub = fake({})
+    stub.plan = lambda record, files, read: go.plan(record, GO_FILES, read)
+
+    def observe(project, planned, out_dir, engine):
+        ran.append(sorted((run["root"], tuple(run["argv"])) for run in planned["runs"]))
+        return {"state": "ran", "sites": [], "gaps": [],
+                "runs": [{**run, "state": "ran", "exit_code": 0} for run in planned["runs"]]}
+    stub.observe = observe
+    return manifest, str(project.resolve()), stub, ran
+
+
+def test_the_step_offers_every_alternative_and_runs_only_the_chosen_slots_reusing_what_ran(tmp_path):
+    """Planned always, run only what is chosen: nothing chosen runs nothing; one slot runs it alone; a second slot
+    chosen later runs only itself, the first's finished run reused; a slot left out reuses too; a slot switched to
+    another alternative changes the plan, and its observer's picked runs run again."""
+    import commands
+    import premap
+    from dynamic import go
+    manifest, project, stub, ran = chooser(tmp_path)
+    with mock.patch.object(premap, "ensure", return_value=go_record(CI, PROJECT)), \
+            mock.patch.object(dynamic, "observers", return_value=[stub]):
+        off, seen, _asked = step(manifest, run_commands="none")
+        assert off["skipped"] and seen == [] and ran == []  # planned, with nothing said and nothing run
+        offered = {(one["root"], one["source"]): one for one in dynamic.offered_of(manifest)[stub.NAME]}
+        assert sorted(offered) == [(".", "ci"), (".", "convention"), ("lib", "convention"), ("svc", "convention"),
+                                   ("svc", "project")]
+        commands.choose(project, [])  # the button pressed, nothing ticked
+        result, seen, asked = step(manifest, run_commands="chosen")
+        assert ran == [] and asked.call_count == 0 and result["languages"]["python"]["state"] == "not-run"
+        assert not [event for event in seen if event["analyzer"] == stub.NAME
+                    and event["kind"] in ("analyzer.started", "analyzer.finished", "gap")]  # a quiet note alone
+        commands.choose(project, [offered["svc", "project"]])
+        step(manifest, run_commands="chosen")
+        assert ran == [[("svc", tuple(PROJECT["argv"]))]]
+        commands.choose(project, [offered["svc", "project"], offered[".", "ci"]])
+        step(manifest, run_commands="chosen")
+        assert ran[1:] == [[(".", tuple(CI["argv"]))]]
+        commands.choose(project, [offered["svc", "project"]])
+        _result, _seen, asked = step(manifest, run_commands="chosen")
+        assert len(ran) == 2 and asked.call_count == 0
+        commands.choose(project, [offered["svc", "convention"], offered[".", "ci"]])
+        step(manifest, run_commands="chosen")
+        assert ran[2:] == [[(".", tuple(CI["argv"])), ("svc", tuple(go.ARGV))]]
+        assert dynamic.offered_of(manifest)[stub.NAME] == list(offered.values())  # written at every run
+
+
+def test_a_chosen_command_the_project_no_longer_offers_is_a_gap_and_does_not_run(tmp_path):
+    import commands
+    import premap
+    manifest, project, stub, ran = chooser(tmp_path)
+    gone = {"kind": "tests", "root": "svc", "runner": "go test", "source": "ci", "argv": ["go", "test", "./..."],
+            "declared_in": ".github/workflows/old.yml#jobs.test.steps.1"}
+    commands.choose(project, [gone, {"kind": "tests", "root": "lib", "runner": "go test", "source": None}])
+    with mock.patch.object(premap, "ensure", return_value=go_record(CI, PROJECT)), \
+            mock.patch.object(dynamic, "observers", return_value=[stub]):
+        _result, seen, asked = step(manifest, run_commands="chosen")
+    [gap] = gaps(seen, "chosen_command_gone")
+    assert (gap["path"], gap["source"], gap["declared_in"]) == ("svc", "ci", gone["declared_in"])
+    assert "choose again in the App" in gap["detail"]
+    assert ran == [] and asked.call_count == 0
+
+
+def test_of_the_person_s_and_the_project_s_pytest_for_one_folder_only_the_picked_one_runs(tmp_path):
+    """The Python observer plans one run per `tests` entry: of the person's command and the project's for the same
+    folder and runner, the step plans the picked one alone, the person's by the preselection."""
+    import commands
+    import premap
+    project, manifest = write_project(tmp_path, {"lib.py": BOX_LIB})
+    static_store(manifest)
+    mine = {"root": ".", "runner": "pytest", "argv": ["pytest", "-k", "one"], "declared_in": "commands.json",
+            "by": "user", "grade": "confermato"}
+    theirs = {"root": ".", "runner": "pytest", "declared_in": "pyproject.toml", "args": ["tests"]}
+    given = []
+    stub = fake({})
+    stub.plan = observer.plan
+    stub.observe = lambda project, planned, out_dir, engine: given.append(planned["runs"]) or {
+        "state": "ran", "sites": [], "gaps": [], "runs": [{**run, "state": "ran"} for run in planned["runs"]]}
+    with mock.patch.object(premap, "ensure", return_value={"tests": [mine, theirs]}), \
+            mock.patch.object(dynamic, "observers", return_value=[stub]):
+        step(manifest)
+        found = next(one for one in dynamic.offered_of(manifest)[stub.NAME] if one["source"] == "project")
+        commands.choose(str(project.resolve()), [found])
+        step(manifest, run_commands="chosen")
+    assert [[(run["declared_in"], run["argv"][:4]) for run in runs] for runs in given] == [
+        [("commands.json", ["-m", "pytest", "-k", "one"])],
+        [("pyproject.toml", ["-m", "pytest", "tests", observer.KEEP_GOING])]]
 

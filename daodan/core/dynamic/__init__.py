@@ -35,8 +35,11 @@ left it. A language with no observer, a project with no declared test command, a
 with no container engine are gaps, never silence; so are a result that breaks this contract (`observer-malformed`,
 `failed`), a run where no test ran (`not-run`) and one that placed no row of a language (`not-observed`).
 Completed test commands can be reused even when they placed no row. Interrupted commands are retried on the next
-analysis, together with the evidence they already produced. The step is off unless asked (`RUN_COMMANDS`): with
-`none`, or `chosen` and nothing the person chose (`commands.chosen`), it runs nothing and says why (`skipped`).
+analysis, together with the evidence they already produced. The step always plans, which runs nothing, and writes
+every observer's alternatives (`OFFERED`, `offered_of`); it runs only what it is asked (`RUN_COMMANDS`, `picked`):
+each slot's preselection, or what the person chose (`commands.chosen`), a choice the project no longer offers being a
+`chosen_command_gone` gap. With `none`, or `chosen` and nothing the person chose, it runs nothing and says why
+(`skipped`).
 
 Every plan also gets `declared` (`preparation.declared`): the hosts the project declares for its dependencies,
 which the observer's preparation reaches beside the registries, as a CI does; a failed restore whose words name one
@@ -75,6 +78,7 @@ from pathlib import Path
 STEP = "run_and_observe"
 APP = "app"  # the exploration of the started app, apart from the observers: its record is `RUNS/APP`
 RUNS = "dynamic-runs"  # beside the manifest: each observer's container record, logs and observation files
+OFFERED = "offered.json"  # in RUNS: every observer's alternatives (`offered`), written at every run of the step
 EXAMPLES = 20
 TESTS = ("ran", "timeout", "killed", "not_started", "no_tests")  # how a run's tests ended; the first three ran
 RUN_COMMANDS = ("none", "preselected", "chosen")  # what `run` runs: nothing, each slot's preselection, the person's
@@ -181,6 +185,46 @@ def preselected(alternatives: list[dict]) -> list[dict]:
         root, runner = slot(one)
         first.setdefault((one["kind"], root, runner if one["kind"] == "tests" else None), one)
     return list(first.values())
+
+
+def _same(choice: dict, alternative: dict) -> bool:
+    """Whether a choice (`commands.chosen`) names the alternative: its kind, slot, source and file."""
+    return all(choice.get(key) == alternative.get(key) for key in ("kind", "root", "runner", "source", "declared_in"))
+
+
+def picked(alternatives: list[dict], choices: list[dict] | None) -> list[dict]:
+    """The alternatives that run, one per slot at most: each slot's preselection where `choices` is None, else the
+    ones the person chose; a slot they left out, or chose none for (`source` None), runs nothing."""
+    if choices is None:
+        return preselected(alternatives)
+    found = {}
+    for one in alternatives:
+        if any(_same(choice, one) for choice in choices):
+            found.setdefault(slot(one), one)
+    return list(found.values())
+
+
+def _planned(record: dict, alternatives: list[dict], picks: list[dict]) -> dict:
+    """`record` with, in each slot, the `tests` entry of one alternative alone: the one picked, else the preselected
+    one, so the plan, and the key of its cache (`execution_cache.key`), stays the same when a slot is picked or left.
+    An entry that is no alternative's stays, with the gaps it gives."""
+    kept = {slot(one): one for one in preselected(alternatives)} | {slot(one): one for one in picks}
+
+    def other(test: dict) -> bool:  # the entry of an alternative that is not the one kept in its slot
+        return any(slot(test) == slot(one) and source(test) == one["source"]
+                   and test.get("declared_in") == one["declared_in"] and one != kept.get(slot(one))
+                   for one in alternatives)
+    return {**record, "tests": [test for test in record.get("tests") or () if not other(test)]}
+
+
+def offered_of(manifest: Path) -> dict[str, list[dict]]:
+    """The alternatives of each observer the last step offered (`OFFERED`, `{observer: [alternative]}`); empty where
+    it wrote none or the file cannot be read."""
+    try:
+        held = json.loads((Path(manifest).parent / RUNS / OFFERED).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return held if isinstance(held, dict) else {}
 
 
 def arguments(argv: list[str], runner: str) -> list[str]:
@@ -574,14 +618,15 @@ def _control_counts(tests: list[dict]) -> list[dict]:
 def run(manifest: Path, bus, run_commands: str = "none") -> dict:
     """The step on the snapshot `manifest`, said on `bus` (`pipeline.events`): `{"languages": {language: outcome}}`.
     It runs only when asked (`run_commands`, one of `RUN_COMMANDS`): with `none`, or `chosen` where the person chose
-    nothing yet, no engine is asked and no container starts, and the result is `{"languages": {}, "skipped": cause,
-    "remedy": ...}`.
+    nothing yet, it only plans the alternatives, no engine is asked and no container starts, and the result is
+    `{"languages": {}, "skipped": cause, "remedy": ...}`.
 
-    Each observer whose languages have a static graph in the store plans its runs from the pre-map, runs them in
-    the container (the engine is asked once, when the first observer has something to run) and saves what the
-    join places. An outcome's `state` is `observed` (with the `sites`, `edges` and `closed` holes of the store's
-    coverage), or why nothing was: `no-observer`, `no-static-graph`, `not-run` (nothing to
-    run, the plan's gaps, or no test ran, the run's), `unavailable` (no container), `failed` (the run, or a result
+    Each observer whose languages have a static graph in the store plans its runs from the pre-map, each slot with
+    the alternative picked there, else its preselection (`_planned`), runs the picked ones in the container (the
+    engine is asked once, when the first observer has something to run) and saves what the join places; one with
+    nothing picked starts nothing. An outcome's `state` is `observed` (with the `sites`, `edges` and `closed` holes of
+    the store's coverage), or why nothing was: `no-observer`, `no-static-graph`, `not-run` (nothing to run, the plan's
+    gaps, nothing picked, or no test ran, the run's), `unavailable` (no container), `failed` (the run, or a result
     that breaks the contract), `not-observed` (the tests ran and placed no row of the language); those carry the
     `reason`. Completed commands are reused on the same snapshot, static analyzers, recorder and plan.
     """
@@ -605,16 +650,23 @@ def run(manifest: Path, bus, run_commands: str = "none") -> dict:
 
     if run_commands not in RUN_COMMANDS:
         raise ValueError(f"run_commands must be one of {', '.join(RUN_COMMANDS)}: {run_commands!r}")
-    if run_commands == "none" or (run_commands == "chosen" and commands.chosen(egress.project_of(manifest)) is None):
-        cause = ("the dynamic step is off (run_commands=none)" if run_commands == "none" else
-                 "no command was chosen to run for this project (run_commands=chosen)")
-        return {"languages": outcomes, "skipped": f"{cause}: no command of the project runs, the graph stays static",
-                "remedy": "choose the commands to run in the App, or analyze with run_commands=preselected"}
+    from types import SimpleNamespace
+    from pipeline import events
     from pipeline import plan as planning
+    from run_store import _write_json_atomic
     asked: dict = {}
     declared, paths = None, {}  # the services of the project's CI (`services`), and where each is declared
+    found: dict = {}  # each observer's alternatives (`offered`), written for the plan and the App (`OFFERED`)
+    record = None  # the pre-map with the project's commands, read when the first observer plans
     with code_graph.Snapshot(manifest) as snapshot:
         project = str(Path(snapshot.store["root"]).resolve())  # the name `egress` asks under (`egress.project_of`)
+        choices = commands.chosen(project) if run_commands == "chosen" else None
+        skipped = None
+        if run_commands == "none" or (run_commands == "chosen" and choices is None):
+            skipped = ("the dynamic step is off (run_commands=none)" if run_commands == "none" else
+                       "no command was chosen to run for this project (run_commands=chosen)")
+            bus = events.Bus()  # the alternatives are planned, which runs nothing, and nothing is said
+        files = sorted(snapshot.checkout.values())
         store = rx.default_edge_store(manifest)
         edges, binding, reason = rx.read_edge_store(store, snapshot.store)
         import engine_pass
@@ -654,22 +706,41 @@ def run(manifest: Path, bus, run_commands: str = "none") -> dict:
                 except OSError:
                     return ""
 
-            record = commands.merged(premap.ensure(manifest), project)  # the user's and the assistant's first
-            planned = module.plan(record, sorted(snapshot.checkout.values()), read)
+            if record is None:
+                record = commands.merged(premap.ensure(manifest), project)  # the user's and the assistant's first
+            plans: dict = {}  # one plan per `tests` list: the alternatives' and the run's share it
+
+            def plan(given: dict, files: list[str], read) -> dict:
+                key = json.dumps(given.get("tests") or [], sort_keys=True, default=str)
+                return plans[key] if key in plans else plans.setdefault(key, module.plan(given, files, read))
+
+            alternatives = found[entry] = offered(SimpleNamespace(plan=plan), record, files, read)
+            if skipped:
+                continue
+            picks = picked(alternatives, choices)
+            planned = dict(plan(_planned(record, alternatives, picks), files, read))
             planned["declared"] = preparation.declared(record)  # the hosts its preparation reaches, as a CI does
             egress.declare(project, planned["declared"]["where"])  # the requests name the files
             folder = manifest.parent / RUNS / entry
             cache_file = folder / "execution.json"
+            # the key covers the whole plan, the slots not picked too: picking or leaving one keeps the runs done
             expected = execution_cache.key(binding, graphs, wanted, module, planned)
             cached = execution_cache.read(cache_file, expected, seen, len(planned["runs"]))
             tests = cached.get("tests", [None] * len(planned["runs"]))
-            retry = [i for i, test in enumerate(tests) if not execution_cache.finished(test)]
+            chosen = {(slot(one), one["declared_in"]) for one in picks}
+            retry = [i for i, test in enumerate(tests) if not execution_cache.finished(test)
+                     and (slot(planned["runs"][i]), planned["runs"][i].get("declared_in")) in chosen]
             if cached and not retry:
                 outcomes.update(cached["outcomes"])
-                ui_controls.extend(_control_counts(tests))
+                ui_controls.extend(_control_counts([test for test in tests if test]))  # None: a run never picked
                 ui_gaps.extend(cached.get("ui_gaps", []))
                 bus.emit("analyzer.finished", f"{entry}: test execution reused", step=STEP, analyzer=entry,
                          languages=wanted, fresh=True)
+                continue
+            if planned["runs"] and not retry:  # nothing of it was asked: no gap, nothing starts
+                left(wanted, "not-run", "none of its commands was chosen to run")
+                bus.emit("log", f"{entry}: none of its commands was chosen to run", step=STEP, analyzer=entry,
+                         level="debug", languages=wanted)
                 continue
             bus.emit("analyzer.started", f"{entry} for {', '.join(wanted)}", step=STEP, analyzer=entry,
                      languages=wanted)
@@ -699,8 +770,8 @@ def run(manifest: Path, bus, run_commands: str = "none") -> dict:
                 if "gap" in asked else None
             if result is None:  # a host the project declares that nobody decided: the runs do not start
                 with egress.asking(entry):  # the observer's hosts are asked about together
-                    waiting, said_hosts = egress.preflight(project, planned["declared"]["hosts"])
-                if waiting:
+                    pending, said_hosts = egress.preflight(project, planned["declared"]["hosts"])
+                if pending:
                     result = {"state": "failed", "cause": said_hosts[0]["detail"],
                               "remedy": "answer in the app, then analyze again", "gaps": said_hosts}
             if result is None:
@@ -794,6 +865,20 @@ def run(manifest: Path, bus, run_commands: str = "none") -> dict:
                                  at, sites, cached.get("attempt", 0) + 1, control_gaps)
             told = ", ".join(f"{language}: {_told(outcomes[language])}" for language in wanted)
             bus.emit("analyzer.finished", f"{entry}: {told}", step=STEP, analyzer=entry, languages=wanted)
+        (manifest.parent / RUNS).mkdir(parents=True, exist_ok=True)
+        _write_json_atomic(manifest.parent / RUNS / OFFERED, found)
+        if skipped:
+            return {"languages": {}, "skipped": f"{skipped}: no command of the project runs, the graph stays static",
+                    "remedy": "choose the commands to run in the App, or analyze with run_commands=preselected"}
+        every = [one for alternatives in found.values() for one in alternatives]
+        for choice in choices or ():  # one the person chose that this analysis no longer offers runs nothing
+            if choice["kind"] == "tests" and choice["source"] is not None and not any(
+                    _same(choice, one) for one in every):
+                detail = (f"{choice['root']} ({choice['runner']}): the command chosen to run ({choice['source']}, "
+                          f"{choice['declared_in'] or 'the convention'}) is no longer offered: the project changed, or "
+                          "its observer did not plan here; it does not run, choose again in the App")
+                say(detail, {"kind": "chosen_command_gone", "path": choice["root"], "runner": choice["runner"],
+                             "source": choice["source"], "declared_in": choice["declared_in"], "detail": detail})
         bus.progress(STEP, len(waiting), len(waiting))
         explored = _app(manifest, snapshot, bus, say, declared["gaps"] if declared else ())
     return {"languages": outcomes, "app": explored, **({"ui_controls": ui_controls} if ui_controls else {}),
