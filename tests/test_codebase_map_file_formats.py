@@ -92,10 +92,14 @@ def _checkout(folder: Path, files: dict[str, str]) -> None:
         (folder / rel).write_text(text, encoding="utf-8", newline="\n")
 
 
+PNG = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"  # a NUL in its first bytes: binary to Git
+
+
 def test_list_files_leaves_out_what_linguist_and_gitattributes_say_and_runs_nothing_of_the_checkout(tmp_path):
-    """The rule above all others (`AGENTS.md`): reading `.gitattributes` runs nothing of the project. The checkout's
-    Git configuration names its own programs (an fsmonitor hook, a filter on every file, a hooks folder), each of which,
-    run, leaves a mark: `git check-attr` reads the attributes, and no mark is left."""
+    """The rule above all others (`AGENTS.md`): reading `.gitattributes` and telling binary files apart run nothing of
+    the project. The checkout's Git configuration names its own programs (an fsmonitor hook, a filter and a diff
+    textconv on every file, a hooks folder), each of which, run, leaves a mark: `git check-attr` reads the attributes,
+    `git grep` the files, and no mark is left."""
     import subprocess
     import file_inventory
     project, marks = tmp_path / "proj", tmp_path / "marks"
@@ -103,21 +107,31 @@ def test_list_files_leaves_out_what_linguist_and_gitattributes_say_and_runs_noth
     mark = f"#!/bin/sh\ntouch {marks}/\"$(basename \"$0\")\"\ncat\n"
     _checkout(project, {"app.py": "x = 1\n", "README.md": "# r\n", "third_party/lib.js": "var a;\n",
                         "gen/api_pb2.py": "y = 2\n", "docs/guide.md": "kept\n", "tools/mark.sh": mark,
+                        "vendor/lib/x.js": "var x;\n", "node_modules/a/index.js": "var a;\n", "build/out.js": "o;\n",
+                        "src/node_modules/b/index.js": "var b;\n", "src/main.py": "m = 1\n", "empty.txt": "",
                         **{f"tools/hooks/{hook}": mark for hook in ("pre-commit", "post-checkout", "post-index-change",
                                                                     "reference-transaction")},
-                        ".gitattributes": "* filter=evil\ngen/** linguist-generated\ndocs/** -linguist-documentation\n"})
+                        ".gitignore": "node_modules/\n",
+                        ".gitattributes": "* filter=evil diff=evil\ngen/** linguist-generated\n"
+                                          "docs/** -linguist-documentation\nnotes.dat binary\n"})
+    (project / "assets").mkdir()
+    (project / "assets/logo.png").write_bytes(PNG)
+    (project / "notes.dat").write_text("text a Git attribute calls binary\n", encoding="utf-8")
     for script in (project / "tools").rglob("*"):
         script.chmod(0o755)
     subprocess.run(["git", "init", "-q", str(project)], check=True)
     for key, value in (("core.fsmonitor", str(project / "tools/mark.sh")), ("core.hooksPath", str(project / "tools/hooks")),
                        ("filter.evil.clean", str(project / "tools/mark.sh")),
                        ("filter.evil.smudge", str(project / "tools/mark.sh")),
-                       ("filter.evil.process", str(project / "tools/mark.sh")), ("filter.evil.required", "true")):
+                       ("filter.evil.process", str(project / "tools/mark.sh")), ("filter.evil.required", "true"),
+                       ("diff.evil.textconv", str(project / "tools/mark.sh")),
+                       ("diff.evil.command", str(project / "tools/mark.sh"))):
         subprocess.run(["git", "-C", str(project), "config", key, value], check=True)
     header = file_inventory.write(project, tmp_path / "inventory.sqlite")
     assert {(entry["path"], entry["why"]) for entry in header["excluded"]} == {
-        (".gitattributes", "vendored"), ("third_party/", "vendored"), ("README.md", "documentation"),
-        ("gen/", "generated")}  # vendor/ is a dependency folder: the walk never enters it
+        (".gitattributes", "vendored"), (".gitignore", "vendored"), ("third_party/", "vendored"),
+        ("README.md", "documentation"), ("gen/", "generated"), ("assets/", "binary"), ("notes.dat", "binary"),
+        ("vendor/", "vendored")}  # node_modules/ is ignored by Git; build/ has no reason; an empty file is not binary
     assert "excluded_unknown" not in header  # docs/ is unset by the attributes, gen/ set: Git answered
     assert list(marks.iterdir()) == []
 
@@ -125,12 +139,25 @@ def test_list_files_leaves_out_what_linguist_and_gitattributes_say_and_runs_noth
 def test_without_a_work_tree_the_attributes_are_not_read_and_the_header_says_so(tmp_path):
     import file_inventory
     import source_files
-    _checkout(tmp_path / "proj", {"gen/api_pb2.py": "y = 2\n", "docs/a.md": "d\n",
+    _checkout(tmp_path / "proj", {"gen/api_pb2.py": "y = 2\n", "docs/a.md": "d\n", "node_modules/a/index.js": "a\n",
                                   ".gitattributes": "gen/** linguist-generated\n"})
+    (tmp_path / "proj/logo.png").write_bytes(PNG)
     header = file_inventory.write(tmp_path / "proj", tmp_path / "inventory.sqlite")
     assert {(entry["path"], entry["why"]) for entry in header["excluded"]} == {
-        (".gitattributes", "vendored"), ("docs/", "documentation")}
+        (".gitattributes", "vendored"), ("docs/", "documentation"), ("logo.png", "binary"),
+        ("node_modules/", "vendored")}  # Git tells binary files apart without a work tree
     assert header["excluded_unknown"] == source_files.NO_ATTRIBUTES
+
+
+def test_without_git_binary_files_are_not_told_apart_and_the_header_says_so(tmp_path, monkeypatch):
+    import file_inventory
+    import source_files
+    _checkout(tmp_path / "proj", {"app.py": "x = 1\n"})
+    (tmp_path / "proj/logo.png").write_bytes(PNG)
+    monkeypatch.setattr(source_files, "git_executable", lambda: None)
+    header = file_inventory.write(tmp_path / "proj", tmp_path / "inventory.sqlite")
+    assert header["excluded"] == []
+    assert header["excluded_unknown"] == "git is not available: binary files are not told apart"
 
 
 def test_check_names_a_language_linguist_does_not_give_the_extension():

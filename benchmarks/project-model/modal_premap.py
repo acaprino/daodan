@@ -113,13 +113,26 @@ def _versions() -> dict:
 
 
 def _real(name: str) -> Path:
-    """A real repository's clone at its pinned commit, from the archive `modal_native.py prepare` stored."""
+    """A real repository's clone at its pinned commit, from the archive `modal_native.py prepare` stored; without an
+    archive, cloned here at that commit (shallow), as `modal_stack.py` does."""
     import tarfile
     project, part = Path("/work") / name, Path("/work/real-part") / name
     shutil.rmtree(project, ignore_errors=True)
     shutil.rmtree(part, ignore_errors=True)
+    archive = Path("/results/project-model/native-real") / f"{name}.tar.gz"
+    if not archive.is_file():
+        source = json.loads((Path(REMOTE_PM) / "fixtures" / name / "source.json").read_text(encoding="utf-8"))
+        project.mkdir(parents=True)
+        for argv in (["git", "init", "-q"], ["git", "remote", "add", "origin", source["repo"]],
+                     ["git", "fetch", "-q", "--depth", "1", "origin", source["commit"]],
+                     ["git", "checkout", "-q", "FETCH_HEAD"]):
+            done = subprocess.run(argv, cwd=project, capture_output=True, text=True, timeout=900,
+                                  env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
+            if done.returncode:
+                raise RuntimeError(f"{' '.join(argv[:3])}: {done.stderr.strip()[-300:]}")
+        return project
     part.mkdir(parents=True)
-    with tarfile.open(Path("/results/project-model/native-real") / f"{name}.tar.gz") as tar:
+    with tarfile.open(archive) as tar:
         tar.extractall(part, filter="tar")
     (part / name).rename(project)
     return project

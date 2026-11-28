@@ -162,13 +162,16 @@ def repo_root(target: Path) -> Path:
     return work_tree(base) or base
 
 
-def _git(git: str, at: Path, *args: str, given: bytes | None = None) -> bytes | None:
-    """The output of Daodan's own `git` (no fsmonitor, no hooks: `GIT_OPTIONS`) in `at`; None when it does not answer."""
+def _git(git: str, at: Path, *args: str, given: bytes | None = None, seconds: int = 10,
+         answers: tuple[int, ...] = (0,)) -> bytes | None:
+    """The output of Daodan's own `git` (no fsmonitor, no hooks: `GIT_OPTIONS`) in `at`; None when it does not answer
+    (exits with a code outside `answers`, or not in `seconds`)."""
     try:
-        proc = subprocess.run([git, *GIT_OPTIONS, "-C", str(at), *args], input=given, capture_output=True, timeout=10)
+        proc = subprocess.run([git, *GIT_OPTIONS, "-C", str(at), *args], input=given, capture_output=True,
+                              timeout=seconds)
     except (OSError, subprocess.SubprocessError):
         return None
-    return proc.stdout if proc.returncode == 0 else None
+    return proc.stdout if proc.returncode in answers else None
 
 
 NO_ATTRIBUTES = "no Git work tree holds the project: its .gitattributes are not read"
@@ -196,6 +199,44 @@ def git_attributes(root: Path, paths: list[str], names) -> tuple[dict[str, dict[
         if value != b"unspecified":
             found.setdefault(path.decode(), {})[name.decode()] = value.decode()
     return found, None
+
+
+BINARY_SECONDS = 300  # `git grep` reads every file of the perimeter once
+FOLDERS_PER_CALL = 2000  # pathspecs on one command line, well under the system's limit on its length
+
+
+def git_binary(root: Path, paths: list[str]) -> tuple[set[str], str | None]:
+    """
+    The files of `paths` (relative to `root`) that Git calls binary, and why
+    Git did not say, if it did not. `git grep -I` tells them apart as Git does
+    everywhere (a `binary` or `-diff` attribute, else a NUL byte in the first
+    8000 bytes): a non-empty file it does not list as text is binary. Linguist's
+    own test is Ruby code (`blob_helper.rb`, a MIME table and an encoding
+    detector), not data. `--no-index` reads the files where they stand, with or
+    without a work tree, and reads no index; `--no-textconv` and `GIT_OPTIONS`
+    leave every program of the checkout unrun. Each folder is asked for its own
+    files only (`--max-depth=0`), by its literal name.
+    """
+    git = git_executable()
+    if git is None:
+        return set(), "git is not available: binary files are not told apart"
+    folders = sorted({PurePath(rel).parent.as_posix() for rel in paths})
+    text: set[str] = set()
+    for start in range(0, len(folders), FOLDERS_PER_CALL):
+        said = _git(git, root, "--literal-pathspecs", "grep", "--no-index", "--no-exclude-standard", "--no-textconv",
+                    "-I", "-l", "-z", "--max-depth=0", "-e", "", "--", *folders[start:start + FOLDERS_PER_CALL],
+                    seconds=BINARY_SECONDS, answers=(0, 1))  # 1: no file of these folders is text
+        if said is None:
+            return set(), "git grep did not answer: binary files are not told apart"
+        text.update(name.decode("utf-8", errors="surrogateescape") for name in said.split(b"\0") if name)
+    binary = set()
+    for rel in paths:
+        try:
+            if rel not in text and (root / rel).stat().st_size:
+                binary.add(rel)
+        except OSError:
+            continue
+    return binary, None
 
 
 FILTERED = "the checkout declares a Git filter, which Daodan does not run on the host"
