@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(fetchfixture CXX)
 set(CMAKE_CXX_STANDARD 17)
-# fmt comes from github.com, which is no package registry: Daodan never downloads it.
+# fmt comes from github.com, which is no package registry: it asks, and is downloaded through the proxy after the yes.
 include(FetchContent)
 FetchContent_Declare(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt.git GIT_TAG 11.0.2)
 FetchContent_MakeAvailable(fmt)

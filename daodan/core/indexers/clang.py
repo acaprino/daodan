@@ -3,14 +3,15 @@
 `index` takes the pre-map's units and workspaces as they are and discovers no unit itself: each `cmake-target`
 is configured from the root of the CMake workspace holding it, or from its own. A configure runs the project's
 CMake code, so it runs only in a container (`container.run_in_container`), in one phase with no network, over a
-copy of the project: `clang_run.py` there configures each root (a fetched dependency is never downloaded: a unit
-that needs one to configure is not indexed, `unavailable` with what CMake recorded and its own output, as is one
-whose configure reads a submodule the pre-map finds not checked out) and runs scip-clang over the compilation
-database. CMake, scip-clang and that script are what the copy carries under
-`TOOLS`, CMake and scip-clang downloaded once by Daodan into the shared directory and checked by sha256. A CMake
-minimum the pre-map states above `CMAKE` (`toolchains`) is installed at that version by mise in a preparation
-before it, the only phase with a network, which reaches mise's hosts only (`preparation.toolchains`); what it
-could not install is a gap and the configure runs with `CMAKE`. A root that declares vcpkg or Conan is restored
+copy of the project: `clang_run.py` there configures each root (a fetched dependency is never downloaded there: a
+unit that needs one to configure is not indexed, `unavailable` with what CMake recorded and its own output, as is
+one whose configure reads a submodule the pre-map finds not checked out) and runs scip-clang over the compilation
+database. The hosts of what CMake recorded ask as every host does (`egress`, `approved`); a root whose hosts the
+user allows is configured again in a second run's preparation, FetchContent downloading through the proxy. CMake,
+scip-clang and that script are what the copy carries under `TOOLS`, CMake and scip-clang downloaded once by Daodan
+into the shared directory and checked by sha256. A CMake minimum the pre-map states above `CMAKE` (`toolchains`) is
+installed at that version by mise in a preparation before it, the only phase with a network, which reaches mise's
+hosts only (`preparation.toolchains`); what it could not install is a gap and the configure runs with `CMAKE`. A root that declares vcpkg or Conan is restored
 in that preparation, with the registries and the manager's hosts open and a CMake on the path, as the pre-map's
 configure of it is (`restores`): the configure reads the initial cache the restore writes, which names the
 manager's toolchain file; a restore that fails is a `restore_failed` gap. The image
@@ -970,9 +971,13 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     allowed registries or an absent submodule, is `unavailable`; one whose build fails otherwise, `failed`; either
     keeps its static facts from the snapshot. Without a unit indexed, or without a container, the result's state
     is `unavailable` (no unit failed) or `failed`. `gaps` says what the preparation could not install: a CMake of
-    `toolchains`, a root's dependencies (`restores`). A CMake root not indexed here is built in the stage of the
-    Dockerfile (`docker`, the pre-map's) that copies in its CMakeLists.txt (`_docker`)."""
+    `toolchains`, a root's dependencies (`restores`). A CMake root whose configure needs what FetchContent
+    downloads asks for its hosts as every run does (`approved`): once the user allows them all, a second run
+    configures it in its preparation, FetchContent downloading through the proxy (`clang_run.py`, `fetch`). A CMake
+    root not indexed here is built in the stage of the Dockerfile (`docker`, the pre-map's) that copies in its
+    CMakeLists.txt (`_docker`)."""
     import container
+    import egress
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
     roots, _observed = configure_roots(units, workspace)  # its states are the dynamic step's: these builds run here
@@ -986,29 +991,56 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     restored = restores(project_dir, roots)
     chosen = [*({"root": root, **({"init": restored[root]["init"]} if root in restored else {}),
                  **({"absent": list(absent)} if absent else {})} for root in roots), *others]
+    given = {"toolchains": toolchains, "declared": declared, "engine": engine, "memory": memory, "cpus": cpus,
+             "timeout": timeout}
+    contract, gaps = _run(project_dir, work_dir, chosen, restored, states=states, **given)
+    again, said = approved(contract.get("units") or (), egress.name(project_dir))
+    gaps += said
+    if again:  # the roots whose downloads the user allows: configured again, through the proxy
+        fetched, more = _run(project_dir, work_dir / "fetch", [{**item, "fetch": True} for item in chosen
+                                                               if "build" not in item and item["root"] in again],
+                             {root: restored[root] for root in again if root in restored}, states=[],
+                             hosts=tuple(sorted({host for hosts in again.values() for host in hosts})), **given)
+        contract, gaps = _again(contract, fetched, set(again)), gaps + more
+    if docker:
+        contract, staged = _docker(project_dir, work_dir, roots, contract, docker, memory=memory, cpus=cpus,
+                                   engine=engine, timeout=timeout)
+        gaps += staged
+    return {**contract, **({"gaps": gaps} if gaps else {})}
+
+
+def _run(project_dir: Path, work_dir: Path, chosen: list[dict], restored: dict, *, toolchains, declared, engine,
+         memory: int, cpus: int, timeout: float, states: list[dict], hosts: tuple[str, ...] = ()) -> tuple[dict, list]:
+    """One container run of the units `chosen` (`clang_run.py`): a preparation, through the proxy, when a toolchain,
+    a restore, a download or a `fetch` configure (open to `hosts`) needs one, then the execution with no network.
+    The contract after the `states` of the units it does not run (`_contract`), and the gaps: what the preparation
+    could not install, what the copy left out, the proxy's refusals (`egress`)."""
+    import container
+    import egress
+    work_dir.mkdir(parents=True, exist_ok=True)
     plan = work_dir / "units.json"
     plan.write_text(json.dumps(chosen, indent=1) + "\n", encoding="utf-8")
     out_dir = work_dir / "container"
     back = out_dir / Path(OUT).name
     shutil.rmtree(back, ignore_errors=True)
-    kinds = {item["build"] for item in others}
-    fetches = "bazel" in kinds or any(item.get("download") for item in others)  # Bazel's aquery, Go's modules
+    kinds = {item["build"] for item in chosen if "build" in item}
+    fetches = "bazel" in kinds or any(item.get("download") for item in chosen)  # Bazel's aquery, Go's modules
     cmake = wanted_cmake([item for item in toolchains or () if item.get("tool") == "cmake"])
     chains = preparation.toolchains(wanted(toolchains, kinds))
     needs = preparation.setup(sorted({item["manager"] for item in restored.values()}))
+    mise = [f"{preparation.T}/bin/cmake"] if cmake else []  # mise's, linked there; the pin when it is not
     lines = [*chains["lines"], *needs["lines"], *([CMAKE_ON_PATH] if restored else []),
              *(item["line"] for item in restored.values()),
-             *([f"python3 {TOOLS}/clang_run.py prepare {TOOLS}/units.json || true"] if fetches else [])]
+             *([shlex.join(["python3", f"{TOOLS}/clang_run.py", "prepare", f"{TOOLS}/units.json", *mise]) + " || true"]
+               if fetches or any(item.get("fetch") for item in chosen) else [])]
     from container_runner import TOOLS as RUNNERS
-    command = ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT, str(cpus)]
+    command = ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT, str(cpus), *mise]
     options = {"prepare": ["sh", "-c", "\n".join([f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}", *lines])],
                "registries": tuple(dict.fromkeys([*(container.REGISTRIES if needs["registries"] or fetches else ()),
                                                   *chains["hosts"], *needs["hosts"],
                                                   *(RUNNERS["bazel"]["hosts"] if "bazel" in kinds else ()),
-                                                  *(declared or {}).get("hosts", ())])),
+                                                  *(declared or {}).get("hosts", ()), *hosts])),
                "env": {**preparation.ENV, "TERM": "dumb"}} if lines else {"env": {"TERM": "dumb"}}
-    if cmake:
-        command.append(f"{preparation.T}/bin/cmake")  # mise's, linked there; the pin when it is not
     if "bazel" in kinds:  # the memory Bazel's server needs, as the pre-map's runner gives it
         memory = max(memory, int(RUNNERS["bazel"]["memory"] * 2**30))
     (out_dir / "prepare.log").unlink(missing_ok=True)
@@ -1022,12 +1054,54 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     prepared = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
     gaps = chains["gaps"] + preparation.missing(prepared) + preparation.restore_gaps(prepared) + list(
         result.get("gaps") or ())  # and what the copy left out (`container.copy_perimeter`)
-    contract = _contract(result, back, work_dir, states)
-    if docker:
-        contract, staged = _docker(project_dir, work_dir, roots, contract, docker, memory=memory, cpus=cpus,
-                                   engine=engine, timeout=timeout)
-        gaps += staged
-    return {**contract, **({"gaps": gaps} if gaps else {})}
+    if result.get("asked") and not any(gap.get("kind") == "approval_required" for gap in gaps):
+        gaps += egress.approval_gap(result["asked"], "ran")  # a preparation that went on past a refusal
+    return _contract(result, back, work_dir, states), gaps
+
+
+def approved(states, project: str) -> tuple[dict[str, list[str]], list[dict]]:
+    """The roots whose configure needs what FetchContent downloads (`clang_run.OUTSIDE`) with every host of it
+    allowed (`egress.decide`: canonical, or approved by the user), each with those hosts: their configure runs again
+    through the proxy. The others' gaps: `approval_required` for the hosts nobody decided, now pending
+    (`egress.preflight`), `host_denied` for those the user refused. A unit with a URL the proxy cannot open
+    (`clang_run.hosts`: git's scp form among them) is not run again, the URL in its cause."""
+    import egress
+    from indexers import clang_run
+    state, answers = egress.load(), egress.session(project)
+    again, ask, deny = {}, [], []
+    for unit in states:
+        if unit.get("kind") != clang_run.OUTSIDE:
+            continue
+        hosts, closed = clang_run.hosts(unit["fetched"])
+        if closed:
+            unit["cause"] = (f"{unit['cause']}; the proxy opens none of {', '.join(closed)}: it opens https URLs at "
+                             "port 443 only, and git's scp form (user@host:path) names no URL")
+            continue
+        decided = {host: egress.decide(host, project, state, answers) for host in hosts}
+        if set(decided.values()) == {"allow"}:
+            again[unit["root"]] = hosts
+        ask += [host for host, said in decided.items() if said == "ask"]
+        deny += [host for host, said in decided.items() if said == "deny"]
+    asked, _before = egress.preflight(project, tuple(dict.fromkeys(ask)))
+    _none, denied = egress.requests([{"host": host, "port": "443"} for host in dict.fromkeys(deny)], project, state,
+                                    answers)
+    return again, [*egress.approval_gap(asked, "ran"), *denied]
+
+
+def _again(contract: dict, again: dict, roots: set[str]) -> dict:
+    """The contract with the units of `roots` that needed FetchContent's downloads as the run that configured them
+    again with them gave them (`again`, its contract), their indexes, runs and compiled files beside the first
+    run's. A run that gave no state of a unit leaves it as it was, with that run's cause."""
+    from indexers.clang_run import OUTSIDE
+    given = {unit["root"]: unit for unit in again.get("units") or ()}
+    units = [given.get(unit["root"]) or {**unit, "cause": f"{unit['cause']}; the configure with its downloads gave "
+                                                          f"no state: {again.get('reason')}"}
+             if unit.get("kind") == OUTSIDE and unit["root"] in roots else unit
+             for unit in contract.get("units") or ()]
+    compiled = collections.Counter((contract.get("configs") or {}).get("compiled") or {})
+    compiled.update((again.get("configs") or {}).get("compiled") or {})
+    return _assembled([*(contract.get("indexes") or ()), *(again.get("indexes") or ())],
+                      [*(contract.get("runs") or ()), *(again.get("runs") or ())], compiled, units)
 
 
 CMAKE_BUILD = r"\bcmake\b"  # the RUN of a Dockerfile's stage that configures and builds its CMake project

@@ -29,6 +29,7 @@ if str(SCRIPTS) not in sys.path:
 
 import code_graph  # noqa: E402
 import container  # noqa: E402
+import egress  # noqa: E402
 import preparation  # noqa: E402
 from indexers import clang, clang_run  # noqa: E402
 
@@ -163,13 +164,57 @@ def test_a_configure_that_succeeds_is_configured_whatever_the_provider_recorded(
         {"state": "configured"}
 
 
-def test_no_second_attempt_is_taken_today(tmp_path):
-    """The place for a second configure exists; until the map-driven round counts the units that need one, it
-    gives no arguments, so a failed configure runs once."""
-    assert clang_run.second_attempt({"root": "."}, LINK_ERROR) is None
+def test_a_recorded_url_gives_its_host_when_the_proxy_can_open_it():
+    """`urllib.parse.urlsplit` reads the host; the proxy opens https at port 443 only. git's scp form, which
+    urlsplit reads as no URL, a local path and another scheme or port give none."""
+    assert clang_run._host("https://github.com/fmtlib/fmt.git") == "github.com"
+    assert clang_run._host("https://user@GitHub.com:443/x/y/archive/v1.tar.gz") == "github.com"
+    for url in ("git@github.com:fmtlib/fmt.git", "/srv/mirror/fmt", "file:///srv/fmt", "http://a.example/x.tgz",
+                "git://a.example/x.git", "ssh://git@a.example/x.git", "https://a.example:8443/x", "https://[::1/x",
+                "https://a.example:port/x"):
+        assert clang_run._host(url) is None, url
+    fetched = [FMT, {"name": "z", "urls": ["git@github.com:z/z.git", "https://a.example/z.tgz"]}]
+    assert clang_run.hosts(fetched) == (["a.example", "github.com"], ["git@github.com:z/z.git"])
+
+
+def test_the_configure_that_downloads_has_fetchcontent_download_into_a_folder_of_its_own(tmp_path):
+    command = clang_run.configure_command("cmake", {"root": "."}, tmp_path / "b", tmp_path / "f.log", tmp_path / "d")
+    assert f"-DFETCHCONTENT_BASE_DIR={tmp_path / 'd'}" in command
+    assert not any("FULLY_DISCONNECTED" in word for word in command)
+    assert f"-DDAODAN_FETCH_LOG={tmp_path / 'f.log'}" in command  # the provider still records
     run, calls = _runner(1, LINK_ERROR, RECORD)
-    steps, _state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "fetch.log")
-    assert len(calls) == len(steps) == 1
+    steps, state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b", tmp_path / "f.log", tmp_path / "d")
+    assert len(calls) == len(steps) == 1  # one configure: no second attempt
+    assert state == {"state": "failed", "fetched": [FMT], "error": LINK_ERROR,
+                     "cause": "the configure ended with exit code 1, FetchContent downloading from github.com "
+                              "through the proxy"}
+
+
+def test_the_preparation_configures_a_fetch_unit_and_the_execution_keeps_the_projects_commands(tmp_path):
+    """A unit whose hosts the user allows is configured in the preparation, through the proxy, FetchContent
+    downloading into its own folder; the execution takes that database, without the dependencies' commands."""
+    prepared, scratch, tools, work = tmp_path / "prepared", tmp_path / "scratch", _tools(tmp_path / "tools"), \
+        tmp_path / "work"
+    deps = prepared / "0" / "deps"
+    database = [{"directory": str(work), "file": str(work / "main.cpp"), "arguments": ["c++", "-c", "main.cpp"]},
+                {"directory": str(deps), "file": str(deps / "fmt-src/src/format.cc"), "arguments": ["c++", "-c"]}]
+    plan = tmp_path / "units.json"
+    plan.write_text(json.dumps([{"root": ".", "fetch": True}]), encoding="utf-8")
+    run, calls = _tool(0, "-- Generating done\n",
+                       {prepared / "0/build/compile_commands.json": json.dumps(database)})
+    with mock.patch.multiple(clang_run, PREPARED=prepared, SCRATCH=scratch, TOOLS=tools, run=run):
+        assert clang_run.main(["clang_run.py", "prepare", str(plan), "/t/cmake"]) == 0
+    configures = [command for command, _cwd in calls if "-S" in command]
+    assert len(configures) == 1 and f"-DFETCHCONTENT_BASE_DIR={deps}" in configures[0]
+    assert (scratch / "provider.cmake").read_text(encoding="utf-8") == clang_run.PROVIDER
+    held = json.loads((prepared / "0/configure.json").read_text(encoding="utf-8"))
+    assert held["state"] == {"state": "configured"} and [step["step"] for step in held["steps"]] == ["configure"]
+    with mock.patch.multiple(clang_run, PREPARED=prepared, WORK=work):
+        steps, state = clang_run.downloaded(0, tmp_path / "b")
+        assert clang_run.compiled(tmp_path / "b/compile_commands.json") == {"main.cpp": 1}
+        assert (steps, state) == (held["steps"], held["state"])
+        assert clang_run.downloaded(1, tmp_path / "b1")[1] == {
+            "state": "failed", "cause": "the preparation recorded no configure: its output is in the run's prepare.log"}
 
 
 def test_the_compilation_database_counts_the_commands_of_each_file(tmp_path):
@@ -426,10 +471,14 @@ UNAVAILABLE = {"root": "vendor", "state": "unavailable", "kind": "download-outsi
                "compiled": {}, "index": None}
 
 
+PUBLIC = [(0, 0, 0, "", ("140.82.121.4", 0))]  # what a lookup of a host that asks answers in these tests
+
+
 def _index(tmp_path, report, units, workspace=None, state="done", cpus=1, **extra):
     run, seen = _fake_run(tmp_path, report, state, **extra)
     with mock.patch.object(container, "run_in_container", run), mock.patch.object(clang, "tools", return_value=TOOLS), \
-            mock.patch.object(container, "architecture", return_value="x64"):
+            mock.patch.object(container, "architecture", return_value="x64"), \
+            mock.patch.object(egress.socket, "getaddrinfo", lambda *_, **__: PUBLIC):
         return clang.index(tmp_path / "project", tmp_path / "work", units=units, workspace=workspace, cpus=cpus), seen
 
 
@@ -485,6 +534,76 @@ def test_without_an_index_the_result_is_unavailable_when_no_unit_failed(tmp_path
     result, _seen = _index(tmp_path, {"peak_mb": None, "units": [{**UNAVAILABLE, "root": "."}]}, [UNIT])
     assert result["state"] == "unavailable" and result["reason"] == f".: {UNAVAILABLE['cause']}"
     assert result["units"][0]["kind"] == "download-outside-registries" and result["indexes"] == []
+
+
+def _index_again(tmp_path, reports: list):
+    """`index()` of `UNIT` with each container run bringing back the next of `reports` (None: a run that timed
+    out); what each run was asked. Names resolve to a public address, with no lookup."""
+    runs, seen = list(reports), []
+
+    def run(project, command, **options):
+        report = runs.pop(0)
+        fake, asked = _fake_run(tmp_path, report, "done" if report else "timeout")
+        seen.append(asked)
+        return fake(project, command, **options)
+
+    with mock.patch.object(container, "run_in_container", run), mock.patch.object(clang, "tools", return_value=TOOLS), \
+            mock.patch.object(container, "architecture", return_value="x64"), \
+            mock.patch.object(egress.socket, "getaddrinfo", lambda *_, **__: PUBLIC):
+        return clang.index(tmp_path / "project", tmp_path / "work", units=[UNIT]), seen
+
+
+FETCHING = {"peak_mb": 1, "units": [{**UNAVAILABLE, "root": "."}]}
+
+
+def test_the_hosts_fetchcontent_needs_ask_and_the_configure_downloads_after_the_yes(tmp_path):
+    """github.com is not canonical: it asks, as every host does (`egress.preflight`), and the unit stays unavailable
+    after one run. After the user's yes the next analysis configures it again, in a second run's preparation open
+    to that host only, and indexes it."""
+    project = str((tmp_path / "project").resolve())
+    result, seen = _index_again(tmp_path, [FETCHING])
+    assert len(seen) == 1 and result["units"][0]["kind"] == "download-outside-registries"
+    gap, = [gap for gap in result["gaps"] if gap["kind"] == "approval_required"]
+    assert gap["hosts"] == ["github.com"] and gap["detail"].startswith("the step ran without hosts")
+    assert [row["host"] for row in egress.pending(project)] == ["github.com"]
+    egress.reply(project, ["github.com"], "once")  # the user's answer, in the app
+    again = {"peak_mb": 2, "units": [{"root": ".", "build": "cmake", "state": "indexed", "index": "index-0.scip",
+                                      "compiled": {"main.cpp": 1},
+                                      "steps": [{"step": "configure", "returncode": 0, "seconds": 9.0, "tail": ""}]}]}
+    result, seen = _index_again(tmp_path, [FETCHING, again])
+    assert len(seen) == 2 and "prepare" not in seen[0]
+    assert json.loads(seen[1]["inputs"][f"{clang.TOOLS}/units.json"].read_text(encoding="utf-8")) == \
+        [{"root": ".", "fetch": True}]
+    assert seen[1]["prepare"][-1].rstrip().endswith(
+        f"python3 {clang.TOOLS}/clang_run.py prepare {clang.TOOLS}/units.json || true")
+    assert seen[1]["registries"] == ("github.com",)
+    assert "gaps" not in result and "state" not in result
+    assert [(unit["root"], unit["state"]) for unit in result["units"]] == [(".", "indexed")]
+    assert result["indexes"] == [[str((tmp_path / "work/fetch/index-0.scip").resolve()), ""]]
+    assert result["configs"]["compiled"] == {"main.cpp": 1}
+    assert [run["step"] for run in result["runs"]] == ["configure", "configure"]
+
+
+def test_a_refused_host_is_denied_and_a_url_the_proxy_cannot_open_stays_the_cause(tmp_path):
+    project = str((tmp_path / "project").resolve())
+    egress.save({"whitelist": {}, "blacklist": ["github.com"]})
+    result, seen = _index_again(tmp_path, [FETCHING])
+    assert len(seen) == 1 and not egress.pending(project)
+    assert [(gap["kind"], gap["host"]) for gap in result["gaps"]] == [("host_denied", "github.com")]
+    scp = {"name": "fmt", "urls": ["git@github.com:fmtlib/fmt.git"]}
+    result, seen = _index_again(tmp_path, [{"peak_mb": 1, "units": [{**UNAVAILABLE, "root": ".", "fetched": [scp]}]}])
+    assert len(seen) == 1 and "gaps" not in result and not egress.pending(project)
+    assert result["units"][0]["cause"].endswith(
+        "; the proxy opens none of git@github.com:fmtlib/fmt.git: it opens https URLs at port 443 only, and git's "
+        "scp form (user@host:path) names no URL")
+
+
+def test_a_second_run_that_brings_back_no_unit_leaves_it_with_that_runs_cause(tmp_path):
+    egress.save({"whitelist": {str((tmp_path / "project").resolve()): ["github.com"]}, "blacklist": []})
+    result, seen = _index_again(tmp_path, [FETCHING, None])
+    assert len(seen) == 2 and result["state"] == "unavailable" and result["units"][0]["state"] == "unavailable"
+    assert result["units"][0]["cause"].endswith("; the configure with its downloads gave no state: scip-clang wrote "
+                                                "no index (the container run ended timeout)")
 
 
 def test_a_container_gap_is_unavailable_and_a_run_without_report_failed(tmp_path):
@@ -1054,15 +1173,31 @@ SMOKE = os.environ.get("DAODAN_CLANG_SMOKE") == "1"
 
 
 @pytest.mark.skipif(not SMOKE, reason="set DAODAN_CLANG_SMOKE=1 to index the fixture in a real container")
-def test_smoke_cmake_records_fmt_from_github_and_the_unit_is_unavailable(tmp_path):
-    """fmt comes from github.com, outside the allowed registries: never downloaded. CMake's provider records it,
-    the configure fails on the missing target, the unit is not indexed."""
+def test_smoke_fmt_from_github_asks_and_after_the_yes_is_downloaded_through_the_proxy(tmp_path):
+    """fmt comes from github.com, which always asks (plan T0.C.1): the run with no network never downloads it,
+    CMake's provider records it, the unit is not indexed and github.com waits for the user. The answer is recorded
+    here, "once", as the app records it; the next analysis configures the unit again in its preparation, git
+    cloning fmt through Daodan's proxy, and indexes the project's two files, none of fmt's."""
+    fixture = HERE / "fixtures/clang-index/fetch"
+    project = str(fixture.resolve())
     unit = {"name": "fetchfixture", "kind": "cmake-target", "root": ".", "manifest": "CMakeLists.txt"}
-    result = clang.index(HERE / "fixtures/clang-index/fetch", tmp_path / "work", units=[unit])
+    result = clang.index(fixture, tmp_path / "work", units=[unit])
     assert result["state"] == "unavailable", result
     state = result["units"][0]
     assert state["kind"] == "download-outside-registries" and state["fetched"] == [FMT]
     assert "CMake Error" in state["error"] and "github.com" in result["reason"]
+    assert [gap["hosts"] for gap in result["gaps"] if gap["kind"] == "approval_required"] == [["github.com"]]
+    assert [row["host"] for row in egress.pending(project)] == ["github.com"]
+    egress.reply(project, ["github.com"], "once")
+    result = clang.index(fixture, tmp_path / "again", units=[unit])
+    assert "state" not in result, result
+    assert [(item["root"], item["state"]) for item in result["units"]] == [(".", "indexed")], result["units"]
+    assert result["configs"]["compiled"] == {"main.cpp": 1, "plain.cpp": 1}
+    assert not [gap for gap in result.get("gaps") or () if gap["kind"] in ("approval_required", "host_denied")]
+    index = code_graph.Index(fixture)
+    for path, prefix in result["indexes"]:
+        index.load(Path(path), prefix)
+    assert sorted(index.documents) == ["main.cpp", "plain.cpp"]
 
 
 def _occurrences(root: Path, indexes) -> dict:
