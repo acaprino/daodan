@@ -246,7 +246,7 @@ def test_of_two_writers_from_the_same_head_the_second_is_refused(tmp_path):
 HASHES = {"src/a.py": "1" * 64, "src/b.py": "2" * 64}
 
 
-def _envelope(label="Pagamento", grade="confirmed", languages=("Python",)):
+def _envelope(label="Pagamento", grade="confirmed", languages=("Python",), module="core", declared=False):
     """A module with a file and two symbols, a call between the files and the flow «label» from `run` to `helper`."""
     def entity(ref, kind, name, **fields):
         found = {"ref": ref, "type": kind, "name": name, "description": "", "evidence": [], "location": "internal", **fields}
@@ -255,8 +255,8 @@ def _envelope(label="Pagamento", grade="confirmed", languages=("Python",)):
     entities = [entity("directory:src", "directory", "src", path="src"),
                 entity("file:src/a.py", "file", "a.py", path="src/a.py"),
                 entity("file:src/b.py", "file", "b.py", path="src/b.py"),
-                entity("module:core", "module", "core", status="confirmed", description="Il nucleo",
-                       languages=list(languages)),
+                entity("module:core", "module", module, status="confirmed", description="Il nucleo",
+                       languages=list(languages), **({"provenance": "declared"} if declared else {})),
                 entity("symbol:src/a.py::run", "symbol", "run", path="src/a.py"),
                 entity("symbol:src/b.py::helper", "symbol", "helper", path="src/b.py")]
     return {"entities": entities,
@@ -312,7 +312,7 @@ def test_the_example_of_the_spec_rename_reanalyse_conflict_and_resolution(tmp_pa
         (conflict,) = project_file.conflicts(db)
         assert conflict["open"] and conflict["detected_rev"] == 4 and conflict["object_id"] == flow
         assert conflict["incoming"] == {"present": True, "value": "Pagare un contatto"}
-        assert conflict["provenance"] == {"analysis": 3, "producer": "daodan/visual@1"}
+        assert conflict["provenance"] == {"analysis": 3, "origin": "analysis", "producer": "daodan/visual@1"}
         assert conflict["edit_id"] == db.execute("SELECT edit_id FROM manual_edits WHERE rev = 2").fetchone()[0]
         assert _reanalyse(db, grade="inferred", label="Pagare un contatto") == 5  # the same value: no second conflict
         assert len(project_file.conflicts(db)) == 1
@@ -387,3 +387,28 @@ def test_an_edited_object_the_analysis_removes_stays_with_a_conflict(tmp_path):
         assert conflict["incoming"] == {"present": False} and conflict["provenance"]["object"] == "removed"
         project_file.resolve(db, conflict["conflict_id"], "analysis", author="ada")
         assert project_file.read(db, module) is None
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Who owns a manual edit (T2.E.7, provisional): the `.daodan`; a declared file stays an input of the analysis
+
+
+def test_a_declared_module_renamed_by_hand_keeps_its_name_until_the_declaration_changes(tmp_path):
+    path = tmp_path / "project.daodan"
+    project_file.create(path, name="demo", source={"git_commit": "a" * 40}, analysis=ANALYSIS, author="daodan",
+                        rows=project_rows.assign(project_rows.from_envelope(_envelope(declared=True), HASHES), {}))
+    with closing(project_file.open_project(path, write=True)) as db:
+        module = _object(db, "module:core")
+        assert project_file.state(db)[module]["provenance"] == "declared"
+        project_file.edit(db, object_id=module, field_path="/name", value="Nucleo", author="ada", base_rev=1)
+        _reanalyse(db, declared=True)  # the same declaration: the name chosen by hand stays, no conflict
+        assert project_file.read(db, module)["name"] == "Nucleo" and project_file.conflicts(db) == []
+        _reanalyse(db, declared=True, module="kernel")  # codebase-modules.json names it again: a conflict
+        assert project_file.read(db, module)["name"] == "Nucleo"
+        (conflict,) = project_file.conflicts(db)
+        assert conflict["incoming"] == {"present": True, "value": "kernel"}
+        assert conflict["provenance"] == {"analysis": 3, "origin": "declared", "producer": "daodan/visual@1"}
+    # the rule is one function: the value and the provenance the analysis brings for an edit's field
+    edit = {"field_path": "/name"}
+    assert project_file.incoming(edit, {"provenance": "declared", "fields": {"name": "kernel", "attributes": {}}}) == \
+        ({"present": True, "value": "kernel"}, {"origin": "declared", "producer": None})

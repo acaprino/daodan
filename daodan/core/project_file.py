@@ -27,7 +27,8 @@ from jsonpointer import JsonPointer, JsonPointerException, resolve_pointer, set_
 from snapshot_store import _plain
 
 __all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "changes", "commit",
-           "confirm", "conflicts", "create", "edit", "head", "open_project", "read", "release", "resolve", "state"]
+           "confirm", "conflicts", "create", "edit", "head", "incoming", "open_project", "read", "release", "resolve",
+           "state"]
 
 SCHEMA_FILE = Path(__file__).with_name("project_schema.sql")
 APPLICATION_ID = 0x44414F44  # "DAOD"
@@ -206,8 +207,8 @@ def commit(db: sqlite3.Connection, *, expected_head: int, kind: str, author: str
     transaction: the head is compared with `expected_head`, the revision is inserted on the analysis it names
     (`analysis_id`; a new one from `source` and `analysis`; else the head's, as a manual edit inherits it), the open
     versions of `closed` (object ids) end, the `opened` rows begin, the `edits` (`{object_id, field_path, action,
-    base_rev, base, value}`) and the `conflicts` (`{edit_id, incoming, producer, evidence, removed}`, their
-    provenance the analysis and its producer) are recorded, the `resolved` conflicts get this revision, the resulting
+    base_rev, base, value}`) and the `conflicts` (`{edit_id, incoming, provenance, evidence}`, their provenance
+    `incoming`'s with the analysis) are recorded, the `resolved` conflicts get this revision, the resulting
     state is checked (`check`) and the head moves. Any error rolls everything back."""
     if kind not in REVISION_KINDS:
         raise ProjectError(f"tipo di revisione sconosciuto: {kind}")
@@ -235,8 +236,7 @@ def commit(db: sqlite3.Connection, *, expected_head: int, kind: str, author: str
                            " VALUES (?, ?, ?, ?, ?, ?, ?)", (rev, item["base_rev"], item["object_id"], item["field_path"],
                                                              item["action"], json.dumps(item["base"]), json.dumps(item["value"])))
             for item in conflicts:
-                provenance = {"analysis": analysis_id, "producer": item.get("producer"),
-                              **({"object": "removed"} if item.get("removed") else {})}
+                provenance = {"analysis": analysis_id, **item["provenance"]}
                 conflict = db.execute("INSERT INTO conflicts (detected_rev, edit_id, incoming_json, incoming_provenance)"
                                       " VALUES (?, ?, ?, ?)", (rev, item["edit_id"], json.dumps(item["incoming"]),
                                                                json.dumps(provenance, sort_keys=True))).lastrowid
@@ -638,16 +638,29 @@ def _open_conflicts(db: sqlite3.Connection, rev: int) -> dict[int, dict]:
         (rev, rev))}
 
 
+def incoming(edit: dict, version: dict) -> tuple[dict, dict]:
+    """The value an analysis brings for the field of `edit` in `version` (the incoming row) and its provenance: who
+    owns a manual edit, in one place («Identità e storia»; [deciso, su delega, provvisorio], `T2.E.7`). The `.daodan`
+    is the one place the app writes an edit, and Daodan never writes the project's files: `codebase-modules.json`
+    and `codebase-system-map.json` stay inputs of the analysis, so a declared value (provenance `declared`) arrives
+    as every other value of the analysis does, and its change under an edit is a conflict, never a silent
+    precedence. Another answer of the owner changes this function, its test and the sentence of the spec."""
+    fields = version["fields"]
+    return _lookup(fields, edit["field_path"]), {
+        "origin": version.get("provenance") or "analysis",
+        "producer": ((fields.get("attributes") or {}).get("identity") or {}).get("producer")}
+
+
 def _merge(row: dict, edits: list[dict], pending: dict[int, dict]) -> tuple[dict, list[dict]]:
     """`row` as the analysis brings it with the choices of `edits` on it, and the conflicts it raises: an incoming
-    value equal to the edit's base or to its choice keeps the choice; another one keeps it too and is a conflict,
-    unless the same value is already one that is open (`pending`, edit id -> incoming)."""
+    value (`incoming`) equal to the edit's base or to its choice keeps the choice; another one keeps it too and is a
+    conflict, unless the same value is already one that is open (`pending`, edit id -> incoming)."""
     fields, conflicts = row["fields"], []
     for item in edits:
-        incoming = _lookup(fields, item["field_path"])
-        if incoming not in (item["base"], item["value"]) and pending.get(item["edit_id"]) != incoming:
-            conflicts.append({"edit_id": item["edit_id"], "incoming": incoming, "evidence": row.get("evidence", ()),
-                              "producer": ((fields.get("attributes") or {}).get("identity") or {}).get("producer")})
+        value, provenance = incoming(item, {**row, "fields": fields})
+        if value not in (item["base"], item["value"]) and pending.get(item["edit_id"]) != value:
+            conflicts.append({"edit_id": item["edit_id"], "incoming": value, "evidence": row.get("evidence", ()),
+                              "provenance": provenance})
         fields = _put(fields, item["field_path"], item["value"])
     return ({**row, "fields": fields, "provenance": "manual"} if edits else row), conflicts
 
@@ -668,7 +681,8 @@ def _merge_all(db: sqlite3.Connection, current: int, before: dict[str, dict], in
     for object_id, items in edits.items():
         if object_id not in present and object_id in before:
             kept.append(before[object_id])
-            conflicts += [{"edit_id": item["edit_id"], "incoming": _ABSENT, "evidence": (), "producer": None, "removed": True}
+            conflicts += [{"edit_id": item["edit_id"], "incoming": _ABSENT, "evidence": (),
+                           "provenance": {"origin": "analysis", "producer": None, "object": "removed"}}
                           for item in items if pending.get(item["edit_id"]) != _ABSENT]
     return keep_needed(before, out, kept), conflicts
 

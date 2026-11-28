@@ -73,7 +73,9 @@ def from_envelope(envelope: dict, hashes: dict[str, str] | None = None) -> list[
         if status not in STATUS:
             raise ValueError(f"{ref}: stato sconosciuto {status!r}")
         catalog = entity.get("mark") or (ref.split(":", 1)[1] if entity["type"] in ("external", "technology") else None)
-        rows.append({"key": ref, "kind": "node", "provenance": "analysis", "evidence": _evidence(entity.get("evidence", ())),
+        # a value the project declares (`codebase-modules.json`) arrives as the analysis's others do, said `declared`
+        provenance = "declared" if entity.get("provenance") == "declared" else "analysis"
+        rows.append({"key": ref, "kind": "node", "provenance": provenance, "evidence": _evidence(entity.get("evidence", ())),
                      "fields": {"parent_id": parents.get(ref), "name": entity["name"], "species": entity["species"],
                                 "position": POSITION[entity.get("location")], "status": STATUS[status],
                                 "abstraction": "concreto" if entity.get("concrete", True) else "astratto",
