@@ -38,6 +38,7 @@ Dal 27 novembre 2026, sera: il proprietario ha chiesto di lavorare senza fermars
 - **`T1.C`, lacune per framework del punto 14:** non hanno un elenco nel piano: vanno nel backlog?
 - **Nuova scoperta cieca su Bank of Anthos dopo `T1.C`:** circa 1,3 USD; parte solo su richiesta.
 - **`T2.B.17`, soglia CSS:** bulma 7/11 (le attese sono 11) e sc-website 12/15 sono sotto la soglia ≥15/15; la misura è uguale con TypeScript 5.9.3 e 6.0.3. Accettare la soglia così, o correggere le attese/il lettore CSS?
+- **`T1.B.10`, file vietati in `excluded`:** un nome vietato da `file-formats.json` (per esempio `*.p12`, `keystore.p12` di jhipster) non si apre né si nomina, quindi manca da `excluded`. [deciso, su delega, provvisorio] resta così; nominarlo (solo il percorso, mai il contenuto) o no?
 - **`T2.C`, profili e condizioni** (il caso Bank of Anthos del Cancello T2): con `T3.C` o un passo nuovo in `T2`?
 
 ## Regole di esecuzione: passi, verifiche e commit
