@@ -1,0 +1,34 @@
+{
+  "steps": [
+    {"id": "list_files", "state": "done", "executes": "no", "stops": true},
+    {"id": "read_code", "state": "done", "executes": "no", "stops": true},
+    {"id": "recognize_stack", "state": "done", "executes": "no", "stops": false, "started_at": "2026-11-28T10:00:00.000000Z", "ended_at": "2026-11-28T10:00:04.000000Z"},
+    {"id": "find_modules", "state": "done", "executes": "container", "stops": true, "started_at": "2026-11-28T10:00:04.000000Z", "ended_at": "2026-11-28T10:01:10.000000Z"},
+    {"id": "find_entry_points", "state": "skipped", "executes": "container", "stops": false, "started_at": "2026-11-28T10:01:10.000000Z", "ended_at": "2026-11-28T10:01:10.000000Z"},
+    {"id": "link_calls", "state": "running", "executes": "container", "stops": true, "started_at": "2026-11-28T10:01:10.000000Z"},
+    {"id": "run_and_observe", "state": "pending", "executes": "container", "stops": false},
+    {"id": "assemble_graph", "state": "pending", "executes": "no", "stops": true}
+  ],
+  "policy": {
+    "network": {"canonical": ["registry.npmjs.org", "pypi.org", "repo.maven.apache.org"], "approved": ["git.example.com"], "blocked": ["tracker.example.com"], "other": "ask", "answered_in": "app"},
+    "container": {"engine": "user"}
+  },
+  "actions": [
+    {"id": "read_code:go", "step": "read_code", "kind": "read", "target": {"languages": ["go"], "files": 3}, "project_code": false, "container": false, "state": "done"},
+    {"id": "read_code:python", "step": "read_code", "kind": "read", "target": {"languages": ["python"], "files": 5}, "project_code": false, "container": false, "state": "done"},
+    {"id": "link_calls:scip-go", "step": "link_calls", "kind": "resolve", "target": {"languages": ["go"], "files": 3, "unit_kinds": ["go"]}, "project_code": true, "container": true, "state": "running"},
+    {"id": "link_calls:scip-python", "step": "link_calls", "kind": "resolve", "target": {"languages": ["python"], "files": 5, "unit_kinds": ["python"]}, "project_code": true, "container": true, "state": "not_possible", "cause": "no container engine answers", "remedy": "start Docker or Podman"},
+    {"id": "run_and_observe:pytest", "step": "run_and_observe", "kind": "observe", "target": {"languages": ["python"], "files": 5}, "project_code": true, "container": true, "state": "pending"},
+    {"id": "recognize_stack:stack-analyser", "step": "recognize_stack", "kind": "recognize", "target": {"technologies": 4}, "project_code": false, "container": false, "state": "done"},
+    {"id": "find_modules:gradle", "step": "find_modules", "kind": "model", "target": {"source": "gradle"}, "project_code": true, "container": true, "tools": ["gradle"], "network": ["registries"], "state": "awaiting_approval", "hosts": ["repo.example.com"]},
+    {"id": "find_modules:go", "step": "find_modules", "kind": "model", "target": {"source": "go"}, "project_code": true, "container": true, "tools": ["go"], "network": ["registries"], "state": "done"},
+    {"id": "find_entry_points:noir", "step": "find_entry_points", "kind": "entries", "target": {"source": "noir"}, "project_code": false, "container": true, "tools": ["noir"], "state": "skipped"},
+    {"id": "find_entry_points:next", "step": "find_entry_points", "kind": "entries", "target": {"source": "next"}, "project_code": false, "container": false, "state": "skipped"},
+    {"id": "assemble_graph", "step": "assemble_graph", "kind": "assemble", "target": {}, "project_code": false, "container": false, "state": "pending"},
+    {"id": "run_and_observe:app:web", "step": "run_and_observe", "kind": "explore", "target": {"root": "web"}, "project_code": true, "container": true, "state": "pending"}
+  ],
+  "gaps": [
+    {"kind": "no-observer", "language": "go", "files": 3, "detail": "go: no observer runs its tests, so its graph holds no observed edge"},
+    {"kind": "download_size_unknown", "detail": "how much a run downloads is not known before it runs: no source gives its size"}
+  ]
+}

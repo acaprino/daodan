@@ -454,3 +454,25 @@ def test_the_command_line_prints_the_plan_the_app_and_mcp_show(tmp_path, shared,
     capsys.readouterr()
     assert snapshot.main(["plan", str(manifest)]) == 0
     assert json.loads(capsys.readouterr().out) == planning.current(manifest)
+
+
+def test_the_plan_of_the_viewer_s_tests_has_the_server_s_ids_states_kinds_and_keys(tmp_path, shared):
+    """`viewer/test/plan.json`, the plan the app's tests read, stays in the server's form: the eight ids in order, the
+    states, kinds and keys of `plan.STATES`, `ACTION_STATES`, `ACTIONS` and `_action`, and the policy's keys."""
+    import json
+    planning = _planning()
+    fixture = json.loads((Path(__file__).resolve().parents[1] / "viewer/test/plan.json").read_text(encoding="utf-8"))
+    real = planning.current(tmp_path / "out" / "manifest.sqlite")
+    assert set(fixture) == set(real)
+    assert [step["id"] for step in fixture["steps"]] == list(pipeline.IDS)
+    assert {step["state"] for step in fixture["steps"]} <= set(planning.STATES)
+    assert all({"id", "state", "executes", "stops"} <= set(step) <= {"id", "state", "executes", "stops", "cause", "remedy",
+                                                                     "started_at", "ended_at"} for step in fixture["steps"])
+    base = set(planning._action("x", "x", "read", {}, False, False, {"state": "pending"}))
+    assert all(base <= set(action) <= base | {"tools", "network", "hosts", "gap", "cause", "remedy"}
+               for action in fixture["actions"])
+    assert {action["state"] for action in fixture["actions"]} <= set(planning.ACTION_STATES)
+    assert {action["kind"] for action in fixture["actions"]} <= set(planning.ACTIONS)
+    assert all(action["step"] == planning.KINDS[action["kind"]][0] for action in fixture["actions"])
+    assert set(fixture["policy"]["network"]) == set(real["policy"]["network"])
+    assert {"kind", "detail"} <= set(fixture["gaps"][-1]) and fixture["gaps"][-1] == planning.DOWNLOADS
