@@ -1,0 +1,1911 @@
+{
+ "code": {
+  "commit": "63948e87f71e301d599bb6d3fc7a326e5c78879a",
+  "tree": "5cdae213a887538d708f1acd1025705268f0f7cc",
+  "differs": [
+   "benchmarks/project-model/fixtures/mix-edge-vendored/node_modules/left-pad/index.js",
+   "benchmarks/project-model/fixtures/mix-edge-vendored/node_modules/left-pad/package.json"
+  ]
+ },
+ "real-bank-of-anthos": {
+  "premap": {
+   "languages": {
+    "given": false,
+    "expected": 10
+   },
+   "languages.files": {
+    "given": false,
+    "expected": 22
+   },
+   "excluded": {
+    "given": true,
+    "expected": 60,
+    "found": 51,
+    "found_normalised": 51,
+    "missed": [
+     ".mvn/wrapper/",
+     "kubernetes-manifests/",
+     ".github/CODE_OF_CONDUCT.md",
+     ".github/SECURITY.md",
+     ".github/ISSUE_TEMPLATE/",
+     ".github/pull_request_template.md",
+     "extras/cloudshell/tutorial.md",
+     "extras/cloudsql-multicluster/tls-for-mci.md"
+    ],
+    "extra": [
+     ".gitignore",
+     "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml",
+     "extras/jwt/jwt-secret.yaml",
+     "extras/postgres-hpa/helm-postgres-ha/pgpool-operator/.gitignore",
+     "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml",
+     "src/ledger/balancereader/.gitignore",
+     "src/ledger/ledgerwriter/.gitignore",
+     "src/ledger/transactionhistory/.gitignore",
+     "src/ledgermonolith/.gitignore"
+    ],
+    "wrong": [
+     {
+      "item": "docs/img/",
+      "fields": {
+       "why": {
+        "expected": "binary",
+        "got": [
+         "documentation"
+        ]
+       }
+      },
+      "same_after_normalisation": false
+     }
+    ]
+   },
+   "units": {
+    "given": true,
+    "expected": 16,
+    "found": 9,
+    "found_normalised": 9,
+    "missed": [
+     "source-tree@src/accounts/accounts-db",
+     "source-tree@src/ledger/ledger-db",
+     "source-tree@.github/workflows/ui-tests",
+     "source-tree@extras/postgres-hpa/helm-postgres-ha/pgpool-operator",
+     "terraform-module@iac/tf-anthos-gke",
+     "terraform-module@iac/tf-multienv-cicd-anthos-autopilot/modules/ci-cd-pipeline"
+    ],
+    "extra": [
+     "make-target@.:monolith"
+    ],
+    "wrong": [
+     {
+      "item": "terraform-module@iac/tf-multienv-cicd-anthos-autopilot",
+      "fields": {
+       "manifest": {
+        "expected": "iac/tf-multienv-cicd-anthos-autopilot/main.tf",
+        "got": "iac/tf-multienv-cicd-anthos-autopilot/pipelines.tf"
+       }
+      },
+      "same_after_normalisation": false
+     }
+    ]
+   },
+   "units.depends_on": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.source_roots": {
+    "given": true,
+    "expected": 18,
+    "found": 7,
+    "found_normalised": 7,
+    "missed": [
+     "python-project@src/frontend > src/frontend",
+     "python-project@src/accounts/userservice > src/accounts/userservice",
+     "python-project@src/accounts/contacts > src/accounts/contacts",
+     "python-project@src/loadgenerator > src/loadgenerator",
+     "source-tree@src/accounts/accounts-db > src/accounts/accounts-db",
+     "source-tree@src/ledger/ledger-db > src/ledger/ledger-db",
+     "source-tree@.github/workflows/ui-tests > .github/workflows/ui-tests",
+     "source-tree@extras/postgres-hpa/helm-postgres-ha/pgpool-operator > extras/postgres-hpa/helm-postgres-ha/pgpool-operator",
+     "terraform-module@iac/tf-anthos-gke > iac/tf-anthos-gke",
+     "terraform-module@iac/tf-multienv-cicd-anthos-autopilot > iac/tf-multienv-cicd-anthos-autopilot",
+     "terraform-module@iac/tf-multienv-cicd-anthos-autopilot/modules/ci-cd-pipeline > iac/tf-multienv-cicd-anthos-autopilot/modules/ci-cd-pipeline"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.config": {
+    "given": true,
+    "expected": 17,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [
+     "maven-module@. > nested_modules",
+     "maven-module@src/ledger/ledgerwriter > entry_files",
+     "maven-module@src/ledger/ledgerwriter > source_sets",
+     "maven-module@src/ledger/balancereader > entry_files",
+     "maven-module@src/ledger/balancereader > source_sets",
+     "maven-module@src/ledger/transactionhistory > entry_files",
+     "maven-module@src/ledger/transactionhistory > source_sets",
+     "maven-module@src/ledgermonolith > entry_files",
+     "maven-module@src/ledgermonolith > source_sets",
+     "python-project@src/frontend > entry_files",
+     "python-project@src/accounts/userservice > entry_files",
+     "python-project@src/accounts/contacts > entry_files",
+     "python-project@src/loadgenerator > entry_files",
+     "source-tree@src/accounts/accounts-db > entry_files",
+     "source-tree@src/ledger/ledger-db > entry_files",
+     "source-tree@.github/workflows/ui-tests > entry_files",
+     "source-tree@extras/postgres-hpa/helm-postgres-ha/pgpool-operator > entry_files"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [
+     "maven@src/ledger/ledgerwriter",
+     "terraform@iac/tf-multienv-cicd-anthos-autopilot"
+    ],
+    "wrong": []
+   },
+   "workspace.members": {
+    "given": true,
+    "expected": 4,
+    "found": 4,
+    "found_normalised": 4,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "toolchains": {
+    "given": true,
+    "expected": 37,
+    "found": 5,
+    "found_normalised": 5,
+    "missed": [
+     "python@src/frontend/pyproject.toml#project.requires-python",
+     "python@src/frontend/.python-version",
+     "python@src/frontend/Dockerfile",
+     "uv@src/frontend/Dockerfile",
+     "python@src/accounts/userservice/pyproject.toml#project.requires-python",
+     "python@src/accounts/userservice/.python-version",
+     "python@src/accounts/userservice/Dockerfile",
+     "uv@src/accounts/userservice/Dockerfile",
+     "python@src/accounts/contacts/pyproject.toml#project.requires-python",
+     "python@src/accounts/contacts/.python-version",
+     "python@src/accounts/contacts/Dockerfile",
+     "uv@src/accounts/contacts/Dockerfile",
+     "python@src/loadgenerator/pyproject.toml#project.requires-python",
+     "python@src/loadgenerator/.python-version",
+     "python@src/loadgenerator/Dockerfile",
+     "uv@src/loadgenerator/Dockerfile",
+     "python@extras/postgres-hpa/kubernetes-manifests/pgpool-operator.yaml",
+     "java@src/ledger/ledgerwriter/pom.xml#build.plugins.jib-maven-plugin.configuration.from.image",
+     "java@src/ledger/balancereader/pom.xml#build.plugins.jib-maven-plugin.configuration.from.image",
+     "java@src/ledger/transactionhistory/pom.xml#build.plugins.jib-maven-plugin.configuration.from.image",
+     "java@src/ledgermonolith/pom.xml#build.plugins.jib-maven-plugin.configuration.from.image",
+     "java@src/ledgermonolith/init/install-script.sh",
+     "java@.github/workflows/make-release.yaml#jobs.build-and-release.steps.java-version",
+     "skaffold@.github/workflows/make-release.yaml",
+     "skaffold@.github/cloudbuild/ci-pr.yaml",
+     "skaffold@src/frontend/cloudbuild.yaml",
+     "skaffold@src/accounts/cloudbuild.yaml",
+     "skaffold@src/ledger/cloudbuild.yaml",
+     "go@.github/cloudbuild/ci-pr.yaml",
+     "terraform@iac/tf-anthos-gke/providers.tf#terraform.required_version",
+     "cypress@.github/workflows/ui-tests/Dockerfile",
+     "cypress@Makefile"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "dependencies": {
+    "given": false,
+    "expected": 24
+   },
+   "frameworks": {
+    "given": false,
+    "expected": 41
+   },
+   "services": {
+    "given": false,
+    "expected": 20
+   },
+   "needs": {
+    "given": false,
+    "expected": 1
+   }
+  },
+  "sources": [
+   {
+    "rank": "reader",
+    "seconds": 0.154,
+    "source": "modules.py@daodan/module-graph/v1+compose.1.pyyaml.6.0.4.unit-resolution.4.image.2.sdk.1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.003,
+    "source": "python-build@daodan/premap/v3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.027,
+    "source": "requirements@daodan/premap/v2",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.007,
+    "source": "python-tests@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.006,
+    "source": "jvm-files@daodan/premap/v5",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.003,
+    "source": "project-files@daodan/premap/v2",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "gitmodules@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.012,
+    "source": "autotools@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "network": [
+     "none"
+    ],
+    "rank": "reader",
+    "seconds": 39.476,
+    "source": "renovate@44.239.1",
+    "state": "ran",
+    "tools": [
+     "renovate"
+    ]
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "compose@5.6.1",
+    "state": "not_needed"
+   },
+   {
+    "network": [
+     "none"
+    ],
+    "rank": "model",
+    "seconds": 21.591,
+    "source": "buildkit@v0.34.2",
+    "state": "ran",
+    "tools": [
+     "daodan-dockerfile"
+    ]
+   },
+   {
+    "network": [
+     "none"
+    ],
+    "rank": "model",
+    "seconds": 6.028,
+    "source": "uv@0.11.28",
+    "state": "ran",
+    "tools": [
+     "uv"
+    ]
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "cmake@4.4.5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "meson@1.12.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "bazel@9.3.1",
+    "state": "not_needed"
+   },
+   {
+    "network": [
+     "none"
+    ],
+    "rank": "model",
+    "seconds": 2.841,
+    "source": "make@4.3",
+    "state": "ran",
+    "tools": [
+     "make"
+    ]
+   },
+   {
+    "network": [
+     "registries"
+    ],
+    "rank": "model",
+    "seconds": 34.892,
+    "source": "maven@3.10.0",
+    "state": "ran",
+    "tools": [
+     "maven"
+    ]
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "sbt@1.13.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "dotnet@10.0.404",
+    "state": "not_needed"
+   }
+  ],
+  "gaps": [
+   {
+    "detail": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml",
+    "source": "renovate@44.239.1"
+   },
+   {
+    "detail": "extras/jwt/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/jwt/jwt-secret.yaml",
+    "source": "renovate@44.239.1"
+   },
+   {
+    "detail": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml",
+    "source": "renovate@44.239.1"
+   },
+   {
+    "detail": "renovate ended the repository (unknown) before reading its files: Host error: getaddrinfo EAI_AGAIN api.github.com: https://api.github.com/repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/dee-platform-ops.json5",
+    "kind": "model_failed",
+    "path": ".",
+    "source": "renovate@44.239.1"
+   },
+   {
+    "detail": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml",
+    "source": "buildkit@v0.34.2"
+   },
+   {
+    "detail": "extras/jwt/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/jwt/jwt-secret.yaml",
+    "source": "buildkit@v0.34.2"
+   },
+   {
+    "detail": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml",
+    "source": "buildkit@v0.34.2"
+   },
+   {
+    "detail": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml",
+    "source": "uv@0.11.28"
+   },
+   {
+    "detail": "extras/jwt/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/jwt/jwt-secret.yaml",
+    "source": "uv@0.11.28"
+   },
+   {
+    "detail": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml",
+    "source": "uv@0.11.28"
+   },
+   {
+    "detail": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml",
+    "source": "make@4.3"
+   },
+   {
+    "detail": "extras/jwt/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/jwt/jwt-secret.yaml",
+    "source": "make@4.3"
+   },
+   {
+    "detail": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml",
+    "source": "make@4.3"
+   },
+   {
+    "detail": "make -pn: Makefile:102: *** PROJECT_ID is undefined.  Stop.",
+    "kind": "model_partial",
+    "path": ".",
+    "source": "make@4.3"
+   },
+   {
+    "detail": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml",
+    "source": "maven@3.10.0"
+   },
+   {
+    "detail": "extras/jwt/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "extras/jwt/jwt-secret.yaml",
+    "source": "maven@3.10.0"
+   },
+   {
+    "detail": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+    "kind": "file_withheld",
+    "path": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml",
+    "source": "maven@3.10.0"
+   },
+   {
+    "detail": "8 JavaScript files that no unit of kind npm-package holds",
+    "files": 8,
+    "kind": "code_outside_units",
+    "language": "JavaScript",
+    "path": ".github/workflows/ui-tests",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "3 JavaScript files that no unit of kind npm-package holds",
+    "files": 3,
+    "kind": "code_outside_units",
+    "language": "JavaScript",
+    "path": "src/frontend/static/scripts",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 Python files that no unit of kind python-project holds",
+    "files": 1,
+    "kind": "code_outside_units",
+    "language": "Python",
+    "path": "extras/postgres-hpa/helm-postgres-ha/pgpool-operator",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 Batchfile files and no analyzer lists the language: their code is in no graph",
+    "files": 1,
+    "kind": "no_analyzer",
+    "language": "Batchfile",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "7 Dockerfile files and no analyzer lists the language: their code is in no graph",
+    "files": 7,
+    "kind": "no_analyzer",
+    "language": "Dockerfile",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "30 HCL files and no analyzer lists the language: their code is in no graph",
+    "files": 30,
+    "kind": "no_analyzer",
+    "language": "HCL",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 Makefile files and no analyzer lists the language: their code is in no graph",
+    "files": 1,
+    "kind": "no_analyzer",
+    "language": "Makefile",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "15 Shell files and no analyzer lists the language: their code is in no graph",
+    "files": 15,
+    "kind": "no_analyzer",
+    "language": "Shell",
+    "source": "premap@daodan/premap/v1"
+   }
+  ],
+  "units": 11,
+  "toolchains": [
+   {
+    "declared_in": ".mvn/wrapper/maven-wrapper.properties#distributionUrl",
+    "line": 15,
+    "sources": [
+     "jvm-files@daodan/premap/v5"
+    ],
+    "tool": "maven",
+    "version": "3.9.16"
+   },
+   {
+    "declared_in": "src/ledger/balancereader/pom.xml#properties.java.version",
+    "line": 35,
+    "sources": [
+     "jvm-files@daodan/premap/v5"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "src/ledger/ledgerwriter/pom.xml#properties.java.version",
+    "line": 35,
+    "sources": [
+     "jvm-files@daodan/premap/v5"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "src/ledger/transactionhistory/pom.xml#properties.java.version",
+    "line": 35,
+    "sources": [
+     "jvm-files@daodan/premap/v5"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "src/ledgermonolith/pom.xml#properties.java.version",
+    "line": 35,
+    "sources": [
+     "jvm-files@daodan/premap/v5"
+    ],
+    "tool": "java",
+    "version": "17"
+   }
+  ],
+  "steps": {
+   "recognize_stack": {
+    "technologies": 30,
+    "tools": [
+     "cypressci",
+     "docker",
+     "gunicorn",
+     "junit-jupiter",
+     "locust",
+     "maven",
+     "mockito",
+     "pytest",
+     "python",
+     "renovate",
+     "terraform"
+    ],
+    "path": "/runs/real-bank-of-anthos/stack.json"
+   },
+   "find_modules": {
+    "modules": 12,
+    "graph": "/runs/real-bank-of-anthos/modules.json",
+    "action": "rebuilt",
+    "units": 11,
+    "gaps": 25,
+    "premap": "/runs/real-bank-of-anthos/premap.json",
+    "technologies": 30
+   },
+   "find_entry_points": {
+    "entry_points": "/runs/real-bank-of-anthos/entry-points.json",
+    "gaps": 3
+   },
+   "link_calls": {
+    "pass": true,
+    "manifest_digest": "dbfb14a3ec7ff8e26e7d00cd740fa29033e32ee4feb275e395067cdc706cd67a",
+    "languages": {
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@eea0e76e35f7"
+     },
+     "python": {
+      "state": "fresh",
+      "engine": "scip-python@0.6.8"
+     },
+     "java": {
+      "state": "fresh",
+      "engine": "scip-java@0.14.2"
+     },
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2"
+     }
+    },
+    "engines": {
+     "stylesheet": {
+      "engine": "stylesheet@eea0e76e35f7",
+      "available": true,
+      "languages": {
+       "stylesheet": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "codebase-map stylesheet.py + @eslint/css-tree + typescript + tailwindcss + codebase-map css_packages.js",
+       "peak_mb": 96,
+       "seconds": 26.6,
+       "version": "eea0e76e35f7",
+       "versions": "cdb9de69a3ed + 4.1.3 + 6.0.3 + None + dc4a31328ff5"
+      },
+      "seconds": 33.3
+     },
+     "scip-python": {
+      "engine": "scip-python@0.6.8",
+      "available": true,
+      "languages": {
+       "python": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-python",
+       "peak_mb": 389,
+       "seconds": 7.5,
+       "version": "0.6.8"
+      },
+      "gaps": [
+       {
+        "detail": "sqlalchemy==1.4.54 is not installed: Using Python 3.13.3 environment at: 18ba713c9e72c278 \u00d7 No solution found when resolving dependencies: \u2570\u2500\u25b6 Because sqlalchemy==1.4.54 has no usable wheels and you require sqlalchemy==1.4.54, we can conclude that your requirements are unsatisfiable. hint: Wheels are required for `sqlalchemy` because building from source is disabled for all packages (i.e., with `--no-build`)",
+        "kind": "restore_failed",
+        "manager": "uv",
+        "package": "sqlalchemy==1.4.54",
+        "path": "."
+       }
+      ],
+      "seconds": 56.5
+     },
+     "scip-java": {
+      "engine": "scip-java@0.14.2",
+      "available": true,
+      "languages": {
+       "java": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-java",
+       "peak_mb": null,
+       "seconds": 18.7,
+       "version": "0.14.2"
+      },
+      "gaps": [
+       {
+        "detail": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+        "kind": "file_withheld",
+        "path": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml"
+       },
+       {
+        "detail": "extras/jwt/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+        "kind": "file_withheld",
+        "path": "extras/jwt/jwt-secret.yaml"
+       },
+       {
+        "detail": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+        "kind": "file_withheld",
+        "path": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml"
+       }
+      ],
+      "seconds": 109.1
+     },
+     "scip-typescript": {
+      "engine": "scip-typescript@0.6.2",
+      "available": true,
+      "languages": {
+       "javascript": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-typescript",
+       "peak_mb": null,
+       "seconds": 12.3,
+       "types": [
+        "@types/node@24.19.4"
+       ],
+       "version": "0.6.2"
+      },
+      "gaps": [
+       {
+        "detail": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+        "kind": "file_withheld",
+        "path": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml"
+       },
+       {
+        "detail": "extras/jwt/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+        "kind": "file_withheld",
+        "path": "extras/jwt/jwt-secret.yaml"
+       },
+       {
+        "detail": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing",
+        "kind": "file_withheld",
+        "path": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml"
+       }
+      ],
+      "seconds": 20.4
+     }
+    },
+    "started_at": "2026-11-28T09:54:59Z",
+    "pipeline_complete": true,
+    "available": true,
+    "finished_at": "2026-11-28T09:58:39Z"
+   },
+   "run_and_observe": {
+    "languages": {
+     "stylesheet": {
+      "state": "no-observer",
+      "reason": "no observer runs this language's tests"
+     },
+     "javascript": {
+      "state": "not-run",
+      "reason": "no package.json of the project declares a test script (`scripts.test`): nothing is observed"
+     },
+     "java": {
+      "state": "observed",
+      "sites": 520,
+      "edges": 520,
+      "closed": 0
+     },
+     "python": {
+      "state": "observed",
+      "sites": 535,
+      "edges": 557,
+      "closed": 176
+     }
+    },
+    "app": {
+     "state": "ran",
+     "apps": 0,
+     "kept": 0
+    }
+   },
+   "assemble_graph": {
+    "languages": {
+     "java": {
+      "state": "fresh",
+      "engine": "scip-java@0.14.2",
+      "coverage": {
+       "sites": 1865,
+       "answered": {
+        "external": 985,
+        "project-callable": 179,
+        "project-value": 701
+       },
+       "holes": {},
+       "uncertain": 0,
+       "externals": {
+        "maven jdk@17": 241,
+        "maven maven/org.mockito/mockito-core@5.23.0": 190,
+        "maven maven/org.springframework/spring-web@6.2.19": 159,
+        "maven maven/org.apache.logging.log4j/log4j-api@2.26.1": 134,
+        "maven maven/org.junit.jupiter/junit-jupiter-api@5.12.2": 101,
+        "maven maven/com.auth0/java-jwt@4.6.1": 61,
+        "maven maven/com.google.guava/guava@33.7.1-jre": 56,
+        "maven maven/io.micrometer/micrometer-registry-stackdriver@1.15.12": 15,
+        "maven maven/com.google.cloud/google-cloud-core@2.64.1": 9,
+        "maven .@.": 6,
+        "maven maven/org.springframework.data/spring-data-commons@3.5.13": 5,
+        "maven maven/org.springframework.boot/spring-boot@3.5.16": 4,
+        "maven maven/io.micrometer/micrometer-core@1.15.12": 3,
+        "maven maven/org.springframework/spring-tx@6.2.19": 1
+       },
+       "files": {
+        "snapshot": 35,
+        "indexed": 35,
+        "missing": []
+       },
+       "state": "lower-bound",
+       "observed": {
+        "resolver": "dynamic-record-jvm@1",
+        "at": "2026-11-28T10:00:14.969219Z",
+        "tests": [
+         {
+          "root": "",
+          "runner": "maven",
+          "state": "ran",
+          "tool": "maven",
+          "argv": [
+           "mvn",
+           "-B",
+           "-o",
+           "-fae",
+           "-Dmaven.test.failure.ignore=true",
+           "test"
+          ],
+          "exit_code": 0,
+          "tests": 38,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "jvms": 3
+         }
+        ],
+        "recorded": 595,
+        "placed": 595,
+        "joined": 520,
+        "unjoined": {},
+        "agree": 517,
+        "wider": 0,
+        "mocked": 75,
+        "conflicts": {
+         "count": 0,
+         "examples": []
+        },
+        "files": {
+         "executed": 10,
+         "not_executed": [
+          "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceCache.java",
+          "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderApplication.java",
+          "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/JWTVerifierGenerator.java",
+          "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/Transaction.java",
+          "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/JWTVerifierGenerator.java",
+          "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterApplication.java",
+          "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/Transaction.java",
+          "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/JWTVerifierGenerator.java",
+          "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/Transaction.java",
+          "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionCache.java",
+          "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryApplication.java",
+          "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/JWTVerifierGenerator.java",
+          "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerMonolithApplication.java",
+          "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerMonolithController.java",
+          "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerReader.java",
+          "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerReaderCache.java",
+          "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/Transaction.java",
+          "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/TransactionValidator.java"
+         ]
+        },
+        "sites": 520,
+        "edges": 520,
+        "closed": {}
+       }
+      }
+     },
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2",
+      "coverage": {
+       "sites": 820,
+       "answered": {
+        "external": 99,
+        "project-callable": 39,
+        "project-value": 148
+       },
+       "holes": {
+        "Element declares no such member: only execution knows it": {
+         "count": 6,
+         "examples": [
+          "src/frontend/static/scripts/index.js:25 checkValidity",
+          "src/frontend/static/scripts/index.js:35 reset",
+          "src/frontend/static/scripts/index.js:47 checkValidity"
+         ]
+        },
+        "a member of a value of type any: only execution knows it": {
+         "count": 456,
+         "examples": [
+          ".github/workflows/ui-tests/cypress/integration/create_spec.js:17 env",
+          ".github/workflows/ui-tests/cypress/integration/create_spec.js:21 visit",
+          ".github/workflows/ui-tests/cypress/integration/create_spec.js:22 get"
+         ]
+        },
+        "no-occurrence": {
+         "count": 72,
+         "examples": [
+          ".github/workflows/ui-tests/cypress/integration/create_spec.js:19 describe",
+          ".github/workflows/ui-tests/cypress/integration/create_spec.js:20 it",
+          ".github/workflows/ui-tests/cypress/integration/create_spec.js:27 it"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "npm typescript@6.0.3": 97,
+        "npm @types/node@24.19.4": 2
+       },
+       "files": {
+        "snapshot": 11,
+        "indexed": 11,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     },
+     "python": {
+      "state": "fresh",
+      "engine": "scip-python@0.6.8",
+      "coverage": {
+       "sites": 1814,
+       "answered": {
+        "external": 814,
+        "observed": 176,
+        "project-callable": 99,
+        "project-value": 595
+       },
+       "holes": {
+        "a member of a value the checker types Unknown: only execution knows it": {
+         "count": 81,
+         "examples": [
+          "extras/postgres-hpa/helm-postgres-ha/pgpool-operator/pgpool.py:24 startup",
+          "extras/postgres-hpa/helm-postgres-ha/pgpool-operator/pgpool.py:33 startup",
+          "extras/postgres-hpa/helm-postgres-ha/pgpool-operator/pgpool.py:34 OperatorSettings"
+         ]
+        },
+        "dangling-local": {
+         "count": 1,
+         "examples": [
+          "src/frontend/frontend.py:363 format"
+         ]
+        },
+        "the checker binds the function exit and scip-python names nothing there": {
+         "count": 2,
+         "examples": [
+          "src/accounts/contacts/contacts.py:223 exit",
+          "src/accounts/userservice/userservice.py:248 exit"
+         ]
+        },
+        "the checker binds the function found and scip-python names nothing there": {
+         "count": 1,
+         "examples": [
+          "src/frontend/frontend.py:545 found"
+         ]
+        },
+        "the checker binds the method __init__ and scip-python names nothing there": {
+         "count": 1,
+         "examples": [
+          "src/frontend/traced_thread_pool_executor.py:26 __init__"
+         ]
+        },
+        "the checker binds the method format and scip-python names nothing there": {
+         "count": 10,
+         "examples": [
+          "src/frontend/frontend.py:251 format",
+          "src/frontend/frontend.py:258 format",
+          "src/frontend/frontend.py:318 format"
+         ]
+        },
+        "the checker binds the method result and scip-python names nothing there": {
+         "count": 2,
+         "examples": [
+          "src/frontend/frontend.py:150 result",
+          "src/frontend/frontend.py:152 result"
+         ]
+        },
+        "the checker binds the method submit and scip-python names nothing there": {
+         "count": 2,
+         "examples": [
+          "src/frontend/traced_thread_pool_executor.py:40 submit",
+          "src/frontend/traced_thread_pool_executor.py:46 submit"
+         ]
+        },
+        "undefined-project-symbol": {
+         "count": 30,
+         "examples": [
+          "extras/postgres-hpa/helm-postgres-ha/pgpool-operator/pgpool.py:22 Lock",
+          "extras/postgres-hpa/helm-postgres-ha/pgpool-operator/pgpool.py:30 Lock",
+          "extras/postgres-hpa/helm-postgres-ha/pgpool-operator/pgpool.py:93 ApiException"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "python python-stdlib@3.11": 371,
+        "python Flask@3.1.3": 193,
+        "python Werkzeug@3.1.8": 133,
+        "python requests@2.34.2": 34,
+        "python locust@2.46.6": 20,
+        "python opentelemetry-api@1.44.0": 12,
+        "python PyJWT@2.14.0": 10,
+        "python pycryptodome@3.23.0": 8,
+        "python opentelemetry-sdk@1.44.0": 6,
+        "python opentelemetry-instrumentation-flask@0.65b0": 6,
+        "python bleach@6.4.0": 4,
+        "python opentelemetry-instrumentation@0.65b0": 4,
+        "python opentelemetry-exporter-gcp-trace@1.15.0": 3,
+        "python opentelemetry-propagator-gcp@1.15.0": 3,
+        "python bcrypt@5.0.0": 3,
+        "python opentelemetry-instrumentation-sqlalchemy@0.65b0": 2,
+        "python opentelemetry-instrumentation-requests@0.65b0": 1,
+        "python opentelemetry-instrumentation-jinja2@0.65b0": 1
+       },
+       "files": {
+        "snapshot": 20,
+        "indexed": 20,
+        "missing": []
+       },
+       "state": "lower-bound",
+       "observed": {
+        "resolver": "dynamic-record-python@1",
+        "at": "2026-11-28T10:00:51.782893Z",
+        "tests": [
+         {
+          "root": "src/accounts/contacts",
+          "runner": "pytest",
+          "declared_in": "src/accounts/contacts/pyproject.toml#tool.pytest.ini_options",
+          "state": "ran",
+          "exit_code": 0,
+          "seconds": 9,
+          "python": "3.14.6",
+          "processes": 1
+         },
+         {
+          "root": "src/accounts/userservice",
+          "runner": "pytest",
+          "declared_in": "src/accounts/userservice/pyproject.toml#tool.pytest.ini_options",
+          "state": "ran",
+          "exit_code": 0,
+          "seconds": 9,
+          "python": "3.14.6",
+          "processes": 1
+         }
+        ],
+        "recorded": 676,
+        "placed": 552,
+        "joined": 535,
+        "unjoined": {
+         "BINARY_OP": 4,
+         "COMPARE_OP": 3,
+         "ClassDef": 6,
+         "GET_ITER": 1,
+         "GeneratorExp": 5,
+         "LOAD_ATTR": 75,
+         "STORE_ATTR": 18,
+         "WITH_EXCEPT_START": 1,
+         "decorator": 11
+        },
+        "agree": 359,
+        "wider": 0,
+        "mocked": 17,
+        "conflicts": {
+         "count": 0,
+         "examples": []
+        },
+        "files": {
+         "executed": 10,
+         "not_executed": [
+          "extras/postgres-hpa/helm-postgres-ha/pgpool-operator/pgpool.py",
+          "src/frontend/api_call.py",
+          "src/frontend/frontend.py",
+          "src/frontend/traced_thread_pool_executor.py",
+          "src/loadgenerator/locustfile.py"
+         ]
+        },
+        "sites": 535,
+        "edges": 557,
+        "closed": {
+         "a member of a value the checker types Unknown: only execution knows it": 31,
+         "a member the checker types Any (a dynamic attribute, `__getattr__`): only execution knows it": 24,
+         "dangling-local": 4,
+         "the checker binds the method assertEqual and scip-python names nothing there": 66,
+         "the checker binds the method assertIsNone and scip-python names nothing there": 1,
+         "the checker binds the method assertRaises and scip-python names nothing there": 1,
+         "the checker binds the method format and scip-python names nothing there": 24,
+         "undefined-project-symbol": 25
+        }
+       }
+      }
+     },
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@eea0e76e35f7",
+      "coverage": {
+       "sites": 657,
+       "answered": {
+        "external": 3,
+        "project-value": 208
+       },
+       "holes": {
+        "no-font-face": {
+         "count": 1,
+         "examples": [
+          "src/frontend/static/styles/cymbal.css:18 Roboto"
+         ]
+        },
+        "no-rule": {
+         "count": 436,
+         "examples": [
+          "src/frontend/static/scripts/index.js:29 .was-validated",
+          "src/frontend/static/scripts/index.js:36 .was-validated",
+          "src/frontend/static/scripts/index.js:51 .was-validated"
+         ]
+        },
+        "unresolved-import": {
+         "count": 9,
+         "examples": [
+          "src/frontend/templates/index.html:377 static/scripts/index.js",
+          "src/frontend/templates/login.html:94 static/scripts/login.js",
+          "src/frontend/templates/shared/html_head.html:14 static/styles/cymbal.css"
+         ]
+        }
+       },
+       "uncertain": 208,
+       "externals": {
+        "cdn fonts.googleapis.com@unknown": 2,
+        "npm bootstrap-material-design@4.1.1": 1
+       },
+       "files": {
+        "snapshot": 20,
+        "indexed": 20,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     }
+    },
+    "routes": {
+     "offered": 21,
+     "called": 0,
+     "linked": 0
+    },
+    "no_analyzer": {
+     "sql": 3
+    }
+   }
+  },
+  "dynamic_gaps": [
+   {
+    "kind": "no-observer",
+    "detail": "stylesheet: no observer runs its tests, so its graph holds no observed edge"
+   },
+   {
+    "kind": "no_test_command",
+    "detail": "no package.json of the project declares a test script (`scripts.test`): nothing is observed"
+   },
+   {
+    "kind": "file_withheld",
+    "path": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml",
+    "detail": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing"
+   },
+   {
+    "kind": "file_withheld",
+    "path": "extras/jwt/jwt-secret.yaml",
+    "detail": "extras/jwt/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing"
+   },
+   {
+    "kind": "file_withheld",
+    "path": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml",
+    "detail": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing"
+   },
+   {
+    "kind": "sites_ambiguous",
+    "detail": "2 observed call sites share their line with another call of the same name, so the reference each answers is unknown and they are not placed: src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/TransactionValidator.java:86 equals, src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/TransactionValidator.java:92 equals"
+   },
+   {
+    "kind": "file_withheld",
+    "path": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml",
+    "detail": "extras/cloudsql/kubernetes-manifests/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing"
+   },
+   {
+    "kind": "file_withheld",
+    "path": "extras/jwt/jwt-secret.yaml",
+    "detail": "extras/jwt/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing"
+   },
+   {
+    "kind": "file_withheld",
+    "path": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml",
+    "detail": "iac/acm-multienv-cicd-anthos-autopilot/base/jwt-secret.yaml is a file Daodan never reads (its name speaks of secrets and it holds a generated value) and only the .env files Git tracks reach the copy: the copy leaves it out, and what reads it there finds nothing"
+   },
+   {
+    "kind": "recorder_unverified",
+    "path": "src/accounts/contacts",
+    "detail": "python -m pytest --continue-on-collection-errors in src/accounts/contacts ran on Python 3.14.6: the recorder is verified on CPython 3.12 and 3.13, and may misplace a with block's exit on another"
+   },
+   {
+    "kind": "recorder_unverified",
+    "path": "src/accounts/userservice",
+    "detail": "python -m pytest --continue-on-collection-errors in src/accounts/userservice ran on Python 3.14.6: the recorder is verified on CPython 3.12 and 3.13, and may misplace a with block's exit on another"
+   },
+   {
+    "kind": "no_start_command",
+    "detail": "no package.json of the project declares a start or dev script that starts an app: nothing is explored"
+   }
+  ],
+  "events": {
+   "step.started": 6,
+   "step.finished": 6,
+   "log": 3,
+   "progress": 33,
+   "gap": 52,
+   "analyzer.started": 7,
+   "analyzer.finished": 7,
+   "graph.ready": 1
+  },
+  "step_seconds": {
+   "recognize_stack": [
+    5.2,
+    12.1
+   ],
+   "find_modules": [
+    12.1,
+    118.3
+   ],
+   "find_entry_points": [
+    118.3,
+    126.8
+   ],
+   "link_calls": [
+    126.8,
+    346.1
+   ],
+   "run_and_observe": [
+    346.1,
+    479.4
+   ],
+   "assemble_graph": [
+    479.4,
+    481.0
+   ]
+  },
+  "containers": [
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 63.436,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 14.411,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 8.209,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 19.713,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 7.852,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.427,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.079,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 19.8,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.292,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.571,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 18.257,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 9.064,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.095,
+    "cause": null
+   }
+  ],
+  "logs": {
+   "premap-runs/daodan-dockerfile/results/0/stderr": "go: creating new go.mod: module daodan-dockerfile\ngo: to add module requirements and sums:\n\tgo mod tidy\ngo: downloading github.com/moby/buildkit v0.34.2\ngo: added github.com/moby/buildkit v0.34.2\ngo: downloading github.com/moby/patternmatcher v0.6.1\ngo: downloading github.com/tonistiigi/go-csvvalue v0.0.0-20240814133006-030d3b2625d0\ngo: downloading github.com/docker/go-units v0.5.0\ngo: downloading github.com/agext/levenshtein v1.2.3\ngo: downloading github.com/pkg/errors v0.9.1\ngo: downloading github.com/moby/docker-image-spec v1.3.1\ngo: downloading github.com/containerd/typeurl/v2 v2.3.0\ngo: downloading github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10\ngo: downloading google.golang.org/protobuf v1.36.12\ngo: downloading github.com/opencontainers/image-spec v1.1.1\ngo: downloading github.com/opencontainers/go-digest v1.0.0\n",
+   "premap-runs/make/results/1/stderr": "Makefile:102: *** PROJECT_ID is undefined.  Stop.\n",
+   "premap-runs/renovate/results/1/stderr": "e/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-28T09:53:40.070Z\",\"v\":0}\n{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":10,\"level\":40,\"logContext\":\"9c45f884-a8c1-4928-b548-168f41dd26ac\",\"repository\":\"local\",\"hostType\":\"github\",\"err\":{\"name\":\"RequestError\",\"code\":\"EAI_AGAIN\",\"timings\":{\"start\":1795859623365,\"socket\":1795859623365,\"lookup\":1795859623366,\"error\":1795859623366,\"phases\":{\"wait\":0,\"dns\":1,\"total\":1}},\"options\":{\"headers\":{\"user-agent\":\"Renovate/44.239.1 (https://github.com/renovatebot/renovate)\",\"accept\":\"application/json, application/vnd.github.v3+json\",\"accept-encoding\":\"gzip, deflate, br, zstd\"},\"url\":\"https://api.github.com/repos/GoogleCloudPlatform/kubernetes-engine-samples/contents/.github/renovate-configs/dee-platform-ops.json5\",\"hostType\":\"github\",\"username\":\"\",\"password\":\"\",\"method\":\"GET\",\"http2\":false},\"message\":\"getaddrinfo EAI_AGAIN api.github.com\",\"stack\":\"RequestError: getaddrinfo EAI_AGAIN api.github.com\\n    at emitRequestError (file:///daodan/state/tools/npm/lib/node_modules/renovate/node_modules/got/dist/source/core/index.js:1378:108)\\n    at ClientRequest.<anonymous> (file:///daodan/state/tools/npm/lib/node_modules/renovate/node_modules/got/dist/source/core/index.js:1407:13)\\n    at ClientRequest.wrapper (node:events:639:12)\\n    at ClientRequest.emit (node:events:526:24)\\n    at ClientRequest.emit (node:domain:489:12)\\n    at emitErrorEvent (node:_http_client:114:11)\\n    at TLSSocket.socketErrorListener (node:_http_client:774:5)\\n    at TLSSocket.emit (node:events:514:28)\\n    at TLSSocket.emit (node:domain:489:12)\\n    at emitErrorNT (node:internal/streams/destroy:170:8)\\n    at emitErrorCloseNT (node:internal/streams/destroy:129:3)\\n    at processTicksAndRejections (node:internal/process/task_queues:90:21)\\n    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:123:26)\"},\"msg\":\"Host error\",\"time\":\"2026-11-28T09:53:43.367Z\",\"v\":0}\n",
+   "premap-runs/renovate/results/0/stdout": "\nadded 614 packages in 15s\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/execute.log": "DAODAN_PEAK -\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/out/tests.log": " \"ERROR\"}\n{\"timestamp\": \"2026-11-28 10:00:13\", \"message\": \"getBalance | Failed to retrieve account balance: not authorized\", \"severity\": \"ERROR\"}\n{\"timestamp\": \"2026-11-28 10:00:13\", \"message\": \"getBalance | Failed to retrieve account balance: not authorized\", \"severity\": \"ERROR\"}\n[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.356 s -- in anthos.samples.bankofanthos.balancereader.BalanceReaderControllerTest\n[INFO] \n[INFO] Results:\n[INFO] \n[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0\n[INFO] \n[INFO] \n[INFO] --------------< org.springframework.boot:ledgermonolith >---------------\n[INFO] Building Ledger Monolith 1.0                                       [4/5]\n[INFO]   from src/ledgermonolith/pom.xml\n[INFO] --------------------------------[ jar ]---------------------------------\n[INFO] \n[INFO] --- jacoco:0.8.15:prepare-agent (default-prepare-agent) @ ledgermonolith ---\n[INFO] argLine set to -javaagent:/daodan/state/home/.m2/repository/org/jacoco/org.jacoco.agent/0.8.15/org.jacoco.agent-0.8.15-runtime.jar=destfile=/work/src/ledgermonolith/target/jacoco.exec\n[INFO] \n[INFO] --- resources:3.3.1:resources (default-resources) @ ledgermonolith ---\n[INFO] Copying 1 resource from src/main/resources to target/classes\n[INFO] Copying 1 resource from src/main/resources to target/classes\n[INFO] \n[INFO] --- compiler:3.14.1:compile (default-compile) @ ledgermonolith ---\n[INFO] Nothing to compile - all classes are up to date.\n[INFO] \n[INFO] --- resources:3.3.1:testResources (default-testResources) @ ledgermonolith ---\n[INFO] skip non existing resourceDirectory /work/src/ledgermonolith/src/test/resources\n[INFO] \n[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ ledgermonolith ---\n[INFO] No sources to compile\n[INFO] \n[INFO] --- surefire:3.6.0:test (default-test) @ ledgermonolith ---\n[INFO] No tests to run.\n[INFO] \n[INFO] -----------< com.google.cloud.anthos.samples:bank-of-anthos >-----------\n[INFO] Building bank-of-anthos 1.0                                        [5/5]\n[INFO]   from pom.xml\n[INFO] --------------------------------[ pom ]---------------------------------\n[INFO] ------------------------------------------------------------------------\n[INFO] Reactor Summary for bank-of-anthos 1.0:\n[INFO] \n[INFO] Ledger Writer ...................................... SUCCESS [  3.989 s]\n[INFO] Transaction History ................................ SUCCESS [  3.227 s]\n[INFO] Balance Reader ..................................... SUCCESS [  3.294 s]\n[INFO] Ledger Monolith .................................... SUCCESS [  0.105 s]\n[INFO] bank-of-anthos ..................................... SUCCESS [  0.001 s]\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  11.509 s\n[INFO] Finished at: 2026-11-28T10:00:13Z\n[INFO] ------------------------------------------------------------------------\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/prepare.log": "AbstractSurefireMojo.java:1082)\n[ERROR] \tat org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo(DefaultBuildPluginManager.java:126)\n[ERROR] \tat org.apache.maven.lifecycle.internal.MojoExecutor.doExecute2(MojoExecutor.java:328)\n[ERROR] \tat org.apache.maven.lifecycle.internal.MojoExecutor.doExecute(MojoExecutor.java:316)\n[ERROR] \tat org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:212)\n[ERROR] \tat org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:174)\n[ERROR] \tat org.apache.maven.lifecycle.internal.MojoExecutor.access$000(MojoExecutor.java:75)\n[ERROR] \tat org.apache.maven.lifecycle.internal.MojoExecutor$1.run(MojoExecutor.java:162)\n[ERROR] \tat org.apache.maven.plugin.DefaultMojosExecutionStrategy.execute(DefaultMojosExecutionStrategy.java:39)\n[ERROR] \tat org.apache.maven.lifecycle.internal.MojoExecutor.execute(MojoExecutor.java:159)\n[ERROR] \tat org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:105)\n[ERROR] \tat org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject(LifecycleModuleBuilder.java:73)\n[ERROR] \tat org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build(SingleThreadedBuilder.java:53)\n[ERROR] \tat org.apache.maven.lifecycle.internal.LifecycleStarter.execute(LifecycleStarter.java:118)\n[ERROR] \tat org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:261)\n[ERROR] \tat org.apache.maven.DefaultMaven.doExecute(DefaultMaven.java:173)\n[ERROR] \tat org.apache.maven.DefaultMaven.execute(DefaultMaven.java:101)\n[ERROR] \tat org.apache.maven.cli.MavenCli.execute(MavenCli.java:919)\n[ERROR] \tat org.apache.maven.cli.MavenCli.doMain(MavenCli.java:285)\n[ERROR] \tat org.apache.maven.cli.MavenCli.main(MavenCli.java:207)\n[ERROR] \tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n[ERROR] \tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n[ERROR] \tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n[ERROR] \tat java.base/java.lang.reflect.Method.invoke(Method.java:569)\n[ERROR] \tat org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced(Launcher.java:255)\n[ERROR] \tat org.codehaus.plexus.classworlds.launcher.Launcher.launch(Launcher.java:201)\n[ERROR] \tat org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode(Launcher.java:362)\n[ERROR] \tat org.codehaus.plexus.classworlds.launcher.Launcher.main(Launcher.java:314)\n[ERROR] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException\nDAODAN_STEP end providers 1 1795859994.289407056\nDAODAN_PEAK -\n",
+   "dynamic-runs/dynamic-record-python/execute.log": "DAODAN-DYNAMIC 0 python 3.14.6 1\nDAODAN-DYNAMIC 0 exit 0 9\nDAODAN-DYNAMIC 1 python 3.14.6 1\nDAODAN-DYNAMIC 1 exit 0 9\n",
+   "dynamic-runs/dynamic-record-python/out/tests-0.log": "============================= test session starts ==============================\nplatform linux -- Python 3.14.6, pytest-9.1.1, pluggy-1.6.0\nrootdir: /work/src/accounts/contacts\nconfigfile: pyproject.toml\nplugins: cov-7.1.0\ncollected 19 items\n\ntests/test_contacts.py ...............                                   [ 78%]\ntests/test_db.py ....                                                    [100%]\n\n=============================== warnings summary ===============================\ntests/test_db.py::TestDb::test_add_contact_returns_none_no_exception\n  /work/src/accounts/contacts/db.py:35: RemovedIn20Warning: Deprecated API features detected! These feature(s) are not compatible with SQLAlchemy 2.0. To prevent incompatible upgrades prior to updating applications, ensure requirements files are pinned to \"sqlalchemy<2.0\". Set environment variable SQLALCHEMY_WARN_20=1 to show all deprecation warnings.  Set environment variable SQLALCHEMY_SILENCE_UBER_WARNING=1 to silence this message. (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)\n    MetaData(self.engine),\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================== 19 passed, 1 warning in 4.59s =========================\n",
+   "dynamic-runs/dynamic-record-python/out/tests-1.log": "============================= test session starts ==============================\nplatform linux -- Python 3.14.6, pytest-9.1.1, pluggy-1.6.0\nrootdir: /work/src/accounts/userservice\nconfigfile: pyproject.toml\nplugins: cov-7.1.0\ncollected 17 items\n\ntests/test_db.py .....                                                   [ 29%]\ntests/test_userservice.py ............                                   [100%]\n\n=============================== warnings summary ===============================\ntests/test_db.py::TestDb::test_add_same_user_raises_exception\n  /work/src/accounts/userservice/db.py:35: RemovedIn20Warning: Deprecated API features detected! These feature(s) are not compatible with SQLAlchemy 2.0. To prevent incompatible upgrades prior to updating applications, ensure requirements files are pinned to \"sqlalchemy<2.0\". Set environment variable SQLALCHEMY_WARN_20=1 to show all deprecation warnings.  Set environment variable SQLALCHEMY_SILENCE_UBER_WARNING=1 to silence this message. (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)\n    MetaData(self.engine),\n\ntests/test_userservice.py::TestUserservice::test_login_200_status_code_jwt_decoding_payload_passes\n  /work/src/accounts/userservice/userservice.py:191: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    exp_time = datetime.utcnow() + timedelta(seconds=app.config['EXPIRY_SECONDS'])\n\ntests/test_userservice.py::TestUserservice::test_login_200_status_code_jwt_decoding_payload_passes\n  /work/src/accounts/userservice/userservice.py:196: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    'iat': datetime.utcnow(),\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================== 17 passed, 3 warnings in 5.50s ========================\n"
+  },
+  "plan": {
+   "steps": [
+    {
+     "id": "list_files",
+     "state": "done",
+     "executes": "no",
+     "stops": true
+    },
+    {
+     "id": "read_code",
+     "state": "done",
+     "executes": "no",
+     "stops": true
+    },
+    {
+     "id": "recognize_stack",
+     "state": "done",
+     "started_at": "2026-11-28T09:52:58.120876Z",
+     "ended_at": "2026-11-28T09:53:05.096212Z",
+     "executes": "no",
+     "stops": false
+    },
+    {
+     "id": "find_modules",
+     "state": "done",
+     "started_at": "2026-11-28T09:53:05.102828Z",
+     "ended_at": "2026-11-28T09:54:51.251485Z",
+     "executes": "container",
+     "stops": true
+    },
+    {
+     "id": "find_entry_points",
+     "state": "done",
+     "started_at": "2026-11-28T09:54:51.251739Z",
+     "ended_at": "2026-11-28T09:54:59.796129Z",
+     "executes": "container",
+     "stops": false
+    },
+    {
+     "id": "link_calls",
+     "state": "done",
+     "started_at": "2026-11-28T09:54:59.796240Z",
+     "ended_at": "2026-11-28T09:58:39.077911Z",
+     "executes": "container",
+     "stops": true
+    },
+    {
+     "id": "run_and_observe",
+     "state": "done",
+     "started_at": "2026-11-28T09:58:39.078208Z",
+     "ended_at": "2026-11-28T10:00:52.318301Z",
+     "executes": "container",
+     "stops": false
+    },
+    {
+     "id": "assemble_graph",
+     "state": "done",
+     "started_at": "2026-11-28T10:00:52.318551Z",
+     "ended_at": "2026-11-28T10:00:53.969110Z",
+     "executes": "no",
+     "stops": true
+    }
+   ],
+   "policy": {
+    "network": {
+     "canonical": [
+      "registry.npmjs.org",
+      "registry.yarnpkg.com",
+      "pypi.org",
+      "files.pythonhosted.org",
+      "repo1.maven.org",
+      "repo.maven.apache.org",
+      "plugins.gradle.org",
+      "plugins-artifacts.gradle.org",
+      "proxy.golang.org",
+      "sum.golang.org",
+      "index.crates.io",
+      "static.crates.io",
+      "api.nuget.org",
+      "rubygems.org",
+      "index.rubygems.org",
+      "repo.packagist.org",
+      "packagist.org",
+      "cdn.cocoapods.org",
+      "repo.anaconda.com",
+      "conda.anaconda.org",
+      "www.cpan.org",
+      "jsr.io",
+      "cache.nixos.org",
+      "channels.nixos.org",
+      "releases.nixos.org",
+      "http://archive.ubuntu.com",
+      "http://security.ubuntu.com",
+      "http://ports.ubuntu.com",
+      "http://deb.debian.org",
+      "nodejs.org",
+      "go.dev",
+      "dl.google.com",
+      "static.rust-lang.org",
+      "sh.rustup.rs",
+      "dot.net",
+      "builds.dotnet.microsoft.com",
+      "download.swift.org",
+      "ziglang.org",
+      "services.gradle.org",
+      "maven.google.com",
+      "mise-versions.jdx.dev",
+      "mise-java.jdx.dev",
+      "api.adoptium.net",
+      "releases.astral.sh",
+      "repo.yarnpkg.com",
+      "deb.debian.org",
+      "center2.conan.io",
+      "repo.scala-sbt.org",
+      "bcr.bazel.build",
+      "mirror.bazel.build",
+      "cdn.playwright.dev",
+      "playwright.download.prss.microsoft.com",
+      "corretto.aws",
+      "cdn.azul.com",
+      "download.oracle.com",
+      "download.visualstudio.microsoft.com",
+      "archive.ubuntu.com",
+      "security.ubuntu.com",
+      "ports.ubuntu.com"
+     ],
+     "approved": [],
+     "blocked": [],
+     "other": "ask",
+     "answered_in": "app"
+    },
+    "container": {
+     "engine": "user"
+    }
+   },
+   "actions": [
+    {
+     "id": "read_code:css",
+     "step": "read_code",
+     "kind": "read",
+     "target": {
+      "languages": [
+       "css"
+      ],
+      "files": 8
+     },
+     "project_code": false,
+     "container": false,
+     "state": "failed",
+     "cause": "none of the 8 css files was parsed by the snapshot (lexical: 8)",
+     "remedy": "install the snapshot's parser packages (requirements.txt beside snapshot.py) and write the snapshot again"
+    },
+    {
+     "id": "read_code:java",
+     "step": "read_code",
+     "kind": "read",
+     "target": {
+      "languages": [
+       "java"
+      ],
+      "files": 35
+     },
+     "project_code": false,
+     "container": false,
+     "state": "done"
+    },
+    {
+     "id": "read_code:javascript",
+     "step": "read_code",
+     "kind": "read",
+     "target": {
+      "languages": [
+       "javascript"
+      ],
+      "files": 11
+     },
+     "project_code": false,
+     "container": false,
+     "state": "done"
+    },
+    {
+     "id": "read_code:markup",
+     "step": "read_code",
+     "kind": "read",
+     "target": {
+      "languages": [
+       "markup"
+      ],
+      "files": 9
+     },
+     "project_code": false,
+     "container": false,
+     "state": "failed",
+     "cause": "none of the 9 markup files was parsed by the snapshot (lexical: 9)",
+     "remedy": "install the snapshot's parser packages (requirements.txt beside snapshot.py) and write the snapshot again"
+    },
+    {
+     "id": "read_code:python",
+     "step": "read_code",
+     "kind": "read",
+     "target": {
+      "languages": [
+       "python"
+      ],
+      "files": 20
+     },
+     "project_code": false,
+     "container": false,
+     "state": "done"
+    },
+    {
+     "id": "read_code:sql",
+     "step": "read_code",
+     "kind": "read",
+     "target": {
+      "languages": [
+       "sql"
+      ],
+      "files": 3
+     },
+     "project_code": false,
+     "container": false,
+     "state": "done"
+    },
+    {
+     "id": "read_code:file-level",
+     "step": "read_code",
+     "kind": "read",
+     "target": {
+      "languages": [],
+      "files": 310
+     },
+     "project_code": false,
+     "container": false,
+     "state": "done"
+    },
+    {
+     "id": "link_calls:stylesheet",
+     "step": "link_calls",
+     "kind": "resolve",
+     "target": {
+      "languages": [
+       "stylesheet"
+      ],
+      "files": 17,
+      "unit_kinds": []
+     },
+     "project_code": false,
+     "container": false,
+     "state": "done"
+    },
+    {
+     "id": "link_calls:scip-python",
+     "step": "link_calls",
+     "kind": "resolve",
+     "target": {
+      "languages": [
+       "python"
+      ],
+      "files": 20,
+      "unit_kinds": [
+       "python-project"
+      ]
+     },
+     "project_code": false,
+     "container": false,
+     "state": "done"
+    },
+    {
+     "id": "link_calls:scip-java",
+     "step": "link_calls",
+     "kind": "resolve",
+     "target": {
+      "languages": [
+       "java"
+      ],
+      "files": 35,
+      "unit_kinds": [
+       "gradle-project",
+       "maven-module"
+      ]
+     },
+     "project_code": true,
+     "container": true,
+     "state": "done"
+    },
+    {
+     "id": "link_calls:scip-typescript",
+     "step": "link_calls",
+     "kind": "resolve",
+     "target": {
+      "languages": [
+       "javascript"
+      ],
+      "files": 11,
+      "unit_kinds": [
+       "npm-package"
+      ]
+     },
+     "project_code": true,
+     "container": true,
+     "state": "done"
+    },
+    {
+     "id": "run_and_observe:dynamic-record-javascript",
+     "step": "run_and_observe",
+     "kind": "observe",
+     "target": {
+      "languages": [
+       "javascript"
+      ],
+      "files": 11
+     },
+     "project_code": true,
+     "container": true,
+     "state": "done"
+    },
+    {
+     "id": "run_and_observe:dynamic-record-jvm",
+     "step": "run_and_observe",
+     "kind": "observe",
+     "target": {
+      "languages": [
+       "java"
+      ],
+      "files": 35
+     },
+     "project_code": true,
+     "container": true,
+     "state": "done"
+    },
+    {
+     "id": "run_and_observe:dynamic-record-python",
+     "step": "run_and_observe",
+     "kind": "observe",
+     "target": {
+      "languages": [
+       "python"
+      ],
+      "files": 20
+     },
+     "project_code": true,
+     "container": true,
+     "state": "done"
+    },
+    {
+     "id": "recognize_stack:stack-analyser",
+     "step": "recognize_stack",
+     "kind": "recognize",
+     "target": {
+      "technologies": 30
+     },
+     "project_code": false,
+     "container": false,
+     "state": "done"
+    },
+    {
+     "id": "find_modules:renovate@44.239.1",
+     "step": "find_modules",
+     "kind": "model",
+     "target": {
+      "source": "renovate@44.239.1"
+     },
+     "project_code": true,
+     "container": true,
+     "tools": [
+      "renovate"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "done"
+    },
+    {
+     "id": "find_modules:buildkit@v0.34.2",
+     "step": "find_modules",
+     "kind": "model",
+     "target": {
+      "source": "buildkit@v0.34.2"
+     },
+     "project_code": true,
+     "container": true,
+     "tools": [
+      "daodan-dockerfile"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "done"
+    },
+    {
+     "id": "find_modules:uv@0.11.28",
+     "step": "find_modules",
+     "kind": "model",
+     "target": {
+      "source": "uv@0.11.28"
+     },
+     "project_code": true,
+     "container": true,
+     "tools": [
+      "uv"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "done"
+    },
+    {
+     "id": "find_modules:make@4.3",
+     "step": "find_modules",
+     "kind": "model",
+     "target": {
+      "source": "make@4.3"
+     },
+     "project_code": true,
+     "container": true,
+     "tools": [
+      "make"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "done"
+    },
+    {
+     "id": "find_modules:maven@3.10.0",
+     "step": "find_modules",
+     "kind": "model",
+     "target": {
+      "source": "maven@3.10.0"
+     },
+     "project_code": true,
+     "container": true,
+     "tools": [
+      "maven"
+     ],
+     "network": [
+      "registries"
+     ],
+     "state": "done"
+    },
+    {
+     "id": "find_entry_points:noir@1.5.0",
+     "step": "find_entry_points",
+     "kind": "entries",
+     "target": {
+      "source": "noir@1.5.0"
+     },
+     "project_code": false,
+     "container": true,
+     "tools": [
+      "noir"
+     ],
+     "network": [
+      "none"
+     ],
+     "state": "done"
+    },
+    {
+     "id": "assemble_graph",
+     "step": "assemble_graph",
+     "kind": "assemble",
+     "target": {},
+     "project_code": false,
+     "container": false,
+     "state": "done"
+    }
+   ],
+   "gaps": [
+    {
+     "kind": "no-analyzer",
+     "language": "sql",
+     "files": 3,
+     "detail": "3 sql files are in the snapshot and no analyzer lists the language: no graph"
+    },
+    {
+     "kind": "no-observer",
+     "language": "stylesheet",
+     "files": 0,
+     "detail": "stylesheet: no observer runs its tests, so its graph holds no observed edge"
+    },
+    {
+     "kind": "download_size_unknown",
+     "detail": "how much a run downloads is not known before it runs: no source gives its size"
+    }
+   ]
+  },
+  "entry_sites": [
+   "src/accounts/contacts/contacts.py:53",
+   "src/accounts/contacts/contacts.py:60",
+   "src/accounts/contacts/contacts.py:65",
+   "src/accounts/contacts/contacts.py:94",
+   "src/accounts/userservice/userservice.py:163",
+   "src/accounts/userservice/userservice.py:53",
+   "src/accounts/userservice/userservice.py:60",
+   "src/accounts/userservice/userservice.py:67",
+   "src/frontend/frontend.py:204",
+   "src/frontend/frontend.py:266",
+   "src/frontend/frontend.py:374",
+   "src/frontend/frontend.py:432",
+   "src/frontend/frontend.py:480",
+   "src/frontend/frontend.py:518",
+   "src/frontend/frontend.py:557",
+   "src/frontend/frontend.py:578",
+   "src/frontend/frontend.py:604",
+   "src/frontend/frontend.py:65",
+   "src/frontend/frontend.py:72",
+   "src/frontend/frontend.py:79",
+   "src/frontend/frontend.py:87",
+   "src/frontend/frontend.py:97",
+   "src/frontend/k8s/overlays/production/frontend-ingress.yaml:31",
+   "src/ledger/balancereader/pom.xml:97",
+   "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:107",
+   "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:118",
+   "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:128",
+   "src/ledger/balancereader/src/main/java/anthos/samples/bankofanthos/balancereader/BalanceReaderController.java:148",
+   "src/ledger/ledgerwriter/pom.xml:97",
+   "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:109",
+   "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:120",
+   "src/ledger/ledgerwriter/src/main/java/anthos/samples/bankofanthos/ledgerwriter/LedgerWriterController.java:134",
+   "src/ledger/transactionhistory/pom.xml:97",
+   "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryController.java:127",
+   "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryController.java:138",
+   "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryController.java:148",
+   "src/ledger/transactionhistory/src/main/java/anthos/samples/bankofanthos/transactionhistory/TransactionHistoryController.java:167",
+   "src/ledgermonolith/pom.xml:86",
+   "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerMonolithController.java:188",
+   "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerMonolithController.java:199",
+   "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerMonolithController.java:209",
+   "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerMonolithController.java:232",
+   "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerMonolithController.java:322",
+   "src/ledgermonolith/src/main/java/anthos/samples/bankofanthos/ledgermonolith/LedgerMonolithController.java:366"
+  ],
+  "seconds": 481.1
+ }
+}
