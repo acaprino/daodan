@@ -3,7 +3,8 @@
     python benchmarks/codebase-explorer/scale.py 100 300 1000 --out DIR
 
 Writes DIR/<n>/visual.json. Of the n visible nodes, 80% are components, 10% external services, 10% stores.
-Each component holds one directory of four files with three symbols each. Every file imports a file of its
+Each component holds one directory of four files (`--files`; the first component `--wide` when given) with three
+symbols each. Every file imports a file of its
 own component; the first two also import, and call, a file of one of the eight components before it, so
 the component graph is layered, as dependencies usually are. One file in five uses an external service.
 One flow per store: a symbol calls a symbol of another component, which writes the store; two symbols of
@@ -22,7 +23,8 @@ def entity(ref: str, kind: str, name: str, **fields) -> dict:
             "gaps": [], **fields}
 
 
-def envelope(n: int) -> dict:
+def envelope(n: int, files: int = 4, wide: int = 0) -> dict:
+    """The export of n visible nodes, each component holding `files` files, the first one `wide` when not 0."""
     rng = random.Random(n)
     components, externals = int(n * 0.8), n // 10
     stores = n - components - externals
@@ -35,6 +37,9 @@ def envelope(n: int) -> dict:
     def file_of(c: int, f: int) -> str:
         return f"src/c{c:04d}/f{f}.ts"
 
+    def count(c: int) -> int:
+        return wide if wide and c == 0 else files
+
     for e in range(externals):
         entities.append(entity(f"external:svc{e:03d}", "external", f"servizio {e}", provenance="declared",
                                status="confirmed", location="external", node_type="servizio o API"))
@@ -45,7 +50,7 @@ def envelope(n: int) -> dict:
                                status="confirmed", location="internal"))
         entities.append(entity(f"directory:src/c{c:04d}", "directory", f"c{c:04d}", technical=f"src/c{c:04d}",
                                path=f"src/c{c:04d}"))
-        for f in range(4):
+        for f in range(count(c)):
             path = file_of(c, f)
             entities.append(entity(f"file:{path}", "file", f"f{f}.ts", technical=path, path=path))
             memberships.append({"member": f"file:{path}", "group": f"component:c{c:04d}", "view": "logical"})
@@ -56,17 +61,18 @@ def envelope(n: int) -> dict:
                                        freshness="uncovered", location="internal", path=path, lines=[k * 10 + 1, k * 10 + 9]))
                 relate("defines", f"file:{path}", f"symbol:{path}::s{k}")
     for c in range(components):
-        for f in range(4):
+        for f in range(count(c)):
             path = file_of(c, f)
-            relate("imports", f"file:{path}", f"file:{file_of(c, (f + 1) % 4)}")
+            relate("imports", f"file:{path}", f"file:{file_of(c, (f + 1) % count(c))}")
             if f < 2 and c > 0:
-                target = file_of(rng.randrange(max(0, c - 8), c), rng.randrange(4))
+                source = rng.randrange(max(0, c - 8), c)
+                target = file_of(source, rng.randrange(count(source)))
                 relate("imports", f"file:{path}", f"file:{target}")
                 relate("calls", f"symbol:{path}::s0", f"symbol:{target}::s1")
             if externals and rng.random() < 0.2:
                 relate("uses", f"file:{path}", f"external:svc{rng.randrange(externals):03d}")
     for s in range(stores):
-        entry, writer, *readers = (f"symbol:{file_of(c, rng.randrange(4))}::s2" for c in rng.sample(range(components), 4))
+        entry, writer, *readers = (f"symbol:{file_of(c, rng.randrange(count(c)))}::s2" for c in rng.sample(range(components), 4))
         store = f"store:db/t{s:03d}"
         site = lambda ref: f"{ref.split(':', 1)[1].split('::')[0]}:{rng.randrange(1, 40)}"  # noqa: E731
         steps = [{"source": entry, "target": writer, "type": "chiama", "origin": "diretto", "site": site(entry)},
@@ -79,16 +85,18 @@ def envelope(n: int) -> dict:
             "snapshot_digest": "synthetic", "modules_digest": "synthetic", "cards_digest": None,
             "created_at": "2026-11-12T00:00:00Z"}
     return {"schema": "daodan/visual@1", "meta": meta, "entities": entities, "relations": relations,
-            "memberships": memberships, "gaps": [], "flows": flows}
+            "memberships": memberships, "gaps": [], "flows": flows, "technologies": []}
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("sizes", type=int, nargs="+")
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--files", type=int, default=4, help="files of each component")
+    parser.add_argument("--wide", type=int, default=0, help="files of the first component, when not 0")
     args = parser.parse_args(argv)
     for n in args.sizes:
-        data = envelope(n)
+        data = envelope(n, args.files, args.wide)
         target = args.out / str(n) / "visual.json"
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")

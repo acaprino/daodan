@@ -122,8 +122,8 @@ image = (modal.Image.debian_slim(python_version="3.13")
          .run_commands(f"mkdir -p {STACK_ANALYSER[2]}", FETCH_STACK_ANALYSER,
                        f"tar -xzf {STACK_ANALYSER[2]}/release.tgz -C {STACK_ANALYSER[2]}"))
 if LOCAL:
-    # The results stay: suites replay the recorded answers kept there. The explorer's sources are no suite's.
-    skipped = ["**/__pycache__/**", "**/node_modules/**", "**/.pytest_cache/**", "codebase-explorer/**",
+    # The results stay: suites replay the recorded answers kept there. The explorer's probes are no suite's.
+    skipped = ["**/__pycache__/**", "**/node_modules/**", "**/.pytest_cache/**", "codebase-explorer/*-probe/**",
                # private projects' reference maps and what was measured on them: out of git, and out of the container
                "system-map/expected/*-system.json", "system-map/results/system/**"]
     # The project-model fixtures go up as they are (mix-edge-vendored commits node_modules/ on purpose), in a
