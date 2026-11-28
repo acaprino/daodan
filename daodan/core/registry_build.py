@@ -53,11 +53,11 @@ KINDS = ("service", "project")
 CATEGORIES = ("framework", "library", "tool", "service")
 SUPPORT = ("full", "partial", "none")  # an entry's `support`, written by `support`
 # A framework or library Daodan reads beyond recognizing it, and the module of the reader, from `core/`: the framework's own tool
-# for its routes or the events of its templates (`premap.FRAMEWORK_SOURCES`, `premap.TEMPLATE_SOURCES`), its compiler
+# for its routes or the events of its templates (`entry_points.FRAMEWORK_SOURCES`, `entry_points.TEMPLATE_SOURCES`), its compiler
 # for the styles of its components, the project's Tailwind for its utilities.
-READERS = {"angular": "premap/angular.py", "astro": "premap/astro.py", "nextjs": "premap/nextjs.py",
-           "nuxtjs": "premap/nuxt.py", "reactrouterdom": "premap/react_router.py", "remixrun": "premap/react_router.py",
-           "sveltejs": "indexers/css_svelte.py", "sveltekit": "premap/sveltekit.py",
+READERS = {"angular": "entry_points/angular.py", "astro": "entry_points/astro.py", "nextjs": "entry_points/nextjs.py",
+           "nuxtjs": "entry_points/nuxt.py", "reactrouterdom": "entry_points/react_router.py", "remixrun": "entry_points/react_router.py",
+           "sveltejs": "indexers/css_svelte.py", "sveltekit": "entry_points/sveltekit.py",
            "tailwind": "indexers/css_tailwind.py", "vue": "indexers/css_vue.py"}
 MIN_ENTRIES = 1000
 MARKS = "marks"  # the folder of the marks, beside the registry: one SVG per entry, named by the entry's id

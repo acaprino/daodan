@@ -19,5 +19,5 @@ APPS = {
                               "Node server, pnpm; `OpenAPIHono` routes (`openapi(route, handler)`); no `main`: `dev` runs `tsx watch src/index.ts`"),
     "fixture": (None, None, "MIT (this repository)", ["src/index.js"], "new Hono(), route('/api', sub), basePath, named and inline handlers, middleware"),
 }
-NOIR = ("https://github.com/owasp-noir/noir/releases/download/v1.5.0/noir-v1.5.0-linux-x86_64",  # `premap/noir.py` DOWNLOAD
+NOIR = ("https://github.com/owasp-noir/noir/releases/download/v1.5.0/noir-v1.5.0-linux-x86_64",  # `entry_points/noir.py` DOWNLOAD
         "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70")

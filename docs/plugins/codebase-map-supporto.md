@@ -60,9 +60,9 @@ Nel giro senza analizzatore: plsql (1 caso, 1 file), sql (7 casi, 51 file).
 
 ## Build tool e toolchain
 
-La pre-mappa ha 34 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
+La pre-mappa ha 27 fonti (`scripts/premap/`, `SOURCES`), i punti d'ingresso 7 (`scripts/entry_points/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
 
-### Fonti della pre-mappa
+### Fonti della pre-mappa e dei punti d'ingresso
 
 Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-model/results/pipeline/2026-11-16-finale.json`): `ran` ha girato, `not_needed` il caso non aveva i suoi file.
 
@@ -95,13 +95,13 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 | `maven` | 3.10.0 | modello: il comando del build tool, nel container | `premap/maven.py` | not_needed 113, ran 9 |
 | `sbt` | 1.13.1 | modello: il comando del build tool, nel container | `premap/sbt.py` | not_needed 121, ran 1 |
 | `dotnet` | 10.0.404 | modello: il comando del build tool, nel container | `premap/dotnet.py` | not_needed 117, ran 5 |
-| `noir` | 1.5.0 | scanner: legge ogni file | `premap/noir.py` | non misurato: non era nel giro |
-| `next` | daodan/premap/v4 | scanner: legge ogni file | `premap/nextjs.py` | non misurato: non era nel giro |
-| `react-router` | daodan/premap/v4 | scanner: legge ogni file | `premap/react_router.py` | non misurato: non era nel giro |
-| `nuxt` | daodan/premap/v2 | scanner: legge ogni file | `premap/nuxt.py` | non misurato: non era nel giro |
-| `sveltekit` | daodan/premap/v2 | scanner: legge ogni file | `premap/sveltekit.py` | non misurato: non era nel giro |
-| `angular` | daodan/premap/v2 | scanner: legge ogni file | `premap/angular.py` | non misurato: non era nel giro |
-| `astro` | daodan/premap/v2 | scanner: legge ogni file | `premap/astro.py` | non misurato: non era nel giro |
+| `noir` | 1.5.0 | scanner: legge ogni file | `entry_points/noir.py` | non misurato: non era nel giro |
+| `next` | daodan/premap/v4 | scanner: legge ogni file | `entry_points/nextjs.py` | non misurato: non era nel giro |
+| `react-router` | daodan/premap/v4 | scanner: legge ogni file | `entry_points/react_router.py` | non misurato: non era nel giro |
+| `nuxt` | daodan/premap/v2 | scanner: legge ogni file | `entry_points/nuxt.py` | non misurato: non era nel giro |
+| `sveltekit` | daodan/premap/v2 | scanner: legge ogni file | `entry_points/sveltekit.py` | non misurato: non era nel giro |
+| `angular` | daodan/premap/v2 | scanner: legge ogni file | `entry_points/angular.py` | non misurato: non era nel giro |
+| `astro` | daodan/premap/v2 | scanner: legge ogni file | `entry_points/astro.py` | non misurato: non era nel giro |
 
 ### Pre-mappa per faccia
 
@@ -220,7 +220,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Apollo Server | `apollo-server` | framework | sì | — | 1 |
 | ASP.NET Core | `aspnetcore` | framework | sì | — | 6 |
 | Assemble | `assemble` | framework | sì | — | 0 |
-| Astro | `astro` | framework | sì | frontmatter e `<script>` nello snapshot (`languages/sfc.py`), del template solo gli eventi (`premap/astro.py`); stili con il compilatore del framework (`indexers/css_astro.py`) | 1 |
+| Astro | `astro` | framework | sì | frontmatter e `<script>` nello snapshot (`languages/sfc.py`), del template solo gli eventi (`entry_points/astro.py`); stili con il compilatore del framework (`indexers/css_astro.py`) | 1 |
 | Axum | `axum` | framework | sì | — | 3 |
 | Blazor | `blazor` | framework | sì | — | 2 |
 | Blitzjs | `blitzjs` | framework | sì | — | 0 |

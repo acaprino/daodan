@@ -911,9 +911,10 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
     before = edge_state(manifest)
     if before["state"] == "fresh" and not before["languages"]:
         # A configuration-only workspace can have model commands remaining after the fast scan.
+        import entry_points
         import premap
-        if premap.state(manifest, runner=True)["state"] == "stale":
-            before = {**before, "state": "stale", "reason": "the pre-map has model commands to retry"}
+        if premap.state(manifest, runner=True)["state"] == "stale" or entry_points.state(manifest, runner=True)["state"] == "stale":
+            before = {**before, "state": "stale", "reason": "the pre-map or the entry points have model commands to retry"}
     if before["state"] in ("fresh", "running", "stopped", "unavailable") or before.get("format") == "json":
         return {**before, "action": "none"}
     if check:

@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, entry_points, premap, recorder
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/react-router-routes/fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/react-router/answers.json").read_text(encoding="utf-8"))
@@ -50,7 +50,7 @@ def runner_for(answers):
 def read(tmp_path, files, name="framework", answers=None):
     _, manifest = manifest_of(tmp_path, files)
     asked, run = runner_for(answers or {".": answer(name)})
-    record = premap.write(manifest, sources=(premap.react_router,), runner=run)
+    record = entry_points.write(manifest, sources=(entry_points.react_router,), runner=run)
     record["bound"] = bound(manifest, record)
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
 
@@ -192,14 +192,14 @@ def test_the_gap_of_a_root_data_function_reaches_the_links_and_its_function_is_a
     import flows
     files = project("framework", **{"app/root.tsx": ROOT, "app/routes/shop/layout.tsx": LAYOUT})
     _, manifest = manifest_of(tmp_path, files)
-    premap.write(manifest, sources=(premap.react_router,), runner=runner_for({".": answer("framework")})[1])
+    entry_points.write(manifest, sources=(entry_points.react_router,), runner=runner_for({".": answer("framework")})[1])
     found = flows.cached_links(manifest, [])
     assert {(e["shape"], e["symbol"].split("::")[1], e["handler_source"]) for e in found["entries"]
             if e["reader"] == "react-router" and e["shape"].endswith("-data")} == {
         ("root-data", "loader", "react-router"), ("root-data", "action", "react-router"), ("layout-data", "loader", "react-router")}
     files = project("framework", **{"app/root.tsx": "export const loader = make();\nexport default function App() { return null; }\n"})
     _, manifest = manifest_of(tmp_path / "unbound", files)
-    premap.write(manifest, sources=(premap.react_router,), runner=runner_for({".": answer("framework")})[1])
+    entry_points.write(manifest, sources=(entry_points.react_router,), runner=runner_for({".": answer("framework")})[1])
     assert [g for g in flows.cached_links(manifest, [])["gaps"] if g["site"].startswith("app/root.tsx")]
 
 
@@ -392,7 +392,7 @@ def test_only_the_packages_that_install_the_command_start_it_and_one_that_is_onl
         _, manifest = manifest_of(tmp_path / f"case{len(count)}", {"package.json": manifest_text})
         count.append(1)
         with open_snapshot(manifest) as store:
-            return premap.react_router.commands(premap.Context(manifest, store))
+            return entry_points.react_router.commands(premap.Context(manifest, store))
     assert asked('{"dependencies": {"react-router": "7.0.0", "react-router-dom": "7.0.0"}}') is None  # library mode: no command lists its routes
     assert asked('{"dependencies": {"react-router": "7.0.0"}, "devDependencies": {"@react-router/node": "7.0.0"}}') is None
     assert asked('{"devDependencies": {"@react-router/dev": "7.0.0"}}')[0]["argv"] == [*LIMIT, "npx", "--no-install", "react-router", "routes", "--json"]
@@ -407,7 +407,7 @@ def test_each_package_json_declaring_the_command_is_one_run_in_its_folder(tmp_pa
              "apps/c/package.json": '{"dependencies": {"react-router": "7.18.6"}}\n'}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        asked = premap.react_router.commands(premap.Context(manifest, store))
+        asked = entry_points.react_router.commands(premap.Context(manifest, store))
     assert [(c["cwd"], c["argv"][-3]) for c in asked] == [("apps/a", "react-router"), ("apps/b", "remix")]
     assert all(c["tool"] == "react-router" and c["network"] == "none" and c["env"] == {"npm_config_offline": "true"} for c in asked)
 
@@ -416,11 +416,11 @@ def test_the_folders_share_the_time_so_that_folders_that_all_hang_do_not_take_th
     """One run lasts 1800 seconds and holds the restore of the packages: a limit of 300 seconds for each of six folders that hang
     would be the whole run again. Up to three folders have 300 each, more share 900, none has less than 10."""
     from snapshot_store import open_snapshot
-    assert [premap.react_router.seconds(n) for n in (1, 3, 6, 90, 100)] == [300, 300, 150, 10, 10]
+    assert [entry_points.react_router.seconds(n) for n in (1, 3, 6, 90, 100)] == [300, 300, 150, 10, 10]
     files = {f"apps/{name}/package.json": '{"devDependencies": {"@react-router/dev": "7.18.6"}}\n' for name in "abcdef"}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        asked = premap.react_router.commands(premap.Context(manifest, store))
+        asked = entry_points.react_router.commands(premap.Context(manifest, store))
     assert [c["argv"][:3] for c in asked] == [["timeout", "--kill-after=10", "150"]] * 6
     record, [gap], _ = read(tmp_path / "hang", project("framework"), answers={".": {**ANSWERS["hang"], "root": "/work"}})
     assert "did not end in 300 seconds" in gap["detail"]  # the seconds the command was given, told from its own argument
@@ -431,7 +431,7 @@ def test_the_setup_installs_no_package_the_project_s_own_command_is_in_the_packa
     from snapshot_store import open_snapshot
     project_dir, manifest = manifest_of(tmp_path, {"package.json": '{"devDependencies": {"@react-router/dev": "7.18.6"}}\n'})
     with open_snapshot(manifest) as store:
-        asked = premap.react_router.commands(premap.Context(manifest, store))
+        asked = entry_points.react_router.commands(premap.Context(manifest, store))
     spec = container_runner.TOOLS["react-router"]
     assert spec["setup"] == [container_runner.UNPACK["node"]]  # Node only
     assert (spec["restores"], spec["runs_on"]) == ("node", ("node",))
@@ -495,7 +495,7 @@ class Host:
         monkeypatch.setattr(os, "popen", popen_pipe)
 
     def write(self, runner):
-        return premap.write(self.manifest, sources=(premap.react_router,), runner=runner)
+        return entry_points.write(self.manifest, sources=(entry_points.react_router,), runner=runner)
 
     def check(self):
         """What must hold of this machine after the source ran: Daodan's own `git` (hooks and fsmonitor off) is the only process
@@ -531,7 +531,7 @@ def test_the_check_of_that_test_fails_when_the_source_starts_a_command_of_the_pr
     start = {"os.system": lambda: os.system(" ".join(argv)), "subprocess.run": lambda: subprocess.run(argv, cwd=host.project),
              "subprocess.Popen with a shell": lambda: subprocess.Popen(" ".join(argv), shell=True, cwd=host.project),
              "os.popen": lambda: os.popen(" ".join(argv))}[how]
-    commands = premap.react_router.commands
+    commands = entry_points.react_router.commands
 
     def mutated(context):
         try:
@@ -539,7 +539,7 @@ def test_the_check_of_that_test_fails_when_the_source_starts_a_command_of_the_pr
         except OSError:
             pass  # the refusal of the spy: the call is recorded
         return commands(context)
-    monkeypatch.setattr(premap.react_router, "commands", mutated)
+    monkeypatch.setattr(entry_points.react_router, "commands", mutated)
     _, run = recorder(state="gap")
     with patch.object(container, "run_commands", run):
         host.write(container_runner.runner(host.manifest))
@@ -549,7 +549,7 @@ def test_the_check_of_that_test_fails_when_the_source_starts_a_command_of_the_pr
 
 def test_a_snapshot_with_no_package_json_declaring_the_command_runs_nothing(tmp_path):
     _, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"react-router": "7.18.6"}}\n', "app/root.tsx": "export default null;\n"})
-    record = premap.write(manifest, sources=(premap.react_router,), runner=lambda commands: 1 / 0)
+    record = entry_points.write(manifest, sources=(entry_points.react_router,), runner=lambda commands: 1 / 0)
     assert record["sources"][0]["state"] == "not_needed" and "framework_entries" not in record
 
 
@@ -557,14 +557,14 @@ def test_a_snapshot_with_no_package_json_declaring_the_command_runs_nothing(tmp_
 
 def test_the_sources_that_give_entries_of_their_own_are_one_tuple_and_each_is_a_registered_model_source():
     import entries
-    assert {premap.nextjs, premap.react_router} <= set(premap.FRAMEWORK_SOURCES)  # one tuple; each framework's source adds its name
-    for source in premap.FRAMEWORK_SOURCES:
-        assert source in premap.SOURCES and hasattr(source, "commands") and callable(source.from_record)
+    assert {entry_points.nextjs, entry_points.react_router} <= set(entry_points.FRAMEWORK_SOURCES)  # one tuple; each framework's source adds its name
+    for source in entry_points.FRAMEWORK_SOURCES:
+        assert source in entry_points.SOURCES and hasattr(source, "commands") and callable(source.from_record)
         assert source.NAME in entries.QUERIES and source.NAME in container_runner.TOOLS  # the table is keyed by the source's name
 
 
 def test_the_evidence_reads_the_rows_and_the_gaps_of_every_source_of_the_tuple(tmp_path):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     from test_codebase_map_premap_nextjs import SHOP, VALIDATOR
     files = {**SHOP, **{f"web/{rel}": text for rel, text in project("framework").items()}}
     _, manifest = manifest_of(tmp_path, files)
@@ -573,7 +573,7 @@ def test_the_evidence_reads_the_rows_and_the_gaps_of_every_source_of_the_tuple(t
         if commands[0]["tool"] == "next":
             return [{"root": "/work", "returncode": 0, "stderr": "", "stdout": "" if c["argv"][0] == "npx" else VALIDATOR} for c in commands]
         return [{**answer("framework")} for _ in commands]
-    premap.write(manifest, sources=(premap.nextjs, premap.react_router), runner=run)
+    entry_points.write(manifest, sources=(entry_points.nextjs, entry_points.react_router), runner=run)
     rows, gaps = evidence(manifest)
     assert {r["reader"] for r in rows} >= {"next", "react-router"}
     assert {r["path"] for r in rows if r["reader"] == "react-router"} >= {"/checkout", "/api/pay"}
@@ -583,7 +583,7 @@ def test_the_evidence_reads_the_rows_and_the_gaps_of_every_source_of_the_tuple(t
 def test_a_source_added_to_the_tuple_reaches_the_evidence_and_the_key_of_the_cached_links_with_no_other_line(tmp_path, monkeypatch):
     import flows
     from pathlib import Path as Reader
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     fake_file = tmp_path / "svelte_like.py"
     fake_file.write_text("# a source of another framework\n", encoding="utf-8")
     row = {"reader": "svelte-like", "shape": "page", "site": "src/routes/+page.svelte", "symbol": "src/routes/+page.svelte::<module>",
@@ -592,7 +592,8 @@ def test_a_source_added_to_the_tuple_reaches_the_evidence_and_the_key_of_the_cac
         [row], [{"kind": "model_partial", "path": "x", "detail": "gap of the fake", "source": "svelte-like@v1"}]))
     _, manifest = manifest_of(tmp_path / "proj", {"package.json": "{}\n"})
     premap.write(manifest, sources=())
-    monkeypatch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, fake))
+    entry_points.write(manifest, sources=())
+    monkeypatch.setattr(entry_points, "FRAMEWORK_SOURCES", (*entry_points.FRAMEWORK_SOURCES, fake))
     rows, gaps = evidence(manifest)
     assert row in rows and any(g["detail"] == "gap of the fake" for g in gaps)
     seen = []
@@ -606,7 +607,7 @@ def test_a_source_added_to_the_tuple_reaches_the_evidence_and_the_key_of_the_cac
 @pytest.fixture(scope="module")
 def made(tmp_path_factory):
     _, manifest = manifest_of(tmp_path_factory.mktemp("react-router-links"), project("framework"))
-    premap.write(manifest, sources=(premap.react_router,), runner=runner_for({".": answer("framework")})[1])
+    entry_points.write(manifest, sources=(entry_points.react_router,), runner=runner_for({".": answer("framework")})[1])
     return manifest
 
 
@@ -631,7 +632,7 @@ def test_the_routes_the_snapshot_cannot_bind_are_gaps_of_the_links_with_what_was
 
 
 def test_a_layout_is_a_candidate_of_no_kind_that_starts_a_flow_and_so_no_entry(made, links):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     [layout] = [r for r in evidence(made)[0] if r["site"] == "app/routes/shop/layout.tsx" and r["shape"] == "layout"]
     assert (layout["reader"], layout["kind"]) == ("react-router", LAST)
     assert not [e for e in links["entries"] if e["site"] == "app/routes/shop/layout.tsx"]
@@ -639,7 +640,7 @@ def test_a_layout_is_a_candidate_of_no_kind_that_starts_a_flow_and_so_no_entry(m
 
 def test_the_shapes_of_the_source_are_in_the_registry_so_no_question_is_asked_for_them(made):
     import entries
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     rules = entries.registry_rules([r for r in evidence(made)[0] if r["reader"] == "react-router"])
     # the module rows of the root's and of a layout's data functions are rows of the pre-map now (`exports_optional`)
     assert {(r["shape"], r["entry"]) for r in rules} == {("route", "rotta"), ("index", "rotta"), ("layout", LAST),
@@ -666,13 +667,14 @@ def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_reco
 def library_gaps(tmp_path, packages_by_file):
     """The gaps the source tells for a project whose `package.json` files declare these dependencies, from the pre-map's
     own `packages` (what `modules.py` read of each manifest) and through the evidence the flows read."""
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     files = {rel: json.dumps({"dependencies": {name: "1.0.0" for name in names}}) for rel, names in packages_by_file.items()}
     _, manifest = manifest_of(tmp_path, files)
-    record = premap.write(manifest, sources=(premap.module_graph, premap.react_router), runner=lambda commands: [
+    record = premap.write(manifest, sources=(premap.module_graph,))
+    entry_points.write(manifest, sources=(entry_points.react_router,), runner=lambda commands: [
         {"root": "/work", "returncode": 1, "stdout": "", "stderr": "no tool here"} for _ in commands])
     library = lambda found: [g for g in found if g.get("source") == SOURCE and "routes written in code" in g["detail"]]  # noqa: E731
-    return library(evidence(manifest)[1]), library(premap.react_router.from_record(record)[1])
+    return library(evidence(manifest)[1]), library(entry_points.react_router.stated_gaps(record))
 
 
 @pytest.mark.parametrize("names", [("react-router-dom", "react"), ("react-router",), ("react-router", "react-router-dom")])
@@ -697,24 +699,26 @@ def test_the_library_gap_needs_no_container_and_no_command(tmp_path):
     from snapshot_store import open_snapshot
     _, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"react-router-dom": "6.30.4"}}\n'})
     with open_snapshot(manifest) as store:
-        assert premap.react_router.commands(premap.Context(manifest, store)) is None
-    record = premap.write(manifest, sources=(premap.module_graph, premap.react_router), runner=lambda commands: 1 / 0)
+        assert entry_points.react_router.commands(premap.Context(manifest, store)) is None
+    stated = premap.write(manifest, sources=(premap.module_graph,))
+    record = entry_points.write(manifest, sources=(entry_points.react_router,), runner=lambda commands: 1 / 0)
     assert [s["state"] for s in record["sources"] if s["source"].startswith("react-router@")] == ["not_needed"]
-    assert len(premap.react_router.from_record(record)[1]) == 1
+    assert len(entry_points.react_router.stated_gaps(stated)) == 1
 
 
 def test_a_premap_made_before_the_source_is_stale(tmp_path):
     _, manifest = manifest_of(tmp_path, project("framework"))
-    before = tuple(source for source in premap.SOURCES if source is not premap.react_router)
-    premap.write(manifest, sources=before)
-    assert premap.state(manifest, sources=before)["state"] == "fresh"
-    assert premap.state(manifest)["state"] == "stale"
+    premap.write(manifest, sources=())
+    before = tuple(source for source in entry_points.SOURCES if source is not entry_points.react_router)
+    entry_points.write(manifest, sources=before)
+    assert entry_points.state(manifest, sources=before)["state"] == "fresh"
+    assert entry_points.state(manifest)["state"] == "stale"
 
 
 def test_a_premap_where_the_source_was_not_needed_gives_the_evidence_no_react_router_row_and_no_gap(tmp_path):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     _, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"react": "19.3.1"}}\n'})
-    premap.write(manifest, sources=(premap.react_router,), runner=lambda commands: 1 / 0)
+    entry_points.write(manifest, sources=(entry_points.react_router,), runner=lambda commands: 1 / 0)
     rows, gaps = evidence(manifest)
     assert [r for r in rows if r["reader"] == "react-router"] == [] and [g for g in gaps if g.get("source") == SOURCE] == []
 
@@ -725,7 +729,7 @@ def test_the_premap_rows_are_the_modules_with_their_exports_and_the_links_bind_t
     import flows
     files = project("framework", **{"app/root.tsx": ROOT})
     _, manifest = manifest_of(tmp_path, files)
-    record = premap.write(manifest, sources=(premap.react_router,), runner=runner_for({".": answer("framework")})[1])
+    record = entry_points.write(manifest, sources=(entry_points.react_router,), runner=runner_for({".": answer("framework")})[1])
     [checkout] = [r for r in record["framework_entries"] if r["path"] == "/checkout"]
     assert (checkout["site"], checkout["symbol"], checkout["exports"]) == (
         "app/routes/shop/checkout.tsx", "app/routes/shop/checkout.tsx::<module>", list(EXPORTS))

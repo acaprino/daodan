@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 export const folder = process.cwd();
 export const require = createRequire(`${folder}/`);
 
-// The compiler the project's `astro` uses, found from the folder of `astro` with `createRequire`, as `daodan/core/premap/astro_templates.mjs`
+// The compiler the project's `astro` uses, found from the folder of `astro` with `createRequire`, as `daodan/core/entry_points/astro_templates.mjs`
 // does (so the one the project installed, whether the package manager hoists it (npm) or not (pnpm), and on any Node `astro` runs on).
 // Astro 5 and 6 depend on `@astrojs/compiler` (2.x, 4.x), Astro 7 on `@astrojs/compiler-rs`.
 export const COMPILERS = ['@astrojs/compiler', '@astrojs/compiler-rs'];

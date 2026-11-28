@@ -31,7 +31,7 @@ from __future__ import annotations
 import json
 import posixpath
 
-from premap import frameworks
+from entry_points import frameworks
 
 NAME, VERSION, RANK = "astro", "daodan/premap/v2", "scanner"
 SCRIPT = "daodan-astro"  # what `container_runner.TOOLS` installs: `astro_templates.mjs` run by the container's Node
@@ -187,7 +187,7 @@ def read(context, commands, results):
 
 
 def from_record(report):
-    """The rows this source persisted in a pre-map and its gaps there; a pre-map made without the source, or where it was not
+    """The rows this source persisted in the record of the entry points and its gaps there; a record made without the source, or where it was not
     needed, has none. The rows are the attribute reader's shape: `entries.compiled` adds them to the tree reader's."""
     source = f"{NAME}@{VERSION}"
     return ([row for row in report.get("framework_entries", ()) if source in row["sources"]],
@@ -195,9 +195,9 @@ def from_record(report):
 
 
 def recorded(manifest) -> list[dict]:
-    """The rows persisted for a snapshot, none where there is no pre-map for it."""
+    """The rows persisted for a snapshot, none where there is no record of the entry points for it."""
     from pathlib import Path
-    from premap.flow_entries import read_record
+    from entry_points import read_record
     try:
         return from_record(read_record(Path(manifest)))[0]
     except (OSError, KeyError, TypeError, ValueError):

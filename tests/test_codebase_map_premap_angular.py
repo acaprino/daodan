@@ -1,6 +1,6 @@
 """The events an Angular project's own compiler reads in its templates, read from its output and bound to the snapshot.
 
-`parseTemplate` of the project's `@angular/compiler` runs in Daodan's container (`premap/angular_templates.mjs`); the
+`parseTemplate` of the project's `@angular/compiler` runs in Daodan's container (`entry_points/angular_templates.mjs`); the
 container is a fake here: the answers are the ones the real script printed on Modal for
 `benchmarks/angular-compiler/fixture` (`tests/fixtures/premap/angular/`, recorded by
 `benchmarks/angular-compiler/modal_probe.py`). The components, their templates and where an inline template lies are read
@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-from test_codebase_map_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import container, container_runner, manifest_of, entry_points, premap, recorder
 
 import preparation  # noqa: E402
 
@@ -36,7 +36,7 @@ def commands_of(tmp_path, files):
     from snapshot_store import open_snapshot
     project, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        return project, manifest, premap.angular.commands(premap.Context(manifest, store))
+        return project, manifest, entry_points.angular.commands(premap.Context(manifest, store))
 
 
 def position(text: str, offset: int) -> list[int]:
@@ -113,7 +113,7 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
     from snapshot_store import open_snapshot
     project, manifest = manifest_of(tmp_path, project_files())
     with open_snapshot(manifest) as store:
-        asked = premap.angular.commands(premap.Context(manifest, store))
+        asked = entry_points.angular.commands(premap.Context(manifest, store))
     spec = container_runner.TOOLS["angular"]
     assert (spec["restores"], spec["runs_on"]) == ("node", ("node",))  # the project's `@angular/compiler` is in its packages
     assert any(item[2] == "angular_templates.mjs" and item[0] is None for item in spec["files"])  # Daodan's own file, beside the source
@@ -130,7 +130,7 @@ def test_the_commands_run_daodans_script_on_the_projects_own_packages_without_ne
     first, *rest = calls[0]["commands"]
     plan = preparation.node_prepare(["package.json"], lambda rel: (project / rel).read_text(encoding="utf-8"))
     setup = first["argv"][-1]
-    assert len(rest) == 2 and rest[1]["argv"][:4] == ["timeout", "--kill-after=10", str(premap.angular.types_seconds(1)), "daodan-angular"]
+    assert len(rest) == 2 and rest[1]["argv"][:4] == ["timeout", "--kill-after=10", str(entry_points.angular.types_seconds(1)), "daodan-angular"]
     assert f"( {plan['lines'][0]} )" in setup and "install -g" not in setup  # the restore of the project's packages, nothing else
     assert f"{container_runner.T}/bin/daodan-angular" in setup and "angular_templates.mjs" in setup
     assert [c["network"] for c in rest] == ["none", "none"] and rest[0]["argv"][0] == "daodan-angular"
@@ -146,8 +146,8 @@ def test_a_project_without_angular_or_without_components_runs_nothing(tmp_path):
              "ng/package.json": '{"dependencies": {"@angular/core": "22.3.0"}}\n', "ng/src/plain.ts": "export const x = 1;\n"}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        assert premap.angular.commands(premap.Context(manifest, store)) is None
-    record = premap.write(manifest, sources=(premap.angular,), runner=lambda commands: 1 / 0)
+        assert entry_points.angular.commands(premap.Context(manifest, store)) is None
+    record = entry_points.write(manifest, sources=(entry_points.angular,), runner=lambda commands: 1 / 0)
     assert record["sources"][0]["state"] == "not_needed" and "framework_entries" not in record
 
 
@@ -175,7 +175,7 @@ def recorded(name: str) -> list[dict]:
 
 def read(tmp_path, answers=None, files=None):
     _, manifest = manifest_of(tmp_path, files or project_files())
-    record = premap.write(manifest, sources=(premap.angular,), runner=lambda commands: answers or recorded("fixture.json"))
+    record = entry_points.write(manifest, sources=(entry_points.angular,), runner=lambda commands: answers or recorded("fixture.json"))
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], manifest
 
 
@@ -188,7 +188,7 @@ def bound(record, manifest) -> dict:
     """The record with its Angular rows bound to the snapshot's declarations, as `entries.compiled` binds them when the links are made."""
     from snapshot_store import open_snapshot
     with open_snapshot(manifest) as store:
-        return {**record, "framework_entries": premap.angular.bind(record["framework_entries"], store)}
+        return {**record, "framework_entries": entry_points.angular.bind(record["framework_entries"], store)}
 
 
 def seen(record) -> dict:
@@ -313,8 +313,8 @@ def test_a_project_of_many_templates_gives_the_container_the_whole_list_as_a_fil
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)
-        [command, _] = premap.angular.commands(context)
-        gaps = premap.angular._plan(context)["gaps"]
+        [command, _] = entry_points.angular.commands(context)
+        gaps = entry_points.angular._plan(context)["gaps"]
     assert len(command["argv"]) == 2 and len(command["argv"][-1]) < 100  # a path
     assert len(listed(command)) == 400 and len(command["inputs"]["angular-jobs-0.json"]) > 20000 and gaps == []
 
@@ -346,7 +346,7 @@ def test_nothing_of_angular_starts_on_the_host_without_an_engine(tmp_path, monke
     monkeypatch.setattr(subprocess, "run", lambda *args, **kwargs: started.append(args) or run(*args, **kwargs))
     monkeypatch.setattr(subprocess, "Popen", lambda *args, **kwargs: started.append(args) or popen(*args, **kwargs))
     monkeypatch.setattr(container, "run_in_container", lambda *args, **kwargs: {"state": "gap", "cause": "no engine", "remedy": "start one"})
-    record = premap.write(manifest, sources=(premap.angular,), runner=container_runner.runner(manifest))
+    record = entry_points.write(manifest, sources=(entry_points.angular,), runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
@@ -357,15 +357,16 @@ def test_nothing_of_angular_starts_on_the_host_without_an_engine(tmp_path, monke
 
 
 def test_the_source_is_registered_with_a_facet_that_joins_nothing():
-    assert premap.angular in premap.SOURCES and premap.IDENTITY["framework_entries"] == ()
+    assert entry_points.angular in entry_points.SOURCES and entry_points.IDENTITY["framework_entries"] == ()
 
 
 def test_a_premap_made_before_the_source_is_stale(tmp_path):
     _, manifest = manifest_of(tmp_path, project_files())
-    before = tuple(source for source in premap.SOURCES if source is not premap.angular)
-    premap.write(manifest, sources=before)
-    assert premap.state(manifest, sources=before)["state"] == "fresh"
-    assert premap.state(manifest)["state"] == "stale"
+    premap.write(manifest, sources=())
+    before = tuple(source for source in entry_points.SOURCES if source is not entry_points.angular)
+    entry_points.write(manifest, sources=before)
+    assert entry_points.state(manifest, sources=before)["state"] == "fresh"
+    assert entry_points.state(manifest)["state"] == "stale"
 
 
 def test_in_the_links_the_compilers_rows_replace_the_tree_readers_at_the_same_event_and_the_label_stays(tmp_path):
@@ -405,7 +406,7 @@ def test_without_the_compilers_rows_the_tree_readers_stay_as_they_were(tmp_path)
     assert {r["site"] for r in entries._cached_rows(manifest)} >= {"src/app/app.component.html:2", "src/app/app.component.html:10"}
     before = flows.cached_links(manifest, [])
     assert (len(before["entries"]), len(before["gaps"])) == (0, 11)  # the tree reader alone: every handler "not resolved"
-    premap.write(manifest, sources=(premap.angular,), runner=lambda commands: recorded("not-installed.json"))  # the compiler gave nothing
+    entry_points.write(manifest, sources=(entry_points.angular,), runner=lambda commands: recorded("not-installed.json"))  # the compiler gave nothing
     rows = [r for r in entries._cached_rows(manifest) if r["site"] == "src/app/app.component.html:2"]
     assert [(r["symbol"], r["gap"]) for r in rows] == [("src/app/app.component.html::<module>", "handler save not resolved")]
     after = flows.cached_links(manifest, [])
@@ -443,7 +444,7 @@ def _imports_the_decorator(context, rel: str) -> bool:
     import entries
     source = context.inventory.text(rel).encode("utf-8")
     found = entries._matches(source, "typescript", "components", entries._parse(source, "typescript"))
-    return bool(premap.angular._decorator_names(source, found))
+    return bool(entry_points.angular._decorator_names(source, found))
 
 
 def test_every_file_the_import_chooses_is_read_or_a_gap_that_names_its_site_or_applies_no_decorator(tmp_path):
@@ -469,7 +470,7 @@ def test_every_file_the_import_chooses_is_read_or_a_gap_that_names_its_site_or_a
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)
-        plan = premap.angular._plan(context)
+        plan = entry_points.angular._plan(context)
         chosen = {rel for rel in context.inventory.files if rel.endswith(".ts") and _imports_the_decorator(context, rel)}
     read = {member["file"]: member["class"] for items in plan["jobs"].values() for _, members in items for member in members}
     gaps = {}
@@ -491,7 +492,7 @@ def test_each_folder_has_a_command_that_parses_and_one_that_asks_the_type_checke
     [parse], [types] = parsing(asked), typing(asked)
     assert asked == [parse, types]
     assert parse["argv"] == ["daodan-angular", f"{preparation.IN}/angular-jobs-0.json"]
-    assert types["argv"] == ["timeout", "--kill-after=10", str(premap.angular.types_seconds(1)), "daodan-angular", "--types",
+    assert types["argv"] == ["timeout", "--kill-after=10", str(entry_points.angular.types_seconds(1)), "daodan-angular", "--types",
                              f"{preparation.IN}/angular-jobs-0.json"]
     assert (types["cwd"], types["network"], types["inputs"]) == (parse["cwd"], "none", parse["inputs"])
     # the components a template belongs to ride with it: file, class and line, relative to the folder the commands run in
@@ -516,7 +517,7 @@ def test_where_the_type_checker_gave_nothing_the_calls_on_another_object_are_gap
     of the component and the parse itself are as they were; only what the type-checker tells is a gap."""
     html = "src/app/app.component.html"
     for name, cause in (("no-compiler-cli.json", "@angular/compiler-cli is not installed"), ("no-tsconfig.json", "tsconfig.json is not in"),
-                        ("timeout.json", f"did not end in {premap.angular.types_seconds(1)} seconds")):
+                        ("timeout.json", f"did not end in {entry_points.angular.types_seconds(1)} seconds")):
         record, gaps, manifest = read(tmp_path / name, recorded(name))
         record = bound(record, manifest)
         rows = {r["site"]: r for r in record["framework_entries"]}
@@ -545,17 +546,17 @@ def test_the_type_checker_time_is_shared_between_the_folders_and_every_parse_com
     _, _, asked = commands_of(tmp_path, files)
     assert [c["argv"][0] == "daodan-angular" for c in asked] == [True] * 3 + [False] * 3  # the parses, then the type-checker's
     seconds = {int(c["argv"][2]) for c in typing(asked)}
-    assert seconds == {premap.angular.types_seconds(3)} and 3 * min(seconds) <= premap.angular.TYPES_TOTAL < 1800
-    assert premap.angular.types_seconds(1) == premap.angular.TYPES_TOTAL and premap.angular.types_seconds(1000) >= 10
+    assert seconds == {entry_points.angular.types_seconds(3)} and 3 * min(seconds) <= entry_points.angular.TYPES_TOTAL < 1800
+    assert entry_points.angular.types_seconds(1) == entry_points.angular.TYPES_TOTAL and entry_points.angular.types_seconds(1000) >= 10
 
 
 def test_a_type_checker_killed_may_have_run_out_of_memory_and_the_gap_says_both(tmp_path):
     parsed, types = recorded("fixture.json")
     record, gaps, _ = read(tmp_path, [parsed, {**types, "returncode": 137, "stdout": ""}])
     [stated] = [g for g in gaps if "not resolved" in g["detail"]]
-    assert "exit 137" in stated["detail"] and f"did not end in {premap.angular.types_seconds(1)} seconds" in stated["detail"]
-    assert f"ran out of memory ({premap.angular.MEMORY_GB} GB)" in stated["detail"]
-    assert container_runner.TOOLS["angular"]["memory"] == premap.angular.MEMORY_GB  # what the message says is what the container has
+    assert "exit 137" in stated["detail"] and f"did not end in {entry_points.angular.types_seconds(1)} seconds" in stated["detail"]
+    assert f"ran out of memory ({entry_points.angular.MEMORY_GB} GB)" in stated["detail"]
+    assert container_runner.TOOLS["angular"]["memory"] == entry_points.angular.MEMORY_GB  # what the message says is what the container has
 
 
 def test_an_answer_of_the_type_checker_that_lacks_a_call_says_so_and_not_none(tmp_path):
@@ -586,8 +587,8 @@ def test_a_label_gap_the_tree_reader_read_stays_with_the_compilers_row(tmp_path,
     import entries
     tree = [{"reader": "attributo", "shape": "(click)", "site": "a.html:1", "column": 3, "symbol": "a.html::<module>", "label_gap": "the key stays"}]
     row = {"reader": "attributo", "shape": "(click)", "site": "a.html:1", "column": 3, "symbol": "a.ts::A.go", "event": "click"}
-    monkeypatch.setattr(premap.angular, "recorded", lambda manifest: [row])
-    monkeypatch.setattr(premap.angular, "bind", lambda rows, store: rows)  # the row is bound already: the merge is what is checked
+    monkeypatch.setattr(entry_points.angular, "recorded", lambda manifest: [row])
+    monkeypatch.setattr(entry_points.angular, "bind", lambda rows, store: rows)  # the row is bound already: the merge is what is checked
     _, manifest = manifest_of(tmp_path, project_files())
     assert entries.compiled(tree, manifest) == [{**row, "label_gap": "the key stays"}]
 
@@ -606,7 +607,7 @@ def test_the_names_the_source_looks_for_are_data_not_code(tmp_path, monkeypatch)
              "c.ts": "import { Component } from '@angular/core';\n@Component({template: '<i></i>'})\nexport class C {}\n"}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        plan = premap.angular._plan(premap.Context(manifest, store))
+        plan = entry_points.angular._plan(premap.Context(manifest, store))
     assert {m["class"] for items in plan["jobs"].values() for _, members in items for m in members} == {"W"}
 
 

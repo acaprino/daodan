@@ -157,12 +157,12 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
             raise ValueError(f"{where}: link must be one of {', '.join(LINKS)}")
         if "shape" in rule or "reader" in rule:
             import entries
-            import premap
+            import entry_points
             if rule.get("source") != "modello":
                 raise ValueError(f"{where}: supplied classifications must have source modello; registry decisions come from Daodan")
             if set(rule) != {"link", "reader", "shape", "entry", "source"} or rule["link"] != "ingresso" or (
                     rule["reader"] not in (entries.ATTRIBUTE, entries.ARGUMENT, entries.DECORATOR, entries.NOIR, entries.MANIFEST,
-                                             *(source.NAME for source in (*premap.FRAMEWORK_SOURCES, *premap.TEMPLATE_SOURCES)))
+                                             *(source.NAME for source in (*entry_points.FRAMEWORK_SOURCES, *entry_points.TEMPLATE_SOURCES)))
                     or not isinstance(rule["shape"], str) or not rule["shape"]
                     or rule["entry"] not in (*entries.ENTRY_KINDS, entries.NO_ENTRY)):
                 raise ValueError(f"{where}: invalid shape classification or entry kind")
@@ -1142,15 +1142,15 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         view = edge_view.load_edge_view(store)
         facts = Facts(store, db, view)
         candidates = entry_reader._cached_rows(manifest, (facts, db, view))
-        from premap.flow_entries import evidence
+        from entry_points.flow_entries import evidence
         declared, source_gaps = evidence(manifest)
         resolver = semantic_store._Resolver(db)
         declared = bind_declared(declared, facts, view, rules)
-        # One route, one entry: the route of a source outside `premap.FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one
+        # One route, one entry: the route of a source outside `entry_points.FRAMEWORK_SOURCES` (Noir) on the schema of a bound row of one
         # of them (the text of the path where a row has no schema), in the file or on the function that row starts, is that row,
         # provided its method is the row's or the row has none (a page answers any; Noir's method is not copied onto it). Another
         # path, or a method no row of that file and path carries, is a route of its own.
-        from premap import FRAMEWORK_SOURCES
+        from entry_points import FRAMEWORK_SOURCES
         tuple_names = {source.NAME for source in FRAMEWORK_SOURCES}
         def file_of(site: str) -> str:
             file, _, line = site.rpartition(":")
@@ -1454,12 +1454,13 @@ def _symbol_coverage(symbols_by_file, entries, edges):
 @cache
 def _links_reader_digest() -> str:
     """Installed link readers and rules; one bounded read of Daodan's own code per process."""
-    from premap import FRAMEWORK_SOURCES, TEMPLATE_SOURCES
+    from entry_points import FRAMEWORK_SOURCES, TEMPLATE_SOURCES
     digest = hashlib.sha256()
     for path in (Path(__file__), SCRIPT_DIR / "binder.py", SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
-                 SCRIPT_DIR / "premap" / "flow_entries.py", SCRIPT_DIR / "premap" / "noir.py",
+                 SCRIPT_DIR / "entry_points" / "__init__.py", SCRIPT_DIR / "entry_points" / "flow_entries.py",
+                 SCRIPT_DIR / "entry_points" / "noir.py",
                  *(Path(source.__file__) for source in (*FRAMEWORK_SOURCES, *TEMPLATE_SOURCES)),
-                 SCRIPT_DIR / "premap" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",
+                 SCRIPT_DIR / "entry_points" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",
                  SCRIPT_DIR / "premap" / "python_build.py", SCRIPT_DIR / "languages" / "rust.py",
                  SCRIPT_DIR / "engine_pass.py", SCRIPT_DIR.parent / "data" / "entry-queries.json"):
         digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
@@ -1472,11 +1473,13 @@ def _links_stamp(manifest: Path, *, premap=True) -> list:
     edges = manifest.with_name("engine-edges.sqlite")
     files = (manifest, manifest.with_name(manifest.name + "-wal"), edges, edges.with_name(edges.name + "-wal"),
              modules.graph_name(manifest), manifest.with_name(modules.LEDGER_FILE))
-    if premap:  # the pre-map's record, and the stack step's: its services are the links' external nodes
+    if premap:  # the pre-map's record, the entry points', and the stack step's: its services are the links' external nodes
+        import entry_points
         import observed_entries
         import technologies
         from premap import path
-        files += (path(manifest), technologies.path(manifest), manifest.with_name(observed_entries.FILE))
+        files += (path(manifest), entry_points.path(manifest), technologies.path(manifest),
+                  manifest.with_name(observed_entries.FILE))
     stamp = []
     for path in files:
         try:

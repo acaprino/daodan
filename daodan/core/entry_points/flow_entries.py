@@ -1,4 +1,5 @@
-"""Flow starts declared to Cargo and Python packaging, joined to definitions already in the snapshot."""
+"""The rows of `find_entry_points`: the routes and pages of its sources (`entry-points.json`), and the flow starts the pre-map
+reads in manifests (Cargo and Python packaging, workflow triggers, Compose services), joined to definitions already in the snapshot."""
 from __future__ import annotations
 
 import json
@@ -8,28 +9,6 @@ import posixpath
 
 import confinement
 from snapshot_store import open_snapshot
-
-
-def workflow_triggers(file, document):
-    """The YAML document Renovate already read. The path after # names the exact workflow property."""
-    on = document.get("on") if isinstance(document, dict) else None
-    if isinstance(on, str):
-        events = [(on, f"{file}#on", None)]
-    elif isinstance(on, list):
-        events = [(name, f"{file}#on.{i}", None) for i, name in enumerate(on) if isinstance(name, str)]
-    elif isinstance(on, dict):
-        events = [(name, f"{file}#on.{name}", value) for name, value in on.items()]
-    else:
-        return []
-    found = []
-    for name, site, value in events:
-        if name == "schedule" and isinstance(value, list):
-            for i, record in enumerate(value):
-                if isinstance(record, dict) and isinstance(record.get("cron"), str):
-                    found.append({"event": name, "label": record["cron"], "declared_in": f"{site}.{i}.cron"})
-        else:
-            found.append({"event": name, "label": name, "declared_in": site})
-    return found
 
 
 def service_and_workflow_entries(report):
@@ -133,21 +112,30 @@ def read_record(manifest):
 
 
 def evidence(manifest):
-    """Load and validate the pre-map once for all of its flow-entry readers."""
-    from premap import FRAMEWORK_SOURCES, TEMPLATE_SOURCES, module_graph, noir, python_build, renovate
+    """Load and validate the pre-map and the record of the entry points once for all of their flow-entry readers."""
+    import entry_points
+    from entry_points import FRAMEWORK_SOURCES, TEMPLATE_SOURCES, noir
+    from premap import module_graph, python_build, renovate
     manifest = Path(manifest)
     try:
         report = read_record(manifest)
     except (OSError, KeyError, TypeError, ValueError) as error:
         return [], [noir.unavailable(error), {"kind": "declared_entries_unavailable", "source": "manifesto",
                     "detail": str(error), "remedy": "refresh the pre-map for this snapshot"}]
-    routes, gaps = noir.from_record(report)
-    for source in FRAMEWORK_SOURCES:
-        framework, framework_gaps = source.from_record(report)
-        routes, gaps = routes + framework, gaps + framework_gaps
-    # A template source's rows are not routes: they stand for, or join, the tree reader's at the same events (`entries.compiled`); their gaps are told here
-    for source in TEMPLATE_SOURCES:
-        gaps += source.from_record(report)[1]
+    try:
+        found = entry_points.read_record(manifest)
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        routes, gaps = [], [noir.unavailable(error)]
+    else:
+        routes, gaps = noir.from_record(found)
+        for source in FRAMEWORK_SOURCES:
+            framework, framework_gaps = source.from_record(found)
+            routes, gaps = routes + framework, gaps + framework_gaps
+        # A template source's rows are not routes: they stand for, or join, the tree reader's at the same events (`entries.compiled`); their gaps are told here
+        for source in TEMPLATE_SOURCES:
+            gaps += source.from_record(found)[1]
+    for source in FRAMEWORK_SOURCES:  # what a source tells from the pre-map alone, with no command (`react_router.stated_gaps`)
+        gaps += source.stated_gaps(report) if hasattr(source, "stated_gaps") else []
     rows = report.get("declared_entries")
     if rows is None:
         # Cargo targets in older reports already identify the path. No need for another Cargo run.

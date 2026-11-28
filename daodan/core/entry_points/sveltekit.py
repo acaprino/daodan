@@ -37,7 +37,7 @@ import json
 import posixpath
 from pathlib import PurePosixPath
 
-from premap import frameworks
+from entry_points import frameworks
 
 NAME, VERSION, RANK = "sveltekit", "daodan/premap/v2", "scanner"
 PACKAGE = "@sveltejs/kit"
@@ -148,7 +148,7 @@ def read(context, commands, results):
 
 
 def from_record(report):
-    """The rows this source persisted in a pre-map and its gaps there; a pre-map made without the source, or where it was not
+    """The rows this source persisted in the record of the entry points and its gaps there; a record made without the source, or where it was not
     needed, has none."""
     source = f"{NAME}@{VERSION}"
     return ([row for row in report.get("framework_entries", ()) if source in row["sources"]],

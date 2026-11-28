@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import file_inventory  # noqa: E402
 import modules  # noqa: E402
 import pipeline  # noqa: E402
+import entry_points  # noqa: E402
 import premap  # noqa: E402
 import stack_recognition  # noqa: E402
 import snapshot  # noqa: E402
@@ -93,7 +94,7 @@ def test_what_scan_and_stack_wrote_stays_fresh_once_the_files_are_read(tmp_path)
 
 
 def _premap_on_both(tmp_path, files: dict, sources: tuple, runner) -> list[dict]:
-    """The pre-map of `sources` on a store `parse` has read and on one that holds only the inventory, of the same files."""
+    """The entry points of `sources` on a store `parse` has read and on one that holds only the inventory, of the same files."""
     records, root = [], tmp_path / "proj"
     for rel, text in files.items():
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
@@ -101,7 +102,7 @@ def _premap_on_both(tmp_path, files: dict, sources: tuple, runner) -> list[dict]
     for name, write in (("read", snapshot.read_project), ("listed", file_inventory.write)):
         manifest = tmp_path / name / "manifest.sqlite"
         write(root, manifest)
-        record = premap.write(manifest, sources=sources, runner=runner)
+        record = entry_points.write(manifest, sources=sources, runner=runner)
         record["sources"] = [{k: v for k, v in s.items() if k != "seconds"} for s in record["sources"]]
         records.append(json.loads(json.dumps({k: v for k, v in record.items() if k != "binding"}).replace(str(manifest.parent), "<OUT>")))
     return records
@@ -111,7 +112,7 @@ def test_angulars_templates_are_found_on_the_inventory(tmp_path):
     """Which files hold components comes from the file's own syntax tree, not from the imports `parse` writes."""
     import test_codebase_map_premap_angular as angular_tests
     files = {rel: text for rel, text in angular_tests.project_files().items() if text is not None}
-    read, listed = _premap_on_both(tmp_path, files, (premap.angular,), lambda commands: angular_tests.recorded("fixture.json"))
+    read, listed = _premap_on_both(tmp_path, files, (entry_points.angular,), lambda commands: angular_tests.recorded("fixture.json"))
     assert read["framework_entries"] and listed == read
 
 
@@ -119,7 +120,7 @@ def test_noirs_absent_line_is_told_on_the_inventory(tmp_path):
     """A line Noir cites is checked against the file's text, not against the line count `parse` writes."""
     endpoints = [{"protocol": "http", "url": url, "method": "POST", "handler": {"path": "/work/api.py", "line": line, "name": "submit"}}
                  for url, line in (("/submit", 1), ("/gone", 99))]
-    read, listed = _premap_on_both(tmp_path, {"api.py": "def submit():\n    pass\n"}, (premap.noir,), lambda commands: [
+    read, listed = _premap_on_both(tmp_path, {"api.py": "def submit():\n    pass\n"}, (entry_points.noir,), lambda commands: [
         {"root": "/work", "returncode": 0, "stdout": json.dumps({"endpoints": endpoints}), "stderr": ""}])
     assert any("absent line: 99" in gap.get("detail", "") for gap in read["gaps"]) and listed == read
 

@@ -32,7 +32,7 @@ from __future__ import annotations
 import json
 import posixpath
 
-from premap import frameworks
+from entry_points import frameworks
 
 NAME, VERSION, RANK = "nuxt", "daodan/premap/v2", "scanner"
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a handler import names, written with no extension
@@ -212,7 +212,7 @@ def read(context, commands, results):
         server = spec["server-route"]
         for route, method, file in handlers:
             # shortcut: the route is the text Nitro wrote (`/api/users/:id`, `/api/files/**:path`), not a path schema a call is
-            # joined to; when the routes are offered, convert it as `premap/nextjs.py` does for Next.js
+            # joined to; when the routes are offered, convert it as `entry_points/nextjs.py` does for Next.js
             base = {"reader": NAME, "shape": "server-route", "kind": server["kind"], "path": route,
                     **({"method": method.upper()} if method != ANY else {})}
             module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
@@ -227,7 +227,7 @@ def read(context, commands, results):
 
 
 def from_record(report):
-    """The rows this source persisted in a pre-map and its gaps there; a pre-map made without the source, or where it was not
+    """The rows this source persisted in the record of the entry points and its gaps there; a record made without the source, or where it was not
     needed, has none."""
     source = f"{NAME}@{VERSION}"
     return ([row for row in report.get("framework_entries", ()) if source in row["sources"]],

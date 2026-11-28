@@ -14,7 +14,7 @@ if str(SCRIPTS) not in sys.path:
 import flows  # noqa: E402
 import snapshot  # noqa: E402
 from daodan.core import entries  # noqa: E402  (by its package: benchmarks/system-map has an entries.py too)
-from daodan.core.premap import noir  # noqa: E402
+from daodan.core.entry_points import noir  # noqa: E402
 
 
 def edge(source: str, target: str, kind: str, site: str) -> dict:

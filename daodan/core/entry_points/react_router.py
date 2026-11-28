@@ -25,7 +25,7 @@ from __future__ import annotations
 import json
 import posixpath
 
-from premap import frameworks
+from entry_points import frameworks
 
 NAME, VERSION, RANK = "react-router", "daodan/premap/v4", "scanner"  # v4: the module row with its `exports`, bound by the links; v3: the data functions of the root and of a layout with no path; v2: an absolute child, the root under `app/`, `timeout`
 CLI = {"@react-router/dev": "react-router", "@remix-run/dev": "remix"}  # the package that installs the command -> the command
@@ -151,14 +151,16 @@ def read(context, commands, results):
     return {"facts": {"framework_entries": rows} if rows else {}, "gaps": gaps}
 
 
-def _library(report, source: str) -> list[dict]:
+def stated_gaps(premap_record) -> list[dict]:
     """A gap for each `package.json` that declares the library and none of the packages that install a command (`CLI`): its routes
     are written in code and no official tool lists them. Told from the dependencies the pre-map already holds
-    (`packages`, read from each manifest), so it needs no command and no container."""
+    (`packages`, read from each manifest), so it needs no command and no container: `flow_entries.evidence` tells it beside the
+    source's own gaps."""
+    source = f"{NAME}@{VERSION}"
     # shortcut: a package of UI components in a monorepo that declares react-router(-dom) is told as a project whose routes are written in
     # code, though it has none, when a monorepo has such packages: tell only a manifest whose folder has a start or a build (`npm-start`)
     declared = {}
-    for package in report.get("packages", ()):
+    for package in premap_record.get("packages", ()):
         file = package["declared_in"].partition("#")[0]
         if package["ecosystem"] == "npm" and file.rpartition("/")[2] == "package.json":
             declared.setdefault(file, set()).add(package["name"])
@@ -170,8 +172,8 @@ def _library(report, source: str) -> list[dict]:
 
 
 def from_record(report):
-    """The rows this source persisted in a pre-map and its gaps there, and the library's (`_library`); a pre-map made without the
-    source, or where it was not needed, has no rows."""
+    """The rows this source persisted in the record of the entry points and its gaps there; a record made without the source, or
+    where it was not needed, has no rows. The library's gaps are the pre-map's (`stated_gaps`)."""
     source = f"{NAME}@{VERSION}"
     return ([row for row in report.get("framework_entries", ()) if source in row["sources"]],
-            [*(gap for gap in report["gaps"] if gap.get("source") == source), *_library(report, source)])
+            [gap for gap in report["gaps"] if gap.get("source") == source])

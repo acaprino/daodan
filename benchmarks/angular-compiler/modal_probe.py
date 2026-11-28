@@ -8,9 +8,9 @@
 fixture's folder, with the project's packages restored from its lockfile while the image is built (the one moment the
 network is open) and blocked when the scripts run; each script's output is written to `results/`.
 
-`--mode source` runs what `daodan/core/premap/angular.py` runs in Daodan's container: the commands it gives for the
+`--mode source` runs what `daodan/core/entry_points/angular.py` runs in Daodan's container: the commands it gives for the
 fixture (a function with the network open, where Daodan's grammar bundle comes from), then each command's script
-(`daodan/core/premap/angular_templates.mjs`) with the network blocked, in a copy of the project with its packages and in
+(`daodan/core/entry_points/angular_templates.mjs`) with the network blocked, in a copy of the project with its packages and in
 variants of it: without its packages (the project declares Angular and the restore did not install it), without
 `@angular/compiler-cli`, without `tsconfig.json`, with a solution-style `tsconfig.json` (no file of its own, the project it
 references holds them), and with the type-checker given 0.05 seconds. The same commands then run in an image of Angular 20
@@ -49,7 +49,7 @@ if LOCAL:
         .add_local_file(FIX / "tsconfig.json", "/fixture/tsconfig.json")
         .add_local_dir(FIX / "src", "/fixture/src")
         .add_local_dir(HERE / "probe", "/fixture/probe")
-        .add_local_file(REPO / "daodan/core/premap/angular_templates.mjs", "/tools/angular_templates.mjs")
+        .add_local_file(REPO / "daodan/core/entry_points/angular_templates.mjs", "/tools/angular_templates.mjs")
         .add_local_dir(REPO / "daodan/core", "/daodan/core", ignore=["**/__pycache__/**"])
         .add_local_dir(REPO / "daodan/data", "/daodan/data")
     )
@@ -58,7 +58,7 @@ if LOCAL:
                              f"npm install --no-audit --no-fund --save-exact {ANGULAR20} 2>&1 | tail -5")
         .add_local_file(FIX / "tsconfig.json", "/fixture/tsconfig.json")
         .add_local_dir(FIX / "src", "/fixture/src")
-        .add_local_file(REPO / "daodan/core/premap/angular_templates.mjs", "/tools/angular_templates.mjs")
+        .add_local_file(REPO / "daodan/core/entry_points/angular_templates.mjs", "/tools/angular_templates.mjs")
     )
 app = modal.App("angular-compiler", image=image)
 
@@ -122,6 +122,7 @@ def commands() -> dict:
     import sys
 
     sys.path[:0] = ["/daodan/core"]
+    import entry_points
     import premap
     import snapshot
     from snapshot_store import open_snapshot
@@ -131,7 +132,7 @@ def commands() -> dict:
     snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)
-        return {"commands": premap.angular.commands(context), "gaps": premap.angular._plan(context)["gaps"]}
+        return {"commands": entry_points.angular.commands(context), "gaps": entry_points.angular._plan(context)["gaps"]}
 
 
 @app.function(timeout=1800)
@@ -144,6 +145,7 @@ def measure(repo: str, commit: str) -> dict:
     from pathlib import Path
 
     sys.path[:0] = ["/daodan/core"]
+    import entry_points
     import premap
     import snapshot
     from snapshot_store import open_snapshot
@@ -154,8 +156,8 @@ def measure(repo: str, commit: str) -> dict:
     snapshot.read_project(project, manifest)
     with open_snapshot(manifest) as store:
         context = premap.Context(manifest, store)
-        plan = premap.angular._plan(context)
-        asked = premap.angular.commands(context) or []
+        plan = entry_points.angular._plan(context)
+        asked = entry_points.angular.commands(context) or []
     return {"templates": {f: len(items) for f, items in plan["jobs"].items()},
             "components": sum(len(members) for items in plan["jobs"].values() for _, members in items),
             "list_characters": {f: len(json.dumps([job for job, _ in items], separators=(",", ":"))) for f, items in plan["jobs"].items()},

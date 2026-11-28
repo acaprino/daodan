@@ -1,5 +1,5 @@
-"""The routes of a Flask application, `premap/flask_app.py`: the commands it gives, and the rows and the gaps `read` makes from what
-Daodan's script (`premap/flask_routes.py`, run in the container by the project's own Python) prints.
+"""The routes of a Flask application, `entry_points/flask_app.py`: the commands it gives, and the rows and the gaps `read` makes from what
+Daodan's script (`entry_points/flask_routes.py`, run in the container by the project's own Python) prints.
 
 The answers are real ones: `benchmarks/flask-routes/modal_probe.py` runs the script on Modal, in the runner's image with the network
 blocked, over the fixture (`benchmarks/flask-routes/fixture/`), over copies of it that do not load and over folders of other layouts
@@ -17,11 +17,11 @@ from pathlib import Path
 
 import pytest
 
-from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, premap, recorder, snapshot
+from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, entry_points, premap, recorder, snapshot, write_both
 from test_codebase_map_premap_sveltekit import nothing_started, spied
 from unittest.mock import patch
 
-from premap import flask_app
+from entry_points import flask_app
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/flask-routes"
 FIXTURE = BENCHMARK / "fixture"
@@ -34,12 +34,12 @@ QUERY = {"route": {"kind": "rotta"}}  # the table of the entry queries the sourc
 
 @pytest.fixture(autouse=True)
 def wired(monkeypatch):
-    """What the source needs of the files of the pre-map that do not name it: it is not in `premap.SOURCES` and `FRAMEWORK_SOURCES`, nor has
+    """What the source needs of the files of the pre-map that do not name it: it is not in `entry_points.SOURCES` and `FRAMEWORK_SOURCES`, nor has
     `entry-queries.json` a table for it (measured on Modal, and left unwired by decision: `benchmarks/flask-routes/README.md`, «Applicazioni
     vere»). Each test runs with the table and the source among the framework sources, as the Django and FastAPI sources' tests do."""
     import entries
     monkeypatch.setitem(entries.QUERIES, "flask", QUERY)
-    monkeypatch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, flask_app))
+    monkeypatch.setattr(entry_points, "FRAMEWORK_SOURCES", (*entry_points.FRAMEWORK_SOURCES, flask_app))
 
 
 def project(folder: Path = FIXTURE, **changes) -> dict[str, str]:
@@ -82,7 +82,7 @@ def read(tmp_path, files, answers, sources=(premap.requirements, flask_app)):
     def run(commands):
         asked.extend(commands)
         return answers
-    record = premap.write(manifest, sources=sources, runner=run)
+    record = write_both(manifest, sources=sources, runner=run)
     # the rows as the links bind them (`binder.bind`): the source gives a name at a position, the binder ties it to the function
     record = {**record, "framework_entries": bound(manifest, record)} if "framework_entries" in record else record
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
@@ -577,7 +577,7 @@ def test_the_lockfiles_the_command_counts_are_the_ones_the_restore_sees_and_a_gi
     for ignore in (True, False):
         project_dir, manifest = ignored_lockfiles(tmp_path / str(ignore), ignore)
         asked = []
-        premap.write(manifest, sources=SOURCES, runner=lambda commands: asked.extend(commands) or [printed([]) for _ in commands])
+        write_both(manifest, sources=SOURCES, runner=lambda commands: asked.extend(commands) or [printed([]) for _ in commands])
         restored = container_runner._python(project_dir)
         managers[ignore] = ({c["cwd"]: c["venv"] for c in asked}, [line.split("for f in ")[1].split(";")[0] for line in restored["lines"][1:]],
                             " ".join(c["argv"][2] for c in asked), " ".join(restored["lines"]))
@@ -608,7 +608,7 @@ def test_several_folders_each_with_rows_are_read_one_by_one_and_a_folder_that_fa
 def commands_of(tmp_path, files, sources=SOURCES):
     _, manifest = manifest_of(tmp_path, files)
     asked = []
-    premap.write(manifest, sources=sources, runner=lambda commands: asked.extend(commands) or [printed([]) for _ in commands])
+    write_both(manifest, sources=sources, runner=lambda commands: asked.extend(commands) or [printed([]) for _ in commands])
     return asked
 
 
@@ -663,7 +663,7 @@ def test_the_folders_share_the_time_and_none_has_less_than_ten_seconds():
 
 def test_only_a_folder_whose_manifest_declares_flask_runs_the_script(tmp_path):
     _, manifest = manifest_of(tmp_path / "plain", {"requirements.txt": "django==6.1.3\n"})
-    record = premap.write(manifest, sources=(premap.requirements, flask_app), runner=lambda commands: 1 / 0)
+    record = write_both(manifest, sources=(premap.requirements, flask_app), runner=lambda commands: 1 / 0)
     assert [s["state"] for s in record["sources"] if s["source"].startswith("flask")] == ["not_needed"]
 
 
@@ -749,7 +749,7 @@ def test_no_engine_carries_the_reason_as_the_source_s_gap_and_nothing_of_the_pro
     _, manifest = manifest_of(tmp_path, project())
     _, run = recorder(state="gap")
     with patch.object(container, "run_commands", run):
-        record = premap.write(manifest, sources=(premap.requirements, flask_app), runner=container_runner.runner(manifest))
+        record = write_both(manifest, sources=(premap.requirements, flask_app), runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
@@ -780,13 +780,13 @@ def test_nothing_of_the_project_starts_on_the_host_without_an_engine_nor_when_th
     marks, manifest = marked_project(tmp_path, monkeypatch)
     started = spied(monkeypatch)
     monkeypatch.setattr(container, "run_in_container", lambda *args, **kwargs: {"state": "gap", "cause": "no engine", "remedy": "start one"})
-    record = premap.write(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
+    record = write_both(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
     nothing_started(started, marks)  # Daodan's own git only, with the hooks and the monitor off; no tool, no file of the project
     started.clear()
-    premap.write(manifest, sources=SOURCES, runner=lambda commands: [recorded("routes") for _ in commands])  # an answer in hand: reading it starts nothing
+    write_both(manifest, sources=SOURCES, runner=lambda commands: [recorded("routes") for _ in commands])  # an answer in hand: reading it starts nothing
     nothing_started(started, marks)
 
 
@@ -808,6 +808,6 @@ def test_the_check_catches_a_source_that_starts_the_command_on_the_host(tmp_path
         return real(context)
     monkeypatch.setattr(flask_app, "commands", mutated)
     monkeypatch.setattr(container, "run_in_container", lambda *args, **kwargs: {"state": "gap", "cause": "no engine", "remedy": "start one"})
-    premap.write(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
+    write_both(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
     with pytest.raises(AssertionError):
         nothing_started(started, marks)

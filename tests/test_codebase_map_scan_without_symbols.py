@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import test_codebase_map_premap_angular as angular_tests  # noqa: E402
-from test_codebase_map_container_runner import manifest_of, premap  # noqa: E402
+from test_codebase_map_container_runner import manifest_of, entry_points, premap  # noqa: E402
 
 
 def _without_declarations(manifest: Path) -> None:
@@ -29,7 +29,7 @@ def test_angulars_pre_map_rows_are_the_same_whether_or_not_the_snapshot_declares
         _, manifest = manifest_of(tmp_path / name, angular_tests.project_files())
         if strip:
             _without_declarations(manifest)
-        record = premap.write(manifest, sources=(premap.angular,), runner=lambda commands: angular_tests.recorded("fixture.json"))
+        record = entry_points.write(manifest, sources=(entry_points.angular,), runner=lambda commands: angular_tests.recorded("fixture.json"))
         rows.append(sorted(record["framework_entries"], key=lambda row: (row["site"], row["column"], repr(row))))
     assert rows[0] and rows[0] == rows[1]
     assert not [row for row in rows[0] if row.get("gap", "").startswith("the snapshot declares no class")]
@@ -39,7 +39,7 @@ def test_the_links_still_bind_each_event_to_the_method_of_its_class(tmp_path):
     """The binding moved to the links: the three cases of the fixture still end on their methods there."""
     import entries
     _, manifest = manifest_of(tmp_path, angular_tests.project_files())
-    premap.write(manifest, sources=(premap.angular,), runner=lambda commands: angular_tests.recorded("fixture.json"))
+    entry_points.write(manifest, sources=(entry_points.angular,), runner=lambda commands: angular_tests.recorded("fixture.json"))
     bound = {(row["site"], row["symbol"]) for row in entries.compiled([], manifest) if not row.get("gap")}
     app, html = angular_tests.APP, "src/app/app.component.html"
     assert {(f"{html}:2", f"{app}::AppComponent.save"), (f"{html}:3", f"{app}::AppComponent.save"),
@@ -63,7 +63,7 @@ def test_the_whole_pre_map_is_the_same_whether_or_not_the_snapshot_declares_anyt
 
 
 def test_the_entries_a_manifest_declares_are_still_bound_in_the_links(tmp_path):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     files = {"pyproject.toml": '[project]\nname = "tool"\n\n[project.scripts]\ntool = "tool.cli:main"\n',
              "tool/__init__.py": "", "tool/cli.py": "def main():\n    return 0\n"}
     _, manifest = manifest_of(tmp_path, files)

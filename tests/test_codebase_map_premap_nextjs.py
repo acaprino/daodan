@@ -6,7 +6,7 @@ for `benchmarks/system-map/real-paths/next-shop` (`tests/fixtures/premap/next/va
 from pathlib import Path
 from unittest.mock import patch
 
-from test_codebase_map_container_runner import container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import container, container_runner, manifest_of, entry_points, premap, recorder
 
 SHOP_DIR = Path(__file__).resolve().parents[1] / "benchmarks/system-map/real-paths/next-shop"
 SHOP = {path.relative_to(SHOP_DIR).as_posix(): path.read_text(encoding="utf-8")
@@ -46,7 +46,7 @@ def runner_for(answers):
 def read(tmp_path, files, answers):
     _, manifest = manifest_of(tmp_path, files)
     asked, run = runner_for(answers)
-    record = premap.write(manifest, sources=(premap.nextjs,), runner=run)
+    record = entry_points.write(manifest, sources=(entry_points.nextjs,), runner=run)
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
 
 
@@ -199,8 +199,8 @@ def test_a_snapshot_with_no_package_json_declaring_next_runs_nothing(tmp_path):
              "tools/package.json": '["next"]\n', "app/page.tsx": "export default function Page() { return null; }\n"}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        assert premap.nextjs.commands(premap.Context(manifest, store)) is None
-    record = premap.write(manifest, sources=(premap.nextjs,), runner=lambda commands: 1 / 0)
+        assert entry_points.nextjs.commands(premap.Context(manifest, store)) is None
+    record = entry_points.write(manifest, sources=(entry_points.nextjs,), runner=lambda commands: 1 / 0)
     assert record["sources"][0]["state"] == "not_needed" and "framework_entries" not in record
 
 
@@ -211,7 +211,7 @@ def test_each_package_json_declaring_next_among_its_dependencies_or_dev_dependen
              "apps/c/package.json": '{"dependencies": {"react": "19.3.1"}}\n'}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        asked = premap.nextjs.commands(premap.Context(manifest, store))
+        asked = entry_points.nextjs.commands(premap.Context(manifest, store))
     assert [(c["cwd"], c["argv"][0]) for c in asked] == [("apps/a", "npx"), ("apps/a", "cat"),
                                                           ("apps/b", "npx"), ("apps/b", "cat")]
 
@@ -221,7 +221,7 @@ def test_the_commands_use_the_projects_own_next_without_network_and_the_setup_in
     from snapshot_store import open_snapshot
     project, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"next": "16.4.6"}}\n'})
     with open_snapshot(manifest) as store:
-        asked = premap.nextjs.commands(premap.Context(manifest, store))
+        asked = entry_points.nextjs.commands(premap.Context(manifest, store))
     # `npm_config_offline`: without `next` installed `npx --no-install` still asks the registry and fails after 70 seconds with a network
     # error (measured for `react-router` and `remix`, `benchmarks/react-router-routes/`); offline it fails at once, saying what is missing
     assert asked == [
@@ -245,7 +245,7 @@ def test_in_an_analysis_the_source_has_a_preparation_that_takes_the_shared_resto
     from snapshot_store import open_snapshot
     _, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"next": "16.4.6"}}\n'})
     with open_snapshot(manifest) as store:
-        asked = premap.nextjs.commands(premap.Context(manifest, store))
+        asked = entry_points.nextjs.commands(premap.Context(manifest, store))
     calls, fake = recorder()
     with node_preparation.analysis(), patch.object(container, "run_commands", fake):  # as the pipeline runs it
         container_runner.runner(manifest)(asked)
@@ -258,29 +258,30 @@ def test_no_engine_carries_the_reason_and_never_runs_typegen_on_the_host(tmp_pat
     _, manifest = manifest_of(tmp_path, SHOP)
     _, run = recorder(state="gap")
     with patch.object(container, "run_commands", run):
-        record = premap.write(manifest, sources=(premap.nextjs,), runner=container_runner.runner(manifest))
+        record = entry_points.write(manifest, sources=(entry_points.nextjs,), runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
 
 
 def test_the_source_is_registered_with_a_facet_that_joins_nothing():
-    assert premap.nextjs in premap.SOURCES and premap.IDENTITY["framework_entries"] == ()
+    assert entry_points.nextjs in entry_points.SOURCES and entry_points.IDENTITY["framework_entries"] == ()
 
 
 def test_a_premap_made_before_the_source_is_stale(tmp_path):
     _, manifest = manifest_of(tmp_path, SHOP)
-    before = tuple(source for source in premap.SOURCES if source is not premap.nextjs)
-    premap.write(manifest, sources=before)
-    assert premap.state(manifest, sources=before)["state"] == "fresh"
-    assert premap.state(manifest)["state"] == "stale"
+    premap.write(manifest, sources=())
+    before = tuple(source for source in entry_points.SOURCES if source is not entry_points.nextjs)
+    entry_points.write(manifest, sources=before)
+    assert entry_points.state(manifest, sources=before)["state"] == "fresh"
+    assert entry_points.state(manifest)["state"] == "stale"
 
 
 def test_the_framework_entries_and_the_gaps_of_the_source_reach_the_flow_evidence(tmp_path):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     files = {rel: text for rel, text in SHOP.items() if rel != "app/orders/[id]/page.tsx"}  # its import has no file
     _, manifest = manifest_of(tmp_path, files)
-    premap.write(manifest, sources=(premap.nextjs,), runner=runner_for({".": done()})[1])
+    entry_points.write(manifest, sources=(entry_points.nextjs,), runner=runner_for({".": done()})[1])
     rows, gaps = evidence(manifest)
     assert {(r["site"], r["path"]) for r in rows if r["reader"] == "next"} == {
         ("app/page.tsx", "/"), ("app/checkout/page.tsx", "/checkout"), ("app/api/pay/route.ts", "/api/pay"),
@@ -290,9 +291,9 @@ def test_the_framework_entries_and_the_gaps_of_the_source_reach_the_flow_evidenc
 
 
 def test_a_premap_where_the_source_was_not_needed_gives_the_evidence_no_framework_entry_and_no_gap(tmp_path):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     _, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"react": "19.3.1"}}\n'})
-    premap.write(manifest, sources=(premap.nextjs,), runner=lambda commands: 1 / 0)
+    entry_points.write(manifest, sources=(entry_points.nextjs,), runner=lambda commands: 1 / 0)
     rows, gaps = evidence(manifest)
     assert [r for r in rows if r["reader"] == "next"] == [] and [g for g in gaps if g.get("source") == SOURCE] == []
 
@@ -320,5 +321,5 @@ def test_each_row_carries_the_path_schema_as_rest_reads_it_and_the_page_mark_fro
     assert by_file["app/orders/[id]/page.tsx"]["schema"] == "/orders/{}" and by_file["app/checkout/page.tsx"]["schema"] == "/checkout"
     assert by_file["app/orders/[id]/page.tsx"]["page"] is True and "page" not in by_file["app/api/pay/route.ts"]
     assert "page" not in by_file["app/layout.tsx"]
-    from premap import nextjs
+    from entry_points import nextjs
     assert nextjs._next_path("/docs/[...slug]") is None and nextjs._next_path("/a/[[...x]]") is None

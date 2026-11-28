@@ -1,11 +1,11 @@
 """The routes of a Flask application are offered routes (`flows.link_facts`), like Noir's and Next.js's: a call of the client meets them.
 
-The Flask rows are the ones `premap/flask_app.py` makes from the answer recorded on Modal (`tests/fixtures/premap/flask/routes.json`) over
+The Flask rows are the ones `entry_points/flask_app.py` makes from the answer recorded on Modal (`tests/fixtures/premap/flask/routes.json`) over
 the fixture of `benchmarks/flask-routes/`; the Noir rows are built in line (what Noir prints is not run here). Each row carries the
 path schema `flask_app` makes from werkzeug's own parse of the rule (`/admin/users/<int:user_id>` is `/admin/users/{}`, as Noir's
 `/admin/users/:user_id`), or none where a parameter may hold a `/`: that route is a gap of the declared routes and meets no call.
 
-The source is not wired (`benchmarks/flask-routes/README.md`, «Applicazioni vere»): it is not in `premap.SOURCES` and `FRAMEWORK_SOURCES`, and
+The source is not wired (`benchmarks/flask-routes/README.md`, «Applicazioni vere»): it is not in `entry_points.SOURCES` and `FRAMEWORK_SOURCES`, and
 `entry-queries.json` has no table for it. The fixture below puts it among the framework sources, with its table, for the time the rows are made and
 linked, as the tests of the Django and FastAPI sources do, so what was measured stays tested.
 """
@@ -18,10 +18,11 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "daodan/core"))
 import entries
 import flows
+import entry_points
 import premap
-from premap import flask_app, noir
+from entry_points import flask_app, noir
 from test_codebase_map_manifest_entries import noir_route
-from test_codebase_map_container_runner import manifest_of
+from test_codebase_map_container_runner import manifest_of, write_both
 from test_codebase_map_premap_flask import QUERY, project, recorded
 
 RULES = [
@@ -56,9 +57,9 @@ def links(tmp_path_factory):
         return [recorded("routes") for _ in commands]
     with pytest.MonkeyPatch.context() as patch:
         patch.setitem(entries.QUERIES, "flask", QUERY)
-        patch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, flask_app))
+        patch.setattr(entry_points, "FRAMEWORK_SOURCES", (*entry_points.FRAMEWORK_SOURCES, flask_app))
         _, manifest = manifest_of(tmp_path_factory.mktemp("flask-routes"), {**project(), "web/client.ts": CLIENT})
-        premap.write(manifest, sources=(premap.requirements, noir, flask_app), runner=run)
+        write_both(manifest, sources=(premap.requirements, noir, flask_app), runner=run)
         return flows.link_facts(manifest, flows.validate_rules(RULES))
 
 

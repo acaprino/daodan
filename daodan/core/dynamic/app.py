@@ -43,10 +43,11 @@ EXPLORE = 900  # the seconds the exploration may take, beside its own cap (`expl
 MEMORY = 4 * 2**30
 
 
-def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = ()) -> dict:
+def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = (), pages: list[dict] = ()) -> dict:
     """`{apps, gaps, roots, toolchains, explore, seeds}` from the pre-map `record`: see the module's docstring. An app
     is the `starts` entry chosen for a module, with its `build` entry where it needs one; `seeds` are routes (paths)
-    the exploration opens besides the app's root."""
+    the exploration opens besides the app's root; `pages`, the framework rows of the entry points (`entry_points`), give
+    each app the pages it opens too."""
     import premap
     builds = {entry["root"]: entry for entry in record.get("builds", [])}
     chosen: dict[str, dict] = {}
@@ -64,7 +65,7 @@ def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = ()) -> di
                         if gap.get("kind") == "build_command_missing" and gap.get("path") == _manifest(entry))
         else:
             apps.append({**entry, **({"build": builds[root]} if entry["needs_build"] else {}),
-                         "seeds": _pages(record, root)})
+                         "seeds": _pages(pages, root)})
     if not record.get("starts"):
         gaps.append({"kind": "no_start_command", "detail": "no package.json of the project declares a start or dev "
                                                            "script that starts an app: nothing is explored"})
@@ -76,10 +77,10 @@ def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = ()) -> di
             "explore": explore, "seeds": list(seeds)}
 
 
-def _pages(record: dict, root: str) -> list[str]:
+def _pages(rows: list[dict], root: str) -> list[str]:
     """The pages the sources declare (the rows marked `page`) in the app's folder, as the paths the exploration opens besides `/`;
     a pattern (a `schema` with a `{}`) or a route with no single schema is not a page to open, and an endpoint is not a page."""
-    return sorted({row["path"] for row in record.get("framework_entries", ()) if row.get("page")
+    return sorted({row["path"] for row in rows if row.get("page")
                    and isinstance(row.get("schema"), str) and "{}" not in row["schema"]
                    and (root == "." or row["site"].startswith(f"{root}/"))})
 
@@ -285,13 +286,13 @@ def record(manifest: Path, planned: dict, out_dir: Path) -> int:
     return len(apps)
 
 
-def explore(manifest: Path, project: Path, record_: dict, digest: str, folder: Path, engine=None) -> dict:
-    """The exploration as the step runs it: plan from the pre-map `record_`, explore in the container, keep the pages
+def explore(manifest: Path, project: Path, record_: dict, digest: str, folder: Path, engine=None, pages: list[dict] = ()) -> dict:
+    """The exploration as the step runs it: plan from the pre-map `record_` and the framework rows `pages`, explore in the container, keep the pages
     beside `manifest`. `{state, apps, gaps, kept}` as `observe` has them (`cause` and `remedy` where it did not run), and
     `reused` where the run of the same snapshot (`digest`, the store's), plan and driver is in `folder`: its gaps come
     back, nothing runs. Only a run that ended `ran` is kept for reuse."""
     import hashlib
-    planned = plan(record_, explore=True)
+    planned = plan(record_, explore=True, pages=pages)
     cache = Path(folder) / "explore.json"
     drivers = hashlib.sha256()
     for path in (Path(__file__), DRIVER, EXPLORER):

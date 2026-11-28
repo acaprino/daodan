@@ -1,6 +1,6 @@
 """The routes of a FastAPI application are offered routes (`flows.link_facts`), like Noir's, Next.js's and Flask's: a call of the client meets them.
 
-The FastAPI rows are the ones `premap/fastapi_app.py` makes from the answer recorded on Modal (`tests/fixtures/premap/fastapi/routes.json`) over the
+The FastAPI rows are the ones `entry_points/fastapi_app.py` makes from the answer recorded on Modal (`tests/fixtures/premap/fastapi/routes.json`) over the
 fixture of `benchmarks/fastapi-routes/`; the Noir rows are built in line (what Noir prints is not run here). Each row carries the path schema
 `fastapi_app` makes from Starlette's own compiled path and convertors (`/api/users/{user_id}` is `/api/users/{}`, as Noir's `/api/users/:user_id`), or none
 where a parameter may hold a `/` or its convertor does not say it holds one segment: that route is a gap of the declared routes and meets no call. A websocket
@@ -18,10 +18,11 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "daodan/core"))
 import entries
 import flows
+import entry_points
 import premap
-from premap import fastapi_app, noir
+from entry_points import fastapi_app, noir
 from test_codebase_map_manifest_entries import noir_route
-from test_codebase_map_container_runner import manifest_of
+from test_codebase_map_container_runner import manifest_of, write_both
 from test_codebase_map_premap_fastapi import QUERIES, WAITS, WIRED, project, recorded
 
 RULES = [
@@ -62,8 +63,8 @@ def links(tmp_path_factory):
         if not WIRED["queries"]:
             patch.setitem(entries.QUERIES, "fastapi", QUERIES)
         if not WIRED["registry"]:
-            patch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, fastapi_app))
-        premap.write(manifest, sources=(premap.module_graph, premap.requirements, noir, fastapi_app), runner=run)
+            patch.setattr(entry_points, "FRAMEWORK_SOURCES", (*entry_points.FRAMEWORK_SOURCES, fastapi_app))
+        write_both(manifest, sources=(premap.module_graph, premap.requirements, noir, fastapi_app), runner=run)
         return flows.link_facts(manifest, flows.validate_rules(RULES))
 
 
@@ -77,8 +78,8 @@ def reasons(links):
 
 @WAITS
 def test_fastapi_is_a_framework_source_whose_rows_are_entries_of_the_links():
-    assert fastapi_app in premap.FRAMEWORK_SOURCES and fastapi_app in premap.SOURCES
-    assert premap.SOURCES.index(fastapi_app) < premap.SOURCES.index(premap.angular)  # after the other frameworks' sources
+    assert fastapi_app in entry_points.FRAMEWORK_SOURCES and fastapi_app in entry_points.SOURCES
+    assert entry_points.SOURCES.index(fastapi_app) < entry_points.SOURCES.index(entry_points.angular)  # after the other frameworks' sources
 
 
 def test_a_fastapi_route_and_the_noir_row_for_the_same_function_are_one_entry(links):

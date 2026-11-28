@@ -668,7 +668,7 @@ def routes_case(name: str, case: dict, archive: bytes | None, rules: str, tag: s
         # what Noir's rows that no function holds say, and what the snapshot declares in the files they cite
         import edge_view
         import semantic_store
-        from premap import noir
+        from entry_points import noir
         from snapshot_store import open_snapshot
         with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
             view = edge_view.load_edge_view(store)
@@ -912,7 +912,7 @@ def facts_case(name: str, case: dict, archive: bytes | None, tag: str) -> dict:
     sys.path.insert(0, SCRIPTS)
     import entries
     import flows
-    from premap import flow_entries
+    from entry_points import flow_entries
     record = json.loads(manifest.with_name("premap.json").read_text(encoding="utf-8"))
     declared, gaps = flow_entries.evidence(manifest)
     found = {"case": name, "renovate": json.loads(done.stdout), **{key: record.get(key, []) for key in FACTS},

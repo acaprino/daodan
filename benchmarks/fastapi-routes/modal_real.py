@@ -5,7 +5,7 @@
 
 The applications are `apps.APPS`: each is fetched at a pinned commit (`https://codeload.github.com/<repo>/tar.gz/<sha>`) while the image is built, with
 the network open, and so are the packages Daodan's own restore installs (`plan.py` over the project's folder, fetched as text on the host by
-`apps.fetch`, never run: the same commands and restore lines the runner would give) and the Noir that `premap/noir.py` pins (sha256 checked). Nothing
+`apps.fetch`, never run: the same commands and restore lines the runner would give) and the Noir that `entry_points/noir.py` pins (sha256 checked). Nothing
 of the applications is kept in the repository: the answers are (`results/real/`). Then, with the network blocked and in a copy of the project at
 `/work`: Daodan's own rewrite of the `.env` files (`container.named`, which the runner applies before every command of a pre-map), then `noir scan
 /work -f json --no-log` (what `noir.commands` gives), or the script of the source (the command of `fastapi_app.commands`). `-script-env` is the

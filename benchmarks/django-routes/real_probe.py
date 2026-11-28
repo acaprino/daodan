@@ -12,8 +12,8 @@ and by `compare.py` (the snapshot the binder ties the rows to): nothing of it ru
 each variant runs in a copy of the tree with the network blocked, in Daodan's environment (`preparation.ENV`):
 
     <name>-environment   the Python, the packages, and what the setup of the image did (exit code, seconds, standard error)
-    <name>-script        `premap/django_routes.py`, the command `django_app.commands` gives: the answer the source reads
-    <name>-noir          `noir scan /work -f json --no-log`, the command `premap/noir.py` gives, Noir 1.5.0 (the pinned one)
+    <name>-script        `entry_points/django_routes.py`, the command `django_app.commands` gives: the answer the source reads
+    <name>-noir          `noir scan /work -f json --no-log`, the command `entry_points/noir.py` gives, Noir 1.5.0 (the pinned one)
     <name>-script-fixed  the script in the second environment, for the projects whose pinned requirements need a C compiler the image's Python does not use
     <name>-script-env    the script again with the environment variables the settings ask for, where the first run says it needs them
 
@@ -55,7 +55,7 @@ def _plan(folder: pathlib.Path) -> dict:
 
 
 PLANS = {name: _plan(folder) for name, folder in FOLDERS.items()} if LOCAL else None
-SCRIPT = HERE.parents[1] / "daodan/core/premap/django_routes.py" if LOCAL else None  # in a container this file lies at /root
+SCRIPT = HERE.parents[1] / "daodan/core/entry_points/django_routes.py" if LOCAL else None  # in a container this file lies at /root
 
 
 def _image(name: str) -> modal.Image:

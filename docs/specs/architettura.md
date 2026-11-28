@@ -41,7 +41,7 @@ Gli identificatori degli step sono **semantici e stabili** per codice, eventi, g
 
 ### Strumenti nativi, Noir e sorgenti dedicate
 
-**Noir** è lo scanner di rotte che gira nel container (`premap/noir.py`).
+**Noir** è lo scanner di rotte che gira nel container (`entry_points/noir.py`).
 
 | Famiglia | Esempi | Che cosa dà | Step |
 | --- | --- | --- | --- |
@@ -530,9 +530,9 @@ Ogni anagrafica deve avere un controllo automatico di coerenza con il codice:
 - **Cartella condivisa:** la cartella di Daodan sulla macchina, fuori da ogni progetto, dove stanno gli strumenti installati al primo uso (`embedding_worker.shared_cache_dir`).
 - **Host fisso, host dichiarato:** fisso è quello che il codice di Daodan assegna a uno strumento; dichiarato è quello che i file del progetto nominano per dipendenze o build.
 - **Kiri:** il motore di container che Daodan porta su Windows, in una distribuzione WSL 2 propria (`daodan/core/container.py`).
-- **Noir:** lo scanner di rotte OWASP Noir, che gira nel container (`daodan/core/premap/noir.py`).
+- **Noir:** lo scanner di rotte OWASP Noir, che gira nel container (`daodan/core/entry_points/noir.py`).
 - **Fork `stack-analyser`:** il riconoscitore delle tecnologie, un fork di quello di Specfy (`daodan/core/stack_analyser.py`).
-- **Pre-mappa:** nel disegno il modello di build, uscita di `find_modules`; oggi `daodan/core/premap/` tiene anche rotte ed eventi.
+- **Pre-mappa:** nel disegno il modello di build, uscita di `find_modules`; rotte ed eventi sono di `find_entry_points` (`daodan/core/entry_points/`, `entry-points.json`).
 - **Smokescreen:** il proxy di uscita di Stripe, candidato a proxy della preparazione.
 - **SCIP:** il formato di indice del codice di un intero progetto, che `daodan/core/code_graph.py` legge come un grafo.
 - **Store:** ciò a cui il codice accede in scrittura o lettura, nominato con la sua chiave da una regola di collegamento (`daodan/core/flows.py`).

@@ -30,6 +30,7 @@ import engine_pass  # noqa: E402
 import flows  # noqa: E402
 import languages  # noqa: E402
 import module_derive  # noqa: E402
+import entry_points  # noqa: E402
 import premap  # noqa: E402
 import preparation  # noqa: E402
 import registry_build  # noqa: E402
@@ -191,12 +192,12 @@ def build_section(report: dict, raw: dict, run_path: Path) -> list[str]:
         for source in case.get("sources") or ():
             states[source["source"].split("@")[0]][source["state"]] += 1
     rows = []
-    for source in premap.SOURCES:
+    for source in (*premap.SOURCES, *entry_points.SOURCES):
         count = states.get(source.NAME)
         cell = ("non misurato: non era nel giro" if not count else
                 ", ".join(f"{state} {n}" for state, n in sorted(count.items())))
         rows.append([f"`{source.NAME}`", source.VERSION, RANKS[source.RANK],
-                     f"`premap/{source.__name__.rsplit('.', 1)[-1]}.py`", cell])
+                     f"`{source.__name__.replace('.', '/')}.py`", cell])
     facets = [[f"`{face}`", _ratio(item["found"], item["expected"]), _n(item["extra"]), _n(item["wrong"])]
               for face, item in report["premap"].items() if item["given"] and item["expected"]]
     manifests = collections.defaultdict(list)
@@ -208,12 +209,13 @@ def build_section(report: dict, raw: dict, run_path: Path) -> list[str]:
                    | set(module_derive.LANGUAGE_TOOLS.values())
                    | {t for v in module_derive.INHERITED_TOOLS.values() for t in v})
     return ["## Build tool e toolchain", "",
-            f"La pre-mappa ha {len(premap.SOURCES)} fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge "
+            f"La pre-mappa ha {len(premap.SOURCES)} fonti (`scripts/premap/`, `SOURCES`), i punti d'ingresso "
+            f"{len(entry_points.SOURCES)} (`scripts/entry_points/`, `SOURCES`); il grafo dei moduli legge "
             f"{sum(len(v) for v in manifests.values())} manifest di {len(manifests)} ecosistemi "
             f"(`scripts/build_units.py`); un modulo riceve {len(tools)} toolchain dal suo ecosistema o linguaggio "
             f"(`scripts/module_derive.py`); la preparazione porta {len(preparation.NEEDS)} toolchain nel container "
             "(`scripts/preparation.py`, `NEEDS`).", "",
-            "### Fonti della pre-mappa", "",
+            "### Fonti della pre-mappa e dei punti d'ingresso", "",
             f"Stati di ogni fonte nei casi del giro del {_date(run_path.name)} (`{_rel(run_path)}`): `ran` ha girato, "
             "`not_needed` il caso non aveva i suoi file.", "",
             *_table(["Fonte", "Versione", "Modo", "Modulo", "Casi per stato"], rows), "",
@@ -239,7 +241,7 @@ def own_reading(key: str) -> str:
     language = languages.SUPPORTED_EXTENSIONS.get(key)
     adapter = languages.get_adapter(language) if language else None
     if isinstance(adapter, type(sfc.vue_adapter)):
-        parts.append("frontmatter e `<script>` nello snapshot (`languages/sfc.py`), del template solo gli eventi (`premap/astro.py`)"
+        parts.append("frontmatter e `<script>` nello snapshot (`languages/sfc.py`), del template solo gli eventi (`entry_points/astro.py`)"
                      if adapter.frontmatter else "`<script>` e template nello snapshot (`languages/sfc.py`)")
     if key in css.COMPONENTS:
         parts.append("stili con il compilatore del framework "

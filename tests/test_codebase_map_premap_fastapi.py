@@ -1,5 +1,5 @@
-"""The routes of a FastAPI application, `premap/fastapi_app.py`: the commands it gives, and the rows and the gaps `read` makes from what
-Daodan's script (`premap/fastapi_routes.py`, run in the container by the project's own Python) prints.
+"""The routes of a FastAPI application, `entry_points/fastapi_app.py`: the commands it gives, and the rows and the gaps `read` makes from what
+Daodan's script (`entry_points/fastapi_routes.py`, run in the container by the project's own Python) prints.
 
 The answers are real ones: `benchmarks/fastapi-routes/modal_probe.py` runs the script on Modal, in the runner's image with the network
 blocked, over the fixture (`benchmarks/fastapi-routes/fixture/`), over copies of it that do not load or that find their application
@@ -25,12 +25,12 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, entry_points, premap, recorder, write_both
 from test_codebase_map_premap_sveltekit import nothing_started, spied
 
 import entries
 import preparation
-from premap import fastapi_app
+from entry_points import fastapi_app
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/fastapi-routes"
 FIXTURE = BENCHMARK / "fixture"
@@ -40,7 +40,7 @@ SOURCES = (premap.module_graph, premap.requirements, fastapi_app)  # the facts `
 SCRIPTS = ("fastapi_routes.py", "python_script.py")
 QUERIES = {"route": {"kind": "rotta"}, "websocket": {"kind": "rotta"}}  # the table `entry-queries.json` has to hold under `fastapi`
 WIRED = {"tool": "fastapi" in container_runner.TOOLS, "queries": "fastapi" in entries.QUERIES,
-         "registry": fastapi_app in premap.SOURCES and fastapi_app in premap.FRAMEWORK_SOURCES}  # the shared files, as they are
+         "registry": fastapi_app in entry_points.SOURCES and fastapi_app in entry_points.FRAMEWORK_SOURCES}  # the shared files, as they are
 
 
 def probe_plan():
@@ -77,7 +77,7 @@ def printed(routes, **fields):
 def commands_of(tmp_path, files, sources=SOURCES):
     _, manifest = manifest_of(tmp_path, files)
     asked = []
-    premap.write(manifest, sources=sources, runner=lambda commands: asked.extend(commands) or [printed([]) for _ in commands])
+    write_both(manifest, sources=sources, runner=lambda commands: asked.extend(commands) or [printed([]) for _ in commands])
     return asked
 
 
@@ -137,7 +137,7 @@ def test_the_folders_share_the_time_and_none_has_less_than_ten_seconds():
 
 def test_only_a_folder_whose_manifest_declares_fastapi_runs_the_script(tmp_path):
     _, manifest = manifest_of(tmp_path / "plain", {"requirements.txt": "django==6.1.3\n"})
-    record = premap.write(manifest, sources=(premap.requirements, fastapi_app), runner=lambda commands: 1 / 0)
+    record = write_both(manifest, sources=(premap.requirements, fastapi_app), runner=lambda commands: 1 / 0)
     assert [s["state"] for s in record["sources"] if s["source"].startswith("fastapi")] == ["not_needed"]
 
 
@@ -176,7 +176,7 @@ def read(tmp_path, files, answers, sources=SOURCES):
     def run(commands):
         asked.extend(commands)
         return answers
-    record = premap.write(manifest, sources=sources, runner=run)
+    record = write_both(manifest, sources=sources, runner=run)
     # the rows as the links bind them (`binder.bind`): the source gives a name at a position, the binder ties it to the function
     record = {**record, "framework_entries": bound(manifest, record)} if "framework_entries" in record else record
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
@@ -686,7 +686,7 @@ def test_several_folders_each_with_rows_are_read_one_by_one_and_a_folder_that_fa
 # -------------------------------------------------------------------- the helpers of the script, which are plain Python and run here
 
 def script_module(name):
-    """A script of `premap/` loaded by its path, as the container loads `python_script.py`: importing runs no project code."""
+    """A script of `entry_points/` loaded by its path, as the container loads `python_script.py`: importing runs no project code."""
     path = Path(fastapi_app.__file__).with_name(name)
     spec = importlib.util.spec_from_file_location(path.stem, path)
     module = importlib.util.module_from_spec(spec)
@@ -770,7 +770,7 @@ def test_no_engine_carries_the_reason_as_the_source_s_gap_and_nothing_of_the_pro
     _, manifest = manifest_of(tmp_path, project())
     _, run = recorder(state="gap")
     with patch.object(container, "run_commands", run):
-        record = premap.write(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
+        record = write_both(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
@@ -801,13 +801,13 @@ def test_nothing_of_the_project_starts_on_the_host_without_an_engine_nor_when_th
     marks, manifest = marked_project(tmp_path, monkeypatch)
     started = spied(monkeypatch)
     monkeypatch.setattr(container, "run_in_container", lambda *args, **kwargs: {"state": "gap", "cause": "no engine", "remedy": "start one"})
-    record = premap.write(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
+    record = write_both(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
     nothing_started(started, marks)  # Daodan's own git only, with the hooks and the monitor off; no tool, no file of the project
     started.clear()
-    record = premap.write(manifest, sources=SOURCES, runner=lambda commands: [recorded("routes") for _ in commands])  # an answer in hand: reading it starts nothing
+    record = write_both(manifest, sources=SOURCES, runner=lambda commands: [recorded("routes") for _ in commands])  # an answer in hand: reading it starts nothing
     assert record["framework_entries"]
     nothing_started(started, marks)
 
@@ -830,7 +830,7 @@ def test_the_check_catches_a_source_that_starts_the_command_on_the_host(tmp_path
         return real(context)
     monkeypatch.setattr(fastapi_app, "commands", mutated)
     monkeypatch.setattr(container, "run_in_container", lambda *args, **kwargs: {"state": "gap", "cause": "no engine", "remedy": "start one"})
-    premap.write(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
+    write_both(manifest, sources=SOURCES, runner=container_runner.runner(manifest))
     with pytest.raises(AssertionError):
         nothing_started(started, marks)
 
@@ -840,10 +840,10 @@ def test_the_check_catches_a_source_that_starts_the_command_on_the_host(tmp_path
 def test_the_source_keeps_no_copy_of_a_shared_helper_and_borrows_no_other_sources():
     tree = ast.parse(Path(fastapi_app.__file__).read_text(encoding="utf-8"))
     assert not {node.name for node in tree.body if isinstance(node, ast.FunctionDef)} & {"_folders", "_folder", "_excerpt"}
-    others = {source.__name__.rsplit(".", 1)[-1] for source in (*premap.FRAMEWORK_SOURCES, *premap.TEMPLATE_SOURCES)} - {"fastapi_app"}
+    others = {source.__name__.rsplit(".", 1)[-1] for source in (*entry_points.FRAMEWORK_SOURCES, *entry_points.TEMPLATE_SOURCES)} - {"fastapi_app"}
     borrowed = [node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id in others]
     borrowed += [alias.name for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)
-                 and ((node.module or "").rsplit(".", 1)[-1] in others or node.module == "premap" and any(alias.name in others for alias in node.names))
+                 and ((node.module or "").rsplit(".", 1)[-1] in others or node.module in ("premap", "entry_points") and any(alias.name in others for alias in node.names))
                  for alias in node.names]
     assert not borrowed  # what two sources share is in `frameworks`, whatever its name
 
@@ -862,8 +862,8 @@ WAITS = pytest.mark.xfail(strict=True, reason="not wired, by decision (benchmark
 
 @WAITS
 def test_the_source_is_registered_with_the_pre_map_and_is_a_framework_source_after_the_other_frameworks_and_before_angular():
-    assert fastapi_app in premap.SOURCES and fastapi_app in premap.FRAMEWORK_SOURCES
-    assert premap.SOURCES.index(fastapi_app) < premap.SOURCES.index(premap.angular)
+    assert fastapi_app in entry_points.SOURCES and fastapi_app in entry_points.FRAMEWORK_SOURCES
+    assert entry_points.SOURCES.index(fastapi_app) < entry_points.SOURCES.index(entry_points.angular)
 
 
 @WAITS

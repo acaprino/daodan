@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT / "daodan/core"))
 
 import container  # noqa: E402
 import egress  # noqa: E402
+import entry_points  # noqa: E402
 import premap  # noqa: E402
 import container_runner  # noqa: E402
 import snapshot  # noqa: E402
@@ -32,6 +33,15 @@ def manifest_of(tmp_path, files):
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(project, manifest)
     return project, manifest
+
+
+def write_both(manifest, sources, runner=None) -> dict:
+    """What `premap.write` gave for a tuple of the pre-map's readers and of the sources of the entry points: the pre-map of the
+    first, then the record of the entry points of the others on it, which is returned."""
+    def entry(source):
+        return source.__name__.startswith("entry_points.")
+    premap.write(manifest, sources=tuple(source for source in sources if not entry(source)))
+    return entry_points.write(manifest, sources=tuple(source for source in sources if entry(source)), runner=runner)
 
 
 def bound(manifest, record) -> list[dict]:
@@ -320,9 +330,9 @@ def test_every_model_source_of_the_premap_has_a_setup():
              "renovate": premap.renovate, "compose": premap.compose,
              "daodan-dockerfile": premap.dockerfile, "cmake": premap.cmake, "meson": premap.meson,
              "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
-             "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir, "next": premap.nextjs,
-             "react-router": premap.react_router, "nuxt": premap.nuxt, "sveltekit": premap.sveltekit, "angular": premap.angular, "astro": premap.astro}
-    assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())
+             "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": entry_points.noir, "next": entry_points.nextjs,
+             "react-router": entry_points.react_router, "nuxt": entry_points.nuxt, "sveltekit": entry_points.sveltekit, "angular": entry_points.angular, "astro": entry_points.astro}
+    assert {s for s in (*premap.SOURCES, *entry_points.SOURCES) if hasattr(s, "commands")} == set(tools.values())
     assert set(tools) <= set(container_runner.TOOLS)
 
 
@@ -331,10 +341,10 @@ def test_every_model_source_of_the_premap_has_a_setup():
 SMOKE = os.environ.get("DAODAN_PREMAP_SMOKE") == "1"
 CORPUS = ROOT / "benchmarks/project-model/fixtures"
 CASES = {  # tool -> (corpus fixture, or the folder of one, the source), one project each
-    "noir": ("js-nextjs", premap.noir),
-    "next": (ROOT / "benchmarks/system-map/real-paths/next-shop", premap.nextjs),  # js-nextjs is Next.js 14: no typegen
-    "react-router": (ROOT / "benchmarks/react-router-routes/fixture/framework", premap.react_router),
-    "nuxt": (ROOT / "benchmarks/nuxt-routes/fixture/nuxt3", premap.nuxt),
+    "noir": ("js-nextjs", entry_points.noir),
+    "next": (ROOT / "benchmarks/system-map/real-paths/next-shop", entry_points.nextjs),  # js-nextjs is Next.js 14: no typegen
+    "react-router": (ROOT / "benchmarks/react-router-routes/fixture/framework", entry_points.react_router),
+    "nuxt": (ROOT / "benchmarks/nuxt-routes/fixture/nuxt3", entry_points.nuxt),
     "go": ("sys-go-buildtags", premap.go), "cargo": ("sys-rust-features", premap.cargo),
     "uv": ("py-uv-workspace", premap.uv), "tsc": ("js-vite-react-ts", premap.tsc),
     "npm": ("js-npm-workspaces", premap.npm), "renovate": ("js-npm-single", premap.renovate),
@@ -358,13 +368,14 @@ def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, to
     shutil.copytree(CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(project, manifest)
-    record = premap.write(manifest, sources=sources, runner=container_runner.runner(manifest, engine=engine))
+    writer = entry_points if source in entry_points.SOURCES else premap  # Noir and the frameworks write their own record
+    record = writer.write(manifest, sources=sources, runner=container_runner.runner(manifest, engine=engine))
     print(json.dumps({"tool": tool, "sources": record["sources"], "units": len(record["units"]),
                       "gaps": record["gaps"][:5]}, indent=1)[:3000])
     assert [s["state"] for s in record["sources"]] == ["ran"] * len(sources), record["sources"]
     assert not [g for g in record["gaps"] if g["kind"] in ("source_failed", "model_failed")]
     if tool == "noir":
-        assert any(r["method"] == "GET" and r["path"] == "/api/health" for r in premap.noir.recorded(manifest))
+        assert any(r["method"] == "GET" and r["path"] == "/api/health" for r in entry_points.noir.recorded(manifest))
     if tool == "next":
         assert {(r["path"], r["site"]) for r in record["framework_entries"]} >= {
             ("/api/pay", "app/api/pay/route.ts"), ("/checkout", "app/checkout/page.tsx")}

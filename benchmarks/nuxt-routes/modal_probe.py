@@ -110,7 +110,7 @@ def _launcher() -> None:
     """`daodan-nuxt` as `container_runner.TOOLS["nuxt"]` installs it: a shell script that runs Daodan's script with Node."""
     os.makedirs(BIN, exist_ok=True)
     target = pathlib.Path(BIN, "daodan-nuxt")
-    target.write_text('#!/bin/sh\nexec node /daodan/core/premap/nuxt_pages.mjs "$@"\n', encoding="utf-8")
+    target.write_text('#!/bin/sh\nexec node /daodan/core/entry_points/nuxt_pages.mjs "$@"\n', encoding="utf-8")
     target.chmod(0o755)
 
 
@@ -331,6 +331,7 @@ def commands() -> dict:
     from pathlib import Path
 
     sys.path[:0] = ["/daodan/core"]
+    import entry_points
     import premap
     import snapshot
     from snapshot_store import open_snapshot
@@ -341,7 +342,7 @@ def commands() -> dict:
         shutil.copytree(f"/lockwork/{name}", project)
         snapshot.read_project(project, manifest)
         with open_snapshot(manifest) as store:
-            out[name] = premap.nuxt.commands(premap.Context(manifest, store))
+            out[name] = entry_points.nuxt.commands(premap.Context(manifest, store))
     return out
 
 

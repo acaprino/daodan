@@ -12,9 +12,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "daodan/core"))
 import edge_view
 import entries
 import flows
+import entry_points
 import premap
 import semantic_store
-from premap import noir
+from entry_points import noir
 from snapshot_store import open_snapshot
 from test_codebase_map_container_runner import manifest_of
 
@@ -37,7 +38,7 @@ def without_handler(url, method, file, line):
 
 def snapshot_of(tmp_path, answer, files):
     _, manifest = manifest_of(tmp_path, files)
-    premap.write(manifest, sources=(noir,), runner=lambda commands: [
+    entry_points.write(manifest, sources=(noir,), runner=lambda commands: [
         {"root": "/work", "returncode": 0, "stdout": json.dumps({"endpoints": answer}), "stderr": ""}])
     return manifest
 

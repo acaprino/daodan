@@ -17,6 +17,7 @@ from pathlib import Path
 TESTS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TESTS.parent / "daodan/core"))
 sys.path.insert(0, str(TESTS))
+import entry_points  # noqa: E402
 import premap  # noqa: E402
 from test_codebase_map_container_runner import manifest_of  # noqa: E402
 
@@ -50,10 +51,11 @@ def _links(tmp_path, monkeypatch, rows=ROWS, rules=()):
     import flows
     _, manifest = manifest_of(tmp_path, SOURCES)
     premap.write(manifest, sources=())
+    entry_points.write(manifest, sources=())
     fake_file = tmp_path / "fake.py"
     fake_file.write_text("# a source of another framework\n", encoding="utf-8")
     fake = types.SimpleNamespace(NAME="fake", __file__=str(fake_file), from_record=lambda report: (rows, []))
-    monkeypatch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, fake))
+    monkeypatch.setattr(entry_points, "FRAMEWORK_SOURCES", (*entry_points.FRAMEWORK_SOURCES, fake))
     return flows.link_facts(manifest, list(rules))
 
 
@@ -85,7 +87,7 @@ def test_a_name_at_a_position_is_the_one_function_of_that_name_whose_lines_hold_
 def test_a_noir_endpoint_with_no_handler_name_is_a_row_at_its_position_that_the_binder_says_is_a_gap():
     """Noir's row always carries `handler`, the name or None, so the binder says what it could not bind."""
     import binder
-    from premap import noir
+    from entry_points import noir
     report = {"endpoints": [{"method": "GET", "url": "/x", "protocol": "http",
                              "details": {"code_paths": [{"path": "/src/app.py", "line": 3}]}}]}
     [row] = noir.rows(report, "/src")
@@ -99,7 +101,7 @@ def test_a_method_noir_names_with_its_class_is_bound_by_the_snapshot_s_qualified
     """Noir names a class view's method `Class.method` (measured on CTFd: `AudienceList.get`); the snapshot's simple name is
     `get`, its qualified name the same `Class.method`. Two classes of one file with a `get` each are told apart by the lines."""
     import binder
-    from premap import noir
+    from entry_points import noir
     report = {"endpoints": [{"method": "GET", "url": url, "protocol": "http",
                              "handler": {"name": name, "path": "/src/api.py", "line": line}}
                             for url, name, line in (("/a", "AudienceList.get", 4), ("/b", "Other.get", 9), ("/c", "Other.get", 4))]}
@@ -115,7 +117,7 @@ def test_a_method_noir_names_with_its_class_is_bound_by_the_snapshot_s_qualified
 # ------------------------------------------- a handler Noir cites by its position: the cases that need no real snapshot (the rest: test_codebase_map_flows_noir_binding.py)
 
 def _row(name, line):
-    from premap import noir
+    from entry_points import noir
     place = {"path": "/src/api.js", "line": line}
     [row] = noir.rows({"endpoints": [{"method": "GET", "url": "/x", "protocol": "http",
                                       **({"handler": {"name": name, **place}} if name else {"handler": None, "details": {"code_paths": [place]}})}]}, "/src")
@@ -159,7 +161,7 @@ def test_a_source_that_names_the_function_itself_binds_by_its_name_only():
 def test_no_source_of_the_entries_tuple_binds_a_row_itself():
     """The sources of `FRAMEWORK_SOURCES` read their tool's output; binding is the binder's, so none opens the snapshot's
     semantic store or looks an export up."""
-    for source in premap.FRAMEWORK_SOURCES:
+    for source in entry_points.FRAMEWORK_SOURCES:
         tree = ast.parse(Path(source.__file__).read_text(encoding="utf-8"))
         named = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)} | {
             alias.name for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
@@ -207,5 +209,5 @@ def test_the_pages_the_exploration_opens_are_the_rows_marked_page_whose_schema_h
         {"reader": "fake", "shape": "view", "page": True, "path": "/docs/[...all]", "schema": None, "site": "web/docs.ts"},
         {"reader": "fake", "shape": "endpoint", "path": "/api/x", "schema": "/api/x", "site": "web/api.ts"},
         {"reader": "fake", "shape": "view", "page": True, "path": "/other", "schema": "/other", "site": "admin/other.ts"}]}
-    assert app._pages(record, "web") == ["/about"]
-    assert app._pages(record, ".") == ["/about", "/other"]
+    assert app._pages(record["framework_entries"], "web") == ["/about"]
+    assert app._pages(record["framework_entries"], ".") == ["/about", "/other"]

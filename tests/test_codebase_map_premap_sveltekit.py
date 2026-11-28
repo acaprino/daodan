@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 import pytest
 
-from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, premap, recorder
+from test_codebase_map_container_runner import bound, container, container_runner, manifest_of, entry_points, premap, recorder
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/sveltekit-routes"
 FIXTURE = BENCHMARK / "fixture"
@@ -60,7 +60,7 @@ def runner_for(pair):
 def read(tmp_path, files, name="routes", pair=None):
     _, manifest = manifest_of(tmp_path, files)
     asked, run = runner_for(pair or answers(name))
-    record = premap.write(manifest, sources=(premap.sveltekit,), runner=run)
+    record = entry_points.write(manifest, sources=(entry_points.sveltekit,), runner=run)
     record["bound"] = bound(manifest, record)
     return record, [g for g in record["gaps"] if g.get("source") == SOURCE], asked
 
@@ -159,7 +159,7 @@ def test_each_file_is_owned_by_the_route_that_has_it_in_its_own_folder_and_the_t
     the file. It is the route whose id is the folder of the file (a route id is a path under the routes folder), checked here
     on the whole of what the tool printed."""
     import posixpath
-    from premap import sveltekit
+    from entry_points import sveltekit
     owner = sveltekit._files(listed())
     assert len(owner) == 18 and set(owner) == {f for files in listed().values() for f in files}
     for file, route in owner.items():
@@ -305,7 +305,7 @@ def test_a_sync_that_timeout_had_to_kill_is_a_gap_that_names_the_time_and_the_me
     pair = [{"root": "/work", "returncode": 137, "stdout": "", "stderr": ""}, answers()[1]]
     record, [gap], _ = read(tmp_path, project(), pair=pair)
     assert gap["kind"] == "model_failed" and "killed (exit 137)" in gap["detail"] and "900 seconds" in gap["detail"]
-    assert f"{premap.sveltekit.MEMORY_GB} GB" in gap["detail"] and "framework_entries" not in record
+    assert f"{entry_points.sveltekit.MEMORY_GB} GB" in gap["detail"] and "framework_entries" not in record
 
 
 def test_the_folders_share_the_time_and_none_has_less_than_ten_seconds_and_the_memory_is_the_runner_s(tmp_path):
@@ -315,9 +315,9 @@ def test_the_folders_share_the_time_and_none_has_less_than_ten_seconds_and_the_m
         files = {f"p{n}/package.json": '{"devDependencies": {"@sveltejs/kit": "2.70.4"}}\n' for n in range(count)}
         _, manifest = manifest_of(tmp_path / f"n{count}", files)
         with open_snapshot(manifest) as store:
-            return {c["argv"][2] for c in premap.sveltekit.commands(premap.Context(manifest, store)) if c["argv"][0] == "timeout"}
+            return {c["argv"][2] for c in entry_points.sveltekit.commands(premap.Context(manifest, store)) if c["argv"][0] == "timeout"}
     assert (seconds(1), seconds(3), seconds(200)) == ({"900"}, {"300"}, {"10"})
-    assert premap.sveltekit.MEMORY_GB == container_runner.TOOLS["sveltekit"]["memory"]  # the same 3 GB the setup gives the container
+    assert entry_points.sveltekit.MEMORY_GB == container_runner.TOOLS["sveltekit"]["memory"]  # the same 3 GB the setup gives the container
 
 
 # `shortcut:` in `sveltekit.py`: a form the framework documents that this reader leaves as a gap
@@ -354,7 +354,7 @@ def test_only_a_package_json_that_declares_the_kit_starts_the_command_one_run_pe
              "apps/d/package.json": "{\n", "apps/e/package.json": '["@sveltejs/kit"]\n'}
     _, manifest = manifest_of(tmp_path, files)
     with open_snapshot(manifest) as store:
-        asked = premap.sveltekit.commands(premap.Context(manifest, store))
+        asked = entry_points.sveltekit.commands(premap.Context(manifest, store))
     assert [(c["cwd"], c["argv"]) for c in asked] == [
         (folder, argv) for folder in ("apps/a", "apps/b")
         for argv in ([*SYNC[:2], "450", *SYNC[3:]], ["cat", META])]  # two folders share the time; `npm-files` reports a manifest that is not JSON
@@ -362,7 +362,7 @@ def test_only_a_package_json_that_declares_the_kit_starts_the_command_one_run_pe
     assert [c["env"] for c in asked[:2]] == [{"npm_config_offline": "true"}, {}]
     _, manifest = manifest_of(tmp_path / "plain", {"package.json": '{"dependencies": {"svelte": "5.59.1"}}\n'})
     with open_snapshot(manifest) as store:
-        assert premap.sveltekit.commands(premap.Context(manifest, store)) is None
+        assert entry_points.sveltekit.commands(premap.Context(manifest, store)) is None
 
 
 def test_a_package_folder_is_read_against_its_own_files(tmp_path):
@@ -379,7 +379,7 @@ def test_the_setup_installs_no_package_the_project_s_own_command_is_in_the_packa
     from snapshot_store import open_snapshot
     project_dir, manifest = manifest_of(tmp_path, {"package.json": '{"devDependencies": {"@sveltejs/kit": "2.70.4"}}\n'})
     with open_snapshot(manifest) as store:
-        asked = premap.sveltekit.commands(premap.Context(manifest, store))
+        asked = entry_points.sveltekit.commands(premap.Context(manifest, store))
     spec = container_runner.TOOLS["sveltekit"]
     assert spec["setup"] == [container_runner.UNPACK["node"]]  # Node only
     assert (spec["restores"], spec["runs_on"]) == ("node", ("node",))
@@ -457,13 +457,13 @@ def test_no_engine_carries_the_reason_and_nothing_of_the_project_runs_on_this_ma
     started = spied(monkeypatch)
     _, run = recorder(state="gap")
     with patch.object(container, "run_commands", run):
-        record = premap.write(manifest, sources=(premap.sveltekit,), runner=container_runner.runner(manifest))
+        record = entry_points.write(manifest, sources=(entry_points.sveltekit,), runner=container_runner.runner(manifest))
     [gap] = [g for g in record["gaps"] if g.get("source") == SOURCE]
     assert gap["kind"] == "model_not_run" and "no engine" in gap["detail"] and gap["remedy"] == "start one"
     assert "framework_entries" not in record
     nothing_started(started, marks)
     started.clear()
-    record = premap.write(manifest, sources=(premap.sveltekit,), runner=runner_for(answers())[1])
+    record = entry_points.write(manifest, sources=(entry_points.sveltekit,), runner=runner_for(answers())[1])
     assert record["framework_entries"]
     nothing_started(started, marks)
 
@@ -474,7 +474,7 @@ def test_the_check_of_the_sign_catches_a_source_that_starts_the_command_on_the_h
     import subprocess
     marks, manifest = marked_project(tmp_path, monkeypatch)
     started = spied(monkeypatch)
-    real = premap.sveltekit.commands
+    real = entry_points.sveltekit.commands
     command = ["npx", "--no-install", "svelte-kit", "sync"]
 
     def mutated(context):
@@ -484,17 +484,17 @@ def test_the_check_of_the_sign_catches_a_source_that_starts_the_command_on_the_h
         except OSError:  # the spy refuses to start it, after recording it
             pass
         return real(context)
-    monkeypatch.setattr(premap.sveltekit, "commands", mutated)
+    monkeypatch.setattr(entry_points.sveltekit, "commands", mutated)
     _, run = recorder(state="gap")
     with patch.object(container, "run_commands", run):
-        premap.write(manifest, sources=(premap.sveltekit,), runner=container_runner.runner(manifest))
+        entry_points.write(manifest, sources=(entry_points.sveltekit,), runner=container_runner.runner(manifest))
     with pytest.raises(AssertionError):
         nothing_started(started, marks)
 
 
 def test_a_snapshot_with_no_package_json_declaring_the_kit_runs_nothing(tmp_path):
     _, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"svelte": "5.59.1"}}\n', "src/routes/+page.svelte": "<h1>x</h1>\n"})
-    record = premap.write(manifest, sources=(premap.sveltekit,), runner=lambda commands: 1 / 0)
+    record = entry_points.write(manifest, sources=(entry_points.sveltekit,), runner=lambda commands: 1 / 0)
     assert record["sources"][0]["state"] == "not_needed" and "framework_entries" not in record
 
 
@@ -502,8 +502,8 @@ def test_a_snapshot_with_no_package_json_declaring_the_kit_runs_nothing(tmp_path
 
 def test_the_source_is_one_name_of_the_registry_with_its_table_in_the_data_and_its_setup_in_the_runner():
     import entries
-    assert premap.sveltekit in premap.FRAMEWORK_SOURCES and premap.sveltekit in premap.SOURCES
-    source = premap.sveltekit
+    assert entry_points.sveltekit in entry_points.FRAMEWORK_SOURCES and entry_points.sveltekit in entry_points.SOURCES
+    source = entry_points.sveltekit
     assert hasattr(source, "commands") and callable(source.from_record)
     assert source.NAME in entries.QUERIES and source.NAME in container_runner.TOOLS
     table = entries.QUERIES["sveltekit"]
@@ -513,9 +513,9 @@ def test_the_source_is_one_name_of_the_registry_with_its_table_in_the_data_and_i
 
 
 def test_the_evidence_reads_the_rows_and_the_gaps_of_the_source_beside_the_others(tmp_path):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     _, manifest = manifest_of(tmp_path, project())
-    premap.write(manifest, sources=(premap.sveltekit,), runner=runner_for(answers())[1])
+    entry_points.write(manifest, sources=(entry_points.sveltekit,), runner=runner_for(answers())[1])
     rows, gaps = evidence(manifest)
     assert {r["reader"] for r in rows} == {"sveltekit"} and {r["path"] for r in rows} >= {"/api/pay", "/blog/[slug]"}
     assert [g for g in gaps if g.get("source") == SOURCE] == []  # the rows the snapshot cannot bind are rows with a gap, not gaps of the source
@@ -523,16 +523,17 @@ def test_the_evidence_reads_the_rows_and_the_gaps_of_the_source_beside_the_other
 
 def test_a_premap_made_before_the_source_is_stale(tmp_path):
     _, manifest = manifest_of(tmp_path, project())
-    before = tuple(source for source in premap.SOURCES if source is not premap.sveltekit)
-    premap.write(manifest, sources=before)
-    assert premap.state(manifest, sources=before)["state"] == "fresh"
-    assert premap.state(manifest)["state"] == "stale"
+    premap.write(manifest, sources=())
+    before = tuple(source for source in entry_points.SOURCES if source is not entry_points.sveltekit)
+    entry_points.write(manifest, sources=before)
+    assert entry_points.state(manifest, sources=before)["state"] == "fresh"
+    assert entry_points.state(manifest)["state"] == "stale"
 
 
 def test_a_premap_where_the_source_was_not_needed_gives_the_evidence_no_row_and_no_gap(tmp_path):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     _, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"react": "19.3.1"}}\n'})
-    premap.write(manifest, sources=(premap.sveltekit,), runner=lambda commands: 1 / 0)
+    entry_points.write(manifest, sources=(entry_points.sveltekit,), runner=lambda commands: 1 / 0)
     rows, gaps = evidence(manifest)
     assert [r for r in rows if r["reader"] == "sveltekit"] == [] and [g for g in gaps if g.get("source") == SOURCE] == []
 
@@ -542,7 +543,7 @@ def test_a_premap_where_the_source_was_not_needed_gives_the_evidence_no_row_and_
 @pytest.fixture(scope="module")
 def made(tmp_path_factory):
     _, manifest = manifest_of(tmp_path_factory.mktemp("sveltekit-links"), project())
-    premap.write(manifest, sources=(premap.sveltekit,), runner=runner_for(answers())[1])
+    entry_points.write(manifest, sources=(entry_points.sveltekit,), runner=runner_for(answers())[1])
     return manifest
 
 
@@ -570,7 +571,7 @@ def test_the_rows_the_snapshot_cannot_bind_are_gaps_of_the_links_with_what_was_l
 
 
 def test_a_layout_is_a_candidate_of_no_kind_that_starts_a_flow_and_so_no_entry(made, links):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     layouts = [r for r in evidence(made)[0] if r["shape"].startswith("+layout")]
     assert len(layouts) == 3 and {r["kind"] for r in layouts} == {LAST}
     assert not [e for e in links["entries"] if e["site"].split(":")[0] in {r["site"] for r in layouts}]
@@ -578,7 +579,7 @@ def test_a_layout_is_a_candidate_of_no_kind_that_starts_a_flow_and_so_no_entry(m
 
 def test_the_shapes_of_the_source_are_in_the_registry_so_no_question_is_asked_for_them(made):
     import entries
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     rows = [r for r in evidence(made)[0] if r["reader"] == "sveltekit"]
     assert {(r["shape"], r["entry"]) for r in entries.registry_rules(rows)} == {
         ("+server", "rotta"), ("+page.server", "rotta"), ("+page", "rotta"), ("+layout.server", LAST), ("+layout", LAST)}
@@ -599,13 +600,14 @@ def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_reco
 
 
 def test_a_source_that_a_fake_adds_to_the_tuple_is_read_with_no_other_line_than_the_name(tmp_path, monkeypatch):
-    from premap.flow_entries import evidence
+    from entry_points.flow_entries import evidence
     row = {"reader": "svelte-like", "shape": "page", "site": "src/routes/+page.svelte", "symbol": "src/routes/+page.svelte::<module>",
            "path": "/", "sources": ["svelte-like@v1"]}
     fake = types.SimpleNamespace(NAME="svelte-like", from_record=lambda report: ([row], []))
     _, manifest = manifest_of(tmp_path, {"package.json": "{}\n"})
     premap.write(manifest, sources=())
-    monkeypatch.setattr(premap, "FRAMEWORK_SOURCES", (*premap.FRAMEWORK_SOURCES, fake))
+    entry_points.write(manifest, sources=())
+    monkeypatch.setattr(entry_points, "FRAMEWORK_SOURCES", (*entry_points.FRAMEWORK_SOURCES, fake))
     assert row in evidence(manifest)[0]
 
 
@@ -614,7 +616,7 @@ def test_the_premap_rows_are_the_modules_with_their_exports_and_the_links_bind_t
     puts each entry on the function the snapshot names."""
     import flows
     _, manifest = manifest_of(tmp_path, project())
-    record = premap.write(manifest, sources=(premap.sveltekit,), runner=runner_for(answers())[1])
+    record = entry_points.write(manifest, sources=(entry_points.sveltekit,), runner=runner_for(answers())[1])
     [pay] = [r for r in record["framework_entries"] if r["path"] == "/api/pay"]
     assert pay["symbol"] == f"{pay['site']}::<module>" and pay["exports"] and "handler" not in pay and "handler_source" not in pay
     linked = {(e["path"], e["symbol"].split("::")[1], e["handler_source"]) for e in flows.cached_links(manifest, [])["entries"]

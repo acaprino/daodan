@@ -5,7 +5,7 @@
 
 Each application is fetched at a pinned commit (`https://codeload.github.com/<repo>/tar.gz/<sha>`) while the image is built, with
 the network open, and so are Maven's dependencies, with Daodan's own restore line (`preparation.RESTORES["maven"]["line"]`, in a
-repository of the application's own) and the Noir that `premap/noir.py` pins (sha256 checked). Nothing of the applications is
+repository of the application's own) and the Noir that `entry_points/noir.py` pins (sha256 checked). Nothing of the applications is
 kept in the repository: the answers are. Then, with the network blocked and in a copy of the project: Noir over the sources, `mvn -o
 -DskipTests package`, each repackaged jar (the ones whose manifest has `Start-Class`) unpacked, the launcher on each (Actuator's
 `mappings` first, the handler methods when the bean is absent, then the variants that try to reach the mappings without the services
@@ -33,7 +33,7 @@ APPS = {
     "ruoyi": ("yangzongzhuan/RuoYi", "d6708994364bfbb472c96380d6129e24303b3228", "MIT"),
     "microservices": ("spring-petclinic/spring-petclinic-microservices", "935ba9320a6514a6c31ff1316c29281b2191dcd3", "Apache-2.0"),
 }
-NOIR = ("https://github.com/owasp-noir/noir/releases/download/v1.5.0/noir-v1.5.0-linux-x86_64",  # premap/noir.py DOWNLOAD
+NOIR = ("https://github.com/owasp-noir/noir/releases/download/v1.5.0/noir-v1.5.0-linux-x86_64",  # entry_points/noir.py DOWNLOAD
         "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70")
 GO_OFFLINE = "mvn -B -q org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline"  # preparation.RESTORES["maven"]["line"]
 BASE = ["server.port=-1", "management.server.port=-1", "management.endpoints.web.exposure.include=mappings", "spring.main.banner-mode=off"]

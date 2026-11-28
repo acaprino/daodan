@@ -505,6 +505,7 @@ def test_the_scan_runs_the_model_commands_in_daodans_container_with_the_engine_f
     """The scan hands the pre-map the container runner: each model source's commands go to one container run,
     the engine found once is given to the first run (it ends with that run), the others find their own."""
     import container
+    import entry_points
     import premap
     import container_runner
     manifest = _go_snapshot(tmp_path)
@@ -525,16 +526,17 @@ def test_the_scan_runs_the_model_commands_in_daodans_container_with_the_engine_f
     assert found.call_count == 1
     assert [tool for tool, _ in asked] == ["renovate", "go", "noir"]
     assert [given for _, given in asked] == [engine, None, None]
-    record = premap.ensure(manifest)
-    assert not [s for s in record["sources"] if s["state"] == "not_run"]
+    ran = [*premap.ensure(manifest)["sources"], *entry_points.ensure(manifest)["sources"]]  # the entry points after the pre-map
+    assert not [s for s in ran if s["state"] == "not_run"]
     sources = {e["data"]["phase"] for e in seen if e["kind"] == "progress" and e["step"] == "scan"}
-    assert {s["source"] for s in record["sources"]} == sources  # one progress event per source
+    assert {s["source"] for s in ran} == sources  # one progress event per source
 
 
 def test_without_a_container_engine_the_model_sources_are_not_run_with_the_gap_and_no_wait(tmp_path):
     """No engine answers: the engine is asked once, every model source is `not_run` at once with a gap that names
     the missing engine and its remedy, nothing starts a container, and the next scan with an engine runs them."""
     import container
+    import entry_points
     import premap
     manifest = _go_snapshot(tmp_path)
     gap = container.Gap("no container engine answers: neither docker nor podman", "start Docker or Podman")
@@ -543,11 +545,11 @@ def test_without_a_container_engine_the_model_sources_are_not_run_with_the_gap_a
             mock.patch.object(container, "run_commands", side_effect=AssertionError("a container started")):
         result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
     assert "failed" not in result["scan"] and found.call_count == 1
-    record = premap.ensure(manifest)
-    model = [s for s in record["sources"] if s["state"] not in ("ran", "not_needed")]
+    record, found = premap.ensure(manifest), entry_points.ensure(manifest)
+    model = [s for s in (*record["sources"], *found["sources"]) if s["state"] not in ("ran", "not_needed")]
     assert {s["source"].split("@")[0] for s in model} == {"renovate", "go", "noir"}
     assert {s["state"] for s in model} == {"not_run"}
-    named = [g for g in record["gaps"] if g["kind"] == "model_not_run"]
+    named = [g for g in (*record["gaps"], *found["gaps"]) if g["kind"] == "model_not_run"]
     assert len(named) == 3 and all(gap.cause in g["detail"] and g["remedy"] == gap.remedy for g in named)
     assert sum(1 for e in seen if e["kind"] == "gap" and gap.cause in e["message"]) == len(named)
     assert premap.state(manifest, runner=lambda commands: [])["state"] == "stale"  # retried once one answers

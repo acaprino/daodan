@@ -26,7 +26,7 @@ import preparation  # noqa: E402
 import premap  # noqa: E402
 import snapshot  # noqa: E402
 import container_runner  # noqa: E402
-from premap import fastapi_app  # noqa: E402
+from entry_points import fastapi_app  # noqa: E402
 
 SCRIPT, SHARED = "fastapi_routes.py", "python_script.py"
 TOOL = {"files": [(None, None, SCRIPT), (None, None, SHARED)],

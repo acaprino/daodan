@@ -38,7 +38,7 @@ APPS = {
     "fastapi-template": ("fastapi", "fastapi/full-stack-fastapi-template", "77e550a73bb49dd2967622c5ed11bf7a49603c93", "MIT", "LICENSE", "pin of benchmarks/fastapi-routes/apps.py"),
     "dispatch": ("fastapi", "Netflix/dispatch", "dd2837e82a0bf5565b1b4b4b91ea30b7262d4061", "Apache-2.0", "LICENSE", "archived repository"),
 }
-# The Noir that `daodan/core/premap/noir.py` pins (`DOWNLOAD`): the image checks the binary's sha256 against the one below, and `summarize.py` refuses an answer
+# The Noir that `daodan/core/entry_points/noir.py` pins (`DOWNLOAD`): the image checks the binary's sha256 against the one below, and `summarize.py` refuses an answer
 # whose `noir_pin` (Daodan's own `DOWNLOAD`) is another.
 NOIR = ("https://github.com/owasp-noir/noir/releases/download/v1.5.0/noir-v1.5.0-linux-x86_64",
         "4e176c92ee16f60fafd3be7ea6f605d82d3f27c39704a3f875cbed5bd050dc70")

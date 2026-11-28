@@ -4,10 +4,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from test_codebase_map_container_runner import manifest_of, premap
+from test_codebase_map_container_runner import manifest_of, entry_points, premap
 import flows
-from premap import cargo, noir, python_build, renovate
-from premap.flow_entries import evidence
+from premap import cargo, python_build, renovate
+from entry_points import noir
+from entry_points.flow_entries import evidence
 
 
 @pytest.mark.parametrize("extra", [
@@ -36,7 +37,7 @@ def test_legacy_python_entries_wait_for_refresh_but_cargo_stays_available(tmp_pa
         '[project.scripts]\nrun="pkg.cli:main"\n[tool.setuptools.package-dir]\npkg="src/real"\n'})
     report = premap.write(manifest, sources=(python_build,))
     report["sources"][0]["source"] = "python-build@daodan/premap/v2"
-    from premap.flow_entries import declarations
+    from entry_points.flow_entries import declarations
     from snapshot_store import open_snapshot
     with open_snapshot(manifest) as store:  # an older pre-map carried the declared entries, bound to the symbols
         report["declared_entries"] = declarations(report["units"], store)
@@ -76,7 +77,7 @@ def test_one_endpoint_outside_the_project_survives_as_a_gap_beside_the_valid_rou
                 "handler": {"path": file, "name": "save", "line": 1}}
     run = Mock(return_value=[{"root": "/work", "returncode": 0, "stderr": "", "stdout": json.dumps({"endpoints": [
         route("/bad", "/other/api.py"), route("/save", "/work/api.py")]})}])
-    premap.write(manifest, sources=(noir,), runner=run)
+    entry_points.write(manifest, sources=(noir,), runner=run)
     for _ in range(2):
         rows, gaps = evidence(manifest)
         assert [(r["path"], r["symbol"]) for r in rows] == [("/save", "api.py::save")]
