@@ -10,7 +10,9 @@ observed rows' resolver is `NAME@VERSION`) and `LANGUAGES`, and gives:
 `plan` takes the command that runs the tests from what the project declares (the pre-map's `tests`); for a folder and
 a runner, an entry with an `argv` (`declared`: the user's and the assistant's from `commands.merged`, the CI's, in
 `PRECEDENCE`) comes before
-the tool's convention (`go test ./...`); with nothing to run it says why, and no container starts. `observe` runs
+the tool's convention (`go test ./...`); with nothing to run it says why, and no container starts. `offered` lists
+every run `plan` could make per slot (`slot`: folder and runner) and source (`SOURCES`), `preselected` the one each
+slot arrives with, never the assistant's proposal. `observe` runs
 project code, so only through `container.run_in_container`: the dependencies restored the project's own way in the preparation, with the
 registries, the tests in the execution, with no network. `state` is `ran`, `gap` with `cause` and `remedy`
 when no container could run, or `failed` with `cause` and `remedy` when the preparation or the engine failed.
@@ -112,6 +114,7 @@ def malformed(result) -> str | None:
 
 
 PRECEDENCE = ("user", "assistant", "ci")  # who states a command (its `by`, else its `source`), the first wins
+SOURCES = (*PRECEDENCE, "project", "convention")  # where a command comes from (`source`)
 
 
 def rank(entry: dict) -> int:
@@ -120,14 +123,63 @@ def rank(entry: dict) -> int:
     return PRECEDENCE.index(who) if who in PRECEDENCE else len(PRECEDENCE)
 
 
+def source(entry: dict) -> str:
+    """Where a `tests` or `starts` entry, or a planned run, comes from, one of `SOURCES`: who stated it (`by`, from
+    `commands.merged`), the CI (`source`), a file of the project (`declared_in`), else the tool's convention."""
+    who = entry.get("by") or entry.get("source")
+    return who if who in PRECEDENCE else "project" if entry.get("declared_in") else "convention"
+
+
+def slot(entry: dict) -> tuple[str, str | None]:
+    """The place a run or a `tests` entry fills: its folder, `.` the project's root (the pre-map names it `.` or the
+    empty path), and its runner, or the build tool that runs the tests."""
+    return posixpath.normpath(entry.get("root") or "."), entry.get("runner") or entry.get("tool")
+
+
 def declared(record: dict, runner: str, root: str) -> dict | None:
     """The pre-map's `tests` entry that runs `runner` in `root` with its own words (`argv`), the first by
-    `PRECEDENCE`; None where there is none, and the observer's convention runs. The pre-map names the project's
-    root `.` or the empty path."""
-    root = posixpath.normpath(root or ".")
-    found = [test for test in record.get("tests") or () if test.get("runner") == runner
-             and isinstance(test.get("argv"), list) and posixpath.normpath(test.get("root") or ".") == root]
+    `PRECEDENCE`; None where there is none, and the observer's convention runs."""
+    found = [test for test in record.get("tests") or () if isinstance(test.get("argv"), list)
+             and slot(test) == (posixpath.normpath(root or "."), runner)]
     return min(found, key=rank, default=None)
+
+
+def offered(module, record: dict, files: list[str], read) -> list[dict]:
+    """Every run the observer `module` could make, per slot and source: one `plan` per source of the record's `tests`,
+    on that source's entries alone, and one on none for the tool's convention. An alternative is `{kind: "tests",
+    root, runner, source, declared_in, argv}` (`argv` None where the run has none), with the `by`, `grade` and
+    `proposed_by` of the entry it runs; the same run planned twice is one."""
+    groups = collections.defaultdict(list)
+    for test in record.get("tests") or ():
+        groups[source(test)].append(test)
+    found = {}
+    for name in SOURCES:
+        tests = [] if name == "convention" else groups.get(name)
+        if tests is None:
+            continue
+        for run in module.plan({**record, "tests": tests}, files, read)["runs"]:
+            entry = next((test for test in tests if test.get("declared_in")
+                          and test["declared_in"] == run.get("declared_in") and slot(test) == slot(run)), {})
+            root, runner = slot(run)
+            argv = list(run["argv"]) if run.get("argv") is not None else None
+            one = {"kind": "tests", "root": root, "runner": runner, "source": source({**run, **entry}),
+                   "declared_in": run.get("declared_in"), "argv": argv,
+                   **{key: entry[key] for key in ("by", "grade", "proposed_by") if key in entry}}
+            key = (root, runner, one["source"], one["declared_in"], None if argv is None else tuple(argv))
+            found.setdefault(key, one)
+    return list(found.values())
+
+
+def preselected(alternatives: list[dict]) -> list[dict]:
+    """The alternative each slot arrives with: the first by `user`, `ci`, `project`, `convention` (`SOURCES`), for a
+    start `start` before `dev`; never the assistant's proposal (`proposto`). A start's slot is its folder."""
+    from commands import GRADES
+    first = {}
+    for one in sorted((one for one in alternatives if one.get("grade") != GRADES["assistant"]),
+                      key=lambda one: (SOURCES.index(one["source"]), one.get("mode") not in (None, "start"))):
+        root, runner = slot(one)
+        first.setdefault((one["kind"], root, runner if one["kind"] == "tests" else None), one)
+    return list(first.values())
 
 
 def arguments(argv: list[str], runner: str) -> list[str]:

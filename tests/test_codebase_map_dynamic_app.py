@@ -108,6 +108,15 @@ def test_the_chosen_start_of_a_folder_is_the_user_s_then_the_assistant_s_then_th
         "web": ["npm", "run", "serve"], "api": ["npm", "run", "dev"]}
 
 
+def test_the_assistant_s_proposal_is_never_the_chosen_start_until_the_user_confirms_it():
+    proposed = {**start("web", "start"), "argv": ["npm", "run", "serve"], "by": "assistant", "grade": "proposto",
+                "declared_in": "commands.json"}
+    assert app.chosen({"starts": [start("web", "dev"), proposed]})["web"]["argv"] == ["npm", "run", "dev"]
+    assert app.chosen({"starts": [proposed]}) == {}
+    confirmed = {**proposed, "by": "user", "grade": "confermato", "proposed_by": "assistant"}
+    assert app.chosen({"starts": [start("web", "dev"), confirmed]})["web"]["argv"] == ["npm", "run", "serve"]
+
+
 def test_a_project_declaring_no_start_is_a_gap_and_nothing_runs():
     planned = app.plan({"gaps": [{"kind": "no_start_command", "path": "t/package.json", "detail": "only tests",
                                   "source": "x"}]})

@@ -515,7 +515,8 @@ def test_an_app_the_person_or_the_assistant_starts_is_an_explore_action_with_who
                                                                                                     monkeypatch):
     """The apps of the fresh pre-map and those a command of the user or the assistant starts (`commands`) are the
     `explore` actions of `run_and_observe`, their target the root with the words, the surface and the place of the start
-    that runs there; one with a stated command carries its `by` and `grade`."""
+    that runs there; one whose start is a stated command carries its `by` and `grade`. The assistant's proposal does not
+    run (`app.chosen`): its folder shows the project's start, with no `by`."""
     import json
     import commands
     import entry_points
@@ -524,8 +525,9 @@ def test_an_app_the_person_or_the_assistant_starts_is_an_explore_action_with_who
     planning = _planning()
     record = tmp_path / "premap.json"
     record.write_text(json.dumps({"sources": [], "starts": [
-        {"root": "web", "mode": "start", "runner": "npm", "argv": ["npm", "run", "start"], "surface": "web",
-         "declared_in": "web/package.json#scripts.start", "port": None, "needs_build": False}]}), encoding="utf-8")
+        {"root": root, "mode": "start", "runner": "npm", "argv": ["npm", "run", "start"], "surface": "web",
+         "declared_in": f"{root}/package.json#scripts.start", "port": None, "needs_build": False}
+        for root in ("api", "web")]}), encoding="utf-8")
     monkeypatch.setattr(premap, "state", lambda manifest: {"state": "fresh"})
     monkeypatch.setattr(premap, "path", lambda manifest: record)
     monkeypatch.setattr(entry_points, "state", lambda manifest: {"state": "stale"})
@@ -538,15 +540,16 @@ def test_an_app_the_person_or_the_assistant_starts_is_an_explore_action_with_who
     commands.set(key, {"kind": "starts", "root": "web", "argv": ["npm", "run", "dev"]}, "user")
     found = planning._found(tmp_path / "manifest.sqlite", {}, {}, [], lambda tools, hosts=(): None, key)
     assert [(action["id"], action["state"], action.get("by"), action.get("grade")) for action in found["explore"]] == [
-        ("run_and_observe:app:api", "pending", "assistant", "proposto"),
+        ("run_and_observe:app:api", "pending", None, None),
         ("run_and_observe:app:web", "pending", "user", "confermato")]
     assert [action["target"] for action in found["explore"]] == [
-        {"root": "api", "argv": ["npm", "run", "serve"], "surface": "web", "declared_in": commands.FILE},
+        {"root": "api", "argv": ["npm", "run", "start"], "surface": "web",
+         "declared_in": "api/package.json#scripts.start"},
         {"root": "web", "argv": ["npm", "run", "dev"], "surface": "web", "declared_in": commands.FILE}]
     alone = planning._found(tmp_path / "manifest.sqlite", {}, {}, [], lambda tools, hosts=(): None, None)
     assert [(action["target"], "by" in action) for action in alone["explore"]] == [
-        ({"root": "web", "argv": ["npm", "run", "start"], "surface": "web",
-          "declared_in": "web/package.json#scripts.start"}, False)]
+        ({"root": root, "argv": ["npm", "run", "start"], "surface": "web",
+          "declared_in": f"{root}/package.json#scripts.start"}, False) for root in ("api", "web")]
 
 
 def test_a_folder_on_a_surface_not_run_yet_is_an_explore_action_not_possible_with_its_gap(tmp_path, shared,

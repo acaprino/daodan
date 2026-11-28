@@ -70,11 +70,14 @@ MISE = ("bun",)  # the runners mise installs at the version the pre-map states: 
 
 
 def chosen(record: dict) -> dict[str, dict]:
-    """The start the exploration runs in each folder of the `starts` of `record`: the user's command, then the
-    assistant's (`commands.merged`), then the project's (`dynamic.rank`); `start` before `dev`."""
+    """The start the exploration runs in each folder of the `starts` of `record`: the user's command
+    (`commands.merged`), then the project's (`dynamic.rank`); `start` before `dev`. The assistant's proposal
+    (`proposto`) never runs until the user confirms it."""
+    from commands import GRADES
     from dynamic import rank
     found: dict[str, dict] = {}
-    for entry in sorted(record.get("starts", []), key=lambda entry: (rank(entry), entry["mode"] != "start")):
+    for entry in sorted((entry for entry in record.get("starts", []) if entry.get("grade") != GRADES["assistant"]),
+                        key=lambda entry: (rank(entry), entry["mode"] != "start")):
         found.setdefault(entry["root"], entry)
     return found
 

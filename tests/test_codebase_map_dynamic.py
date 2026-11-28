@@ -849,3 +849,69 @@ def test_one_rule_says_how_a_stopped_run_ended_for_every_observer(exit_code, sec
     for module in dynamic.observers():
         assert "137" not in inspect.getsource(module), module.NAME
 
+
+def go_record(*tests: dict) -> dict:
+    """A pre-map of three Go modules, each with a test file, and `tests` its entries."""
+    return {"units": [{"kind": "go-module", "root": root} for root in (".", "lib", "svc")], "tests": list(tests)}
+
+
+GO_FILES = ["main_test.go", "lib/lib_test.go", "svc/svc_test.go"]
+USER = {"root": "svc", "runner": "go test", "argv": ["go", "test", "./pkg/..."], "declared_in": "commands.json",
+        "by": "user", "grade": "confermato", "proposed_by": "assistant"}
+ASSISTANT = {"root": "lib", "runner": "go test", "argv": ["go", "test", "-count=1", "./..."],
+             "declared_in": "commands.json", "by": "assistant", "grade": "proposto"}
+CI = {"root": "", "runner": "go test", "argv": ["go", "test", "-race", "./..."],
+      "declared_in": ".github/workflows/ci.yml#jobs.test.steps.2", "source": "ci"}
+PROJECT = {"root": "svc", "runner": "go test", "argv": ["go", "test", "-short", "./..."], "declared_in": "Makefile#test"}
+
+
+def test_every_command_of_a_slot_is_an_alternative_with_its_source_and_a_record_with_none_costs_one_plan():
+    """One `plan` per source of the record's `tests` and one for the tool's convention: each run they make is an
+    alternative of its slot, once, with where it comes from and, for a stated command, who stated it."""
+    from dynamic import go
+    module = SimpleNamespace(plan=mock.Mock(wraps=go.plan))
+    found = dynamic.offered(module, go_record(USER, ASSISTANT, CI, PROJECT), GO_FILES, lambda rel: "")
+    assert module.plan.call_count == len(dynamic.SOURCES)
+    assert [(one["root"], one["source"], one["declared_in"], one["argv"]) for one in found] == [
+        (".", "convention", None, go.ARGV), ("lib", "convention", None, go.ARGV),
+        ("svc", "user", "commands.json", USER["argv"]), ("lib", "assistant", "commands.json", ASSISTANT["argv"]),
+        ("svc", "convention", None, go.ARGV), (".", "ci", CI["declared_in"], CI["argv"]),
+        ("svc", "project", "Makefile#test", PROJECT["argv"])]
+    assert {one["kind"] for one in found} == {"tests"} and {one["runner"] for one in found} == {go.RUNNER}
+    assert [{key: one[key] for key in ("by", "grade", "proposed_by") if key in one} for one in found
+            if one["source"] in ("user", "assistant")] == [
+        {"by": "user", "grade": "confermato", "proposed_by": "assistant"}, {"by": "assistant", "grade": "proposto"}]
+    assert all({"by", "grade"}.isdisjoint(one) for one in found if one["source"] not in ("user", "assistant"))
+    module.plan.reset_mock()
+    alone = dynamic.offered(module, go_record(), GO_FILES, lambda rel: "")
+    assert module.plan.call_count == 1
+    assert [(one["root"], one["source"]) for one in alone] == [(".", "convention"), ("lib", "convention"),
+                                                              ("svc", "convention")]
+
+
+def test_each_slot_arrives_with_the_user_s_then_the_ci_s_then_the_project_s_then_the_convention_never_a_proposto():
+    """The preselection: per slot the first by `SOURCES` that is not the assistant's proposal; per folder, a start's
+    `start` script before its `dev` one."""
+    from dynamic import go
+    found = dynamic.offered(go, go_record(USER, ASSISTANT, CI, PROJECT), GO_FILES, lambda rel: "")
+    assert sorted((one["root"], one["source"]) for one in dynamic.preselected(found)) == [
+        (".", "ci"), ("lib", "convention"), ("svc", "user")]
+    assert [one["source"] for one in dynamic.preselected([one for one in found if one["source"] != "user"])
+            if one["root"] == "svc"] == ["project"]
+    web = {"kind": "starts", "root": "web", "runner": "npm", "declared_in": "web/package.json#scripts.dev",
+           "argv": ["npm", "run", "dev"], "source": "project", "mode": "dev"}
+    starts = [web, {**web, "argv": ["npm", "run", "start"], "declared_in": "web/package.json#scripts.start",
+                    "mode": "start"},
+              {**web, "argv": ["npm", "run", "serve"], "declared_in": "commands.json", "mode": "start",
+               "source": "assistant", "by": "assistant", "grade": "proposto"}]
+    assert [one["argv"] for one in dynamic.preselected(starts)] == [["npm", "run", "start"]]
+    assert dynamic.preselected(starts[2:]) == []
+
+
+def test_a_slot_is_the_folder_as_the_pre_map_names_it_and_the_runner_or_the_build_tool():
+    assert dynamic.slot({"root": "", "tool": "gradle", "argv": ["gradle"]}) == (".", "gradle")
+    assert dynamic.slot({"root": ".", "runner": "pytest"}) == dynamic.slot({"root": "./", "runner": "pytest"})
+    assert dynamic.slot({"root": "./svc/", "runner": "go test"}) == ("svc", "go test")
+    assert [dynamic.source(entry) for entry in (USER, ASSISTANT, CI, PROJECT, {"root": "", "tool": "maven"})] == [
+        "user", "assistant", "ci", "project", "convention"]
+
