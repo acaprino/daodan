@@ -462,14 +462,13 @@ def _link_relations(links: dict) -> list[dict]:
 
 
 def _flows(manifest: Path, entities: dict, by_id: dict, graph: dict, gaps: list, entity) -> tuple[list[dict], list[dict]]:
-    """The run's flows, one per entry point, and its deduced links as relations, when link rules are recorded
-    beside its snapshot."""
-    rules_path = Path(manifest).with_name("flow-rules.json")
-    if not rules_path.is_file():
-        return [], []
+    """The run's flows, one per entry point, and its links as relations: the static ones (entry points bound to their
+    definitions, direct calls, HTTP calls to the declared routes, uses of the services) without a model, and what the
+    link rules recorded beside its snapshot add."""
     import flow_paths
     import flows
-    links = flows.cached_links(Path(manifest), flows.load_rules(rules_path))
+    rules_path = Path(manifest).with_name("flow-rules.json")
+    links = flows.cached_links(Path(manifest), flows.load_rules(rules_path) if rules_path.is_file() else [])
     names = {module["name"]: by_id[module["id"]] for module in graph.get("modules", []) if module["id"] in by_id}
     store_types = links.get("store_types", {})
 

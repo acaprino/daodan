@@ -29,7 +29,8 @@ stop, else the words that say how it goes on) and `run(context)`; it says what i
    apart) and what stayed
    unobserved (a language with no observed edge, the tests that did not run, the files no test executed, an
    observed edge against a proven one), and what the graph does not hold: the files an index left out, the
-   languages no analyzer lists, the calls between two analyzers' languages.
+   languages no analyzer lists, the calls between two analyzers' languages. It counts the routes the static links
+   join, with no rule of the model (`flows.cached_links`), and says the HTTP calls no route answers.
 
 See docs/specs/2026-11-15-pipeline-di-analisi.md.
 """
@@ -188,8 +189,10 @@ class Dynamic:
 
 
 class Union:
-    # `modules.ensure_graph` derives the module edges from the snapshot's symbols and the graph `scan` wrote
-    NAME, INPUTS, OUTPUTS, WITHOUT = "union", ("snapshot", "modules", "edges", "observed"), ("graph",), None
+    # `modules.ensure_graph` derives the module edges from the snapshot's symbols and the graph `scan` wrote; the
+    # static links (`flows.cached_links`) join the HTTP calls to the routes of `entry-points`
+    NAME, INPUTS, OUTPUTS = "union", ("snapshot", "modules", "entry-points", "edges", "observed"), ("graph",)
+    WITHOUT = None
     # Languages two analyzers index apart that call each other (Java and Kotlin in one build, cgo, a Python C
     # extension, JNI): each stage loads only its own index, so no edge joins them.
     APART = (("java", "kotlin"), ("go", "c"), ("python", "c"), ("python", "cpp"), ("java", "c"), ("java", "cpp"))
@@ -242,6 +245,7 @@ class Union:
             detail = (f"calls between {one} and {other} are not resolved: each analyzer reads its own index, so a "
                       "project symbol of the other language can read as external")
             say(detail, {"kind": "not-joined", "languages": [one, other], "detail": detail})
+        routes = Union.routes(context, say)
         ui_controls = (dynamic or {}).get("ui_controls", [])
         ui_gaps = (dynamic or {}).get("ui_gaps", [])
         context.bus.emit("graph.ready", "the complete graph is ready", step=Union.NAME,
@@ -249,8 +253,30 @@ class Union:
                          **({"ui_gaps": ui_gaps} if ui_gaps else {}),
                          languages={language: {"state": entry.get("state"), "engine": entry.get("engine")}
                                     for language, entry in languages.items()})
-        return {"languages": languages, **({"no_analyzer": unserved} if unserved else {}),
-                **({"not_joined": apart} if apart else {})}
+        return {"languages": languages, **({"routes": routes} if routes else {}),
+                **({"no_analyzer": unserved} if unserved else {}), **({"not_joined": apart} if apart else {})}
+
+    @staticmethod
+    def routes(context: Context, say) -> dict | None:
+        """The routes of the static links (`flows.cached_links`, with the recorded link rules or none): how many are
+        offered, how many HTTP calls ask for one and how many are linked, and a gap with the calls no single route
+        answers. The envelope reads the same links back from their cache; links that cannot be computed stop no other
+        report, nor the graph."""
+        import flows
+        recorded = Path(context.manifest).with_name("flow-rules.json")
+        try:
+            rules = flows.load_rules(recorded) if recorded.is_file() else []
+            routes = flows.cached_links(Path(context.manifest), rules)["routes"]
+        except Exception as error:  # noqa: BLE001 - the links are one report of the union, not its graph
+            context.bus.emit("log", f"the static links could not be computed: {error!r}", step=Union.NAME,
+                             level="error", cause=f"{type(error).__name__}: {error}",
+                             remedy="analyze again: the links are computed again from the snapshot")
+            return None
+        if unjoined := max(0, routes["called"] - routes["linked"]):
+            detail = (f"{unjoined} of {routes['called']} HTTP calls are linked to no route: none or several of the "
+                      f"{routes['offered']} offered answer each")
+            say(detail, {"kind": "routes-not-joined", "calls": unjoined, **routes, "detail": detail})
+        return routes
 
     @staticmethod
     def observed(language: str, coverage: dict, reason: str | None, bus, say) -> None:
