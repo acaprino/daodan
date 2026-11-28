@@ -76,6 +76,18 @@ class LevelTests(unittest.TestCase):
         people = self.view(["persone"])
         self.assertTrue(any("budget" in g["reason"] for g in people["gaps"]))
 
+    def test_an_external_node_with_a_registry_logo_carries_its_mark(self):
+        marked = system_levels.service_registry.marked()
+        plain = next(e["id"] for e in system_levels.service_registry.load()["entries"] if e["id"] not in marked)
+        changed = copy.deepcopy(self.m)
+        for record in changed["nodes"]:
+            record.update({"Stripe": {"registry": "stripe"}, "Server shop": {"registry": plain}}.get(record["name"], {}))
+        shown = {n["name"]: n for n in system_levels.view(changed, PAY, ["persone", "infrastruttura"])["nodes"]}
+        self.assertIn("stripe", marked)
+        self.assertEqual(shown["Stripe"]["mark"], "stripe")
+        self.assertNotIn("mark", shown["Server shop"])
+        self.assertNotIn("mark", shown["Checkout"])
+
     def test_code_shows_files_from_the_links(self):
         code = self.view(["codice"], links=self.links)
         self.assertIn("server/payments.py", names(code))

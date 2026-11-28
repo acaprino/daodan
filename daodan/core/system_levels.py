@@ -9,7 +9,8 @@ path whose middle nodes are hidden: it stays declared when a step is declared an
 keeps the proof of every step. A path enters and leaves an entity on the same
 representation; when it does not, or a step is refused, it is a gap, never an arrow.
 At `infrastruttura` a node is put on what it runs on; at `codice` a node becomes the
-files of its members that the flow's links touch, never single symbols.
+files of its members that the flow's links touch, never single symbols. An external node whose registry entry has a
+logo carries the entry's id in `mark`, as in the envelope (`visual.build_envelope`).
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import service_registry  # noqa: E402
 import system_map  # noqa: E402
 
 LEVELS = ("persone", "funzioni", "dati", "codice", "infrastruttura")
@@ -174,8 +176,11 @@ def view(system: dict, flow: str, levels: list[str], links: dict | None = None) 
             steps = [s for s in moved if s["from"] != s["to"]]
     entities = {n for n in pool if nodes[n]["type"] == "entità"}
     arrows, gaps = _contract(visible, steps, entities)
+    logos = service_registry.marked()
     out_nodes = [{"name": n, "type": nodes[n]["type"], "level": shown[n], "position": nodes[n]["position"],
-                  "also": _also(nodes[n], shown[n], system["nodes"])} for n in pool if shown[n]]
+                  "also": _also(nodes[n], shown[n], system["nodes"]),
+                  **({"mark": nodes[n]["registry"]} if nodes[n].get("registry") in logos else {})}
+                 for n in pool if shown[n]]
     if "codice" in chosen:
         code_steps, files = _code_steps(record, nodes, links)
         code_arrows, code_gaps = _contract(set(files), code_steps, set())

@@ -179,7 +179,7 @@ Ogni voce dice il suo `support`, calcolato da `registry_build.support` e mai scr
 - `[deciso]` Per tenere semplice il primo grafo, i servizi restano in vista accanto a chi li usa; framework, librerie e strumenti stanno sotto un nodo astratto «Tecnologie», che si apre. Il logo sul modulo resta la forma chiusa della freccia.
 - **Logo di una tecnologia:** una tessera di Daodan in `daodan/data/marks/`; i servizi di AWS, Azure e Google Cloud hanno pittogrammi di Daodan.
 - **Senza logo:** il nodo ha l'icona della sua specie (`viewer/src/icons.ts`). `filesystem` e `altro` prendono quella dell'entità, `funzionalità` nessuna.
-- **Mappa di sistema:** i suoi nodi esterni portano l'id dell'anagrafica (`registry`), ma oggi la vista (`system_levels.view`) non passa il logo (allineamento tracciato nel piano, `T2.C`).
+- **Mappa di sistema:** i suoi nodi esterni portano l'id dell'anagrafica (`registry`) e, quando la voce ha un logo, la vista (`system_levels.view`) lo passa in `mark`, come l'involucro. *Nel codice.*
 - `[deciso]` **Due ingressi con lo stesso esito** sono due varianti di un solo flusso, che si apre per vederle (nel piano, `T3.C`).
 
 ## File di progetto
