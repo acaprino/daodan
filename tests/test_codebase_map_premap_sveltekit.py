@@ -24,7 +24,7 @@ from test_codebase_map_container_runner import bound, container, container_runne
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/sveltekit-routes"
 FIXTURE = BENCHMARK / "fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/sveltekit/answers.json").read_text(encoding="utf-8"))
-SOURCE = "sveltekit@daodan/premap/v2"
+SOURCE = "sveltekit@daodan/premap/v3"  # v3: the route's `schema`
 SYNC = ["timeout", "--kill-after=10", "900", "npx", "--no-install", "svelte-kit", "sync"]  # one folder has all the time there is
 LAST = "nessun ingresso"
 META = ".svelte-kit/types/route_meta_data.json"
@@ -178,6 +178,16 @@ def test_the_route_is_the_tool_s_id_with_its_group_and_its_segments_as_written_a
         assert route in listed() and not [r for r in record["bound"] if r["path"] == route], route
         assert all(file.endswith(("+layout.ts", "+layout.server.ts")) for file in listed()[route]), route
     assert not [r for r in record["bound"] if r["site"].endswith(".svelte")]
+
+
+def test_the_schema_of_a_route_is_its_id_with_each_parameter_as_one_and_none_for_a_rest_an_optional_segment_or_a_group(tmp_path):
+    """No file the tool writes ties an id to its URL, so a group is not taken out of it here: its route has no schema."""
+    record, _, _ = read(tmp_path, project())
+    schemas = {r["path"]: r["schema"] for r in record["bound"]}
+    assert schemas["/blog/[slug]"] == "/blog/{}" and schemas["/api/items/[id]"] == "/api/items/{}" and schemas["/sitemap.xml"] == "/sitemap.xml"
+    assert schemas["/docs/[...rest]"] is None and schemas["/(shop)/cart"] is None
+    schema = entry_points.sveltekit._schema
+    assert (schema("/items/[id=integer]"), schema("/lang/[[opt]]"), schema("/")) == ("/items/{}", None, "/")
 
 
 def test_a_routes_folder_that_is_not_src_routes_needs_no_reading_the_tool_prints_the_files_where_the_project_has_them(tmp_path):
@@ -589,10 +599,12 @@ def test_the_shapes_of_the_source_are_in_the_registry_so_no_question_is_asked_fo
 def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_recorded_answer(tmp_path):
     """`results/pipeline-scan.json`: the `scan` step in Daodan's container, with the packages restored from the lockfile and the
     command run under `timeout` with no network, wrote the same 25 rows that the recorded answer gives here, and no gap of the
-    source; the 16 entries are the rows on a function, and Noir's 25 endpoints in the same files stay gaps of their own."""
+    source; the 16 entries are the rows on a function, and Noir's 25 endpoints in the same files stay gaps of their own. The run was
+    recorded before the `schema`, a reading of the same answer that the recording does not hold."""
     scan = json.loads((BENCHMARK / "results/pipeline-scan.json").read_text(encoding="utf-8"))
     record, _, _ = read(tmp_path, project())
-    assert scan["framework_entries"] == [{key: value for key, value in row.items() if key != "sources"} for row in record["bound"]]
+    assert scan["framework_entries"] == [{key: value for key, value in row.items() if key not in ("sources", "schema")}
+                                         for row in record["bound"]]
     assert len(scan["framework_entries"]) == 25 and scan["source_gaps"] == []
     assert scan["sources"]["sveltekit"]["state"] == "ran" and scan["sources"]["next"]["state"] == "not_needed"
     assert scan["links"]["entries"] == {"sveltekit rotta": 16} and scan["links"]["routes"]["offered"] == 0

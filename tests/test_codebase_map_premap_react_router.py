@@ -20,7 +20,7 @@ from test_codebase_map_container_runner import bound, container, container_runne
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/react-router-routes/fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/react-router/answers.json").read_text(encoding="utf-8"))
-SOURCE = "react-router@daodan/premap/v4"  # v4: the module row with its `exports`, bound by the links; v3: the root's and a pathless layout's data functions are rows; v2: an absolute child, the root under `app/`: an older pre-map is stale
+SOURCE = "react-router@daodan/premap/v5"  # v5: the route's `schema`; v4: the module row with its `exports`, bound by the links; v3: the root's and a pathless layout's data functions are rows; v2: an absolute child, the root under `app/`: an older pre-map is stale
 LAST = "nessun ingresso"
 EXPORTS = ("default", "loader", "action", "clientLoader", "clientAction")
 LIMIT = ["timeout", "--kill-after=10", "300"]  # what ends a command that does not end: 10 seconds after the signal, the kill
@@ -210,6 +210,14 @@ def test_the_path_of_a_route_is_the_path_of_its_ancestors_and_its_own(tmp_path):
     assert paths["app/routes/nested/child.tsx"] == "/nested/child"  # under a layout with one
     assert paths["app/routes/api/pay.ts"] == "/api/pay"  # one path of two segments
     assert paths["app/routes/blog.tsx"] == "/:lang?/blog" and paths["app/routes/docs.tsx"] == "/docs/*"  # as the tool writes them
+
+
+def test_the_schema_of_a_route_is_its_path_with_each_parameter_as_one_and_none_for_a_splat_or_an_optional_segment(tmp_path):
+    record, _, _ = read(tmp_path, project("framework"))
+    schemas = {r["path"]: r["schema"] for r in record["bound"]}
+    assert schemas["/orders/:id"] == "/orders/{}" and schemas["/users/:id/edit"] == "/users/{}/edit" and schemas["/about"] == "/about"
+    assert schemas["/"] == "/" and schemas["/:lang?/blog"] is None and schemas["/docs/*"] is None  # several schemas: a gap of the links
+    assert entry_points.react_router._schema("/files/about?") is None
 
 
 def test_a_path_that_begins_with_a_slash_is_the_whole_path_of_the_route_and_of_what_is_under_it(tmp_path):
@@ -624,6 +632,7 @@ def test_each_export_a_route_starts_is_an_entry_on_its_function_and_no_route_is_
             ("/checkout", "Checkout", "rotta", "react-router"), ("/api/pay", "action", "rotta", "react-router"),
             ("/orders/:id", "loader", "rotta", "react-router"), ("/about", "About", "rotta", "react-router")} <= found
     assert links["routes"]["offered"] == 0 and links["routes"]["linked"] == 0  # entries, not offered routes: the tool gives no method
+    assert "declared route None /about: it has no method" in {g["reason"] for g in links["gaps"]}  # as Django's, with the cause
 
 
 def test_the_routes_the_snapshot_cannot_bind_are_gaps_of_the_links_with_what_was_looked_for(links):
@@ -652,10 +661,12 @@ def test_the_shapes_of_the_source_are_in_the_registry_so_no_question_is_asked_fo
 def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_recorded_answer(tmp_path):
     """`results/pipeline-scan.json`: the `scan` step in Daodan's container, with the packages restored from the lockfile and the
     command run with no network, wrote the same 23 rows that the recorded answer gives here, and no gap of the source; the 19
-    entries are the rows on a function, and Noir's 25 endpoints in the same files stay gaps of their own."""
+    entries are the rows on a function, and Noir's 25 endpoints in the same files stay gaps of their own. The run was recorded
+    before the `schema`, a reading of the same answer that the recording does not hold."""
     scan = json.loads((BENCHMARK.parent / "results/pipeline-scan.json").read_text(encoding="utf-8"))
     record, _, _ = read(tmp_path, project("framework"))
-    assert scan["framework_entries"] == [{key: value for key, value in row.items() if key != "sources"} for row in record["bound"]]
+    assert scan["framework_entries"] == [{key: value for key, value in row.items() if key not in ("sources", "schema")}
+                                         for row in record["bound"]]
     assert len(scan["framework_entries"]) == 23 and scan["source_gaps"] == []
     assert scan["sources"]["react-router"]["state"] == "ran" and scan["sources"]["next"]["state"] == "not_needed"
     assert scan["links"]["entries"] == {"react-router rotta": 19} and scan["links"]["routes"]["offered"] == 0

@@ -22,7 +22,9 @@ routes it has made of the pages, after the project's own `pages:extend` hooks, i
 the whole path composed from its ancestors and no line (the tool gives none): the file is the entry, as a Next.js page is. A route
 with no file (a redirect), a file the snapshot does not hold (a layer outside the project) and an app that never reaches the hook
 (no pages folder) are gaps; a script that failed (the config throws, `@nuxt/kit` is missing, a route whose file is gone) is a gap
-with the cause it wrote, and the server routes are still read. The rows are entries, not offered routes.
+with the cause it wrote, and the server routes are still read. Each row carries its route's `schema` (`_route_schema`,
+`_page_schema`): a server route with a method of its own is an offered route, and Noir's route on the same file and path is that
+row (`flows.link_facts`); a page answers any method, as a Next.js page does.
 
 Nuxt's own two routes (`/__nuxt_error`, `/__nuxt_island/**`) name a package's file and a virtual module, so they are the second
 kind of gap in every project.
@@ -34,7 +36,7 @@ import posixpath
 
 from entry_points import frameworks
 
-NAME, VERSION, RANK = "nuxt", "daodan/premap/v2", "scanner"
+NAME, VERSION, RANK = "nuxt", "daodan/premap/v3", "scanner"  # v3: the route's `schema`, a page is `page`
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a handler import names, written with no extension
 TYPES = ".nuxt/types"
 # shortcut: the file is read where Nuxt writes it by default; a project that sets `buildDir` is a gap saying so (measured: `build-dir`
@@ -113,6 +115,28 @@ def _pages(tree, parents=()) -> list[dict]:
         found.append({"name": node.get("name"), "file": node["file"], "path": "/" + "/".join(s for s in segments if s)})
         found += _pages(node.get("children", []), segments)
     return found
+
+
+def _route_schema(route: str) -> str | None:
+    """A server route as `REST` reads a path (`flows.path_schema`: `:id` is `{}`, and so is `*`, one segment in Nitro's router), or
+    None for one that stands for several schemas: `**` and `**:path`, what is under it. The tool prints the text only, so its
+    segments are read as Nitro writes them: a text with no grammar, read with string operations, as `nextjs._next_path` does."""
+    import flows
+    segments = route.split("/")
+    if any(segment.startswith("**") for segment in segments):
+        return None
+    return flows.path_schema("/".join("{}" if segment == "*" else segment for segment in segments))
+
+
+def _page_schema(path: str) -> str | None:
+    """A page's path as `REST` reads one (`flows.path_schema`: `:id()` is `{}`), or None for one that stands for several schemas:
+    a segment vue-router repeats or may leave out (`:slug(.*)*`, `:page?`, `:p+`), as Nuxt writes a catch-all and an optional page.
+    Read as the vue-router of Nuxt writes it: a text with no grammar, read with string operations, as `nextjs._next_path` does."""
+    # shortcut: a parameter inside a segment (`:id()-x`, `[id]-x.vue`) reads as the whole segment, when a project names a page so
+    import flows
+    if any(segment.endswith(("?", "*", "+")) for segment in path.split("/")):
+        return None
+    return flows.path_schema(path)
 
 
 def _printed(result: dict) -> tuple[bool, list[dict]]:
@@ -211,9 +235,7 @@ def read(context, commands, results):
     if handlers:
         server = spec["server-route"]
         for route, method, file in handlers:
-            # shortcut: the route is the text Nitro wrote (`/api/users/:id`, `/api/files/**:path`), not a path schema a call is
-            # joined to; when the routes are offered, convert it as `entry_points/nextjs.py` does for Next.js
-            base = {"reader": NAME, "shape": "server-route", "kind": server["kind"], "path": route,
+            base = {"reader": NAME, "shape": "server-route", "kind": server["kind"], "path": route, "schema": _route_schema(route),
                     **({"method": method.upper()} if method != ANY else {})}
             module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
             # shortcut: the default export of a handler file is nearly always a call, `defineEventHandler(...)`, which the
@@ -221,8 +243,8 @@ def read(context, commands, results):
             # records bind the function a call is given as its argument, the row is on that function
             rows.append({**module, "exports": server["exports"]})  # the links bind them (`binder`)
     for path, file in pages:  # the file is the entry, as for a Next.js page: no line, the tool gives none
-        rows.append({"reader": NAME, "shape": "page", "kind": spec["page"]["kind"], "path": path, "site": file,
-                     "symbol": f"{file}::{flows.MODULE}"})
+        rows.append({"reader": NAME, "shape": "page", "kind": spec["page"]["kind"], "path": path, "schema": _page_schema(path),
+                     "site": file, "symbol": f"{file}::{flows.MODULE}", **({"page": True} if spec["page"].get("page") else {})})
     return {"facts": {"framework_entries": rows} if rows else {}, "gaps": gaps}
 
 

@@ -1108,7 +1108,7 @@ def _declared_routes(found: list[dict], offered: list[dict]) -> tuple[list[dict]
         if item.get("kind") != "rotta" or "schema" not in item or item.get("page") or not item.get("symbol"):
             continue  # a page answers any method: it is no route and no gap
         cause = "it has no method" if not method else None if item["schema"] is not None else (
-            "the tool's path is no single path schema (a catch-all, or nothing after the base URL)")
+            "the tool's path is no single path schema (a catch-all, an optional segment, a group, or nothing after the base URL)")
         if cause:
             gaps.append({"site": item["site"], "symbol": item["symbol"], "reason": f"declared route {method} {item.get('path')}: {cause}"})
             continue

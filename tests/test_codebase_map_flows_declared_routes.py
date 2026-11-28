@@ -191,6 +191,61 @@ def test_what_was_linked_before_is_linked_after_and_the_counts_rise(links):
     assert links["routes"] == {"offered": 8, "called": 13, "linked": 6}
 
 
+# ------------------------------------------- one route, one entry: Noir and React Router, SvelteKit, Nuxt
+
+def joined(tmp_path, source, files, run_source, endpoints):
+    """The links of a project read by Noir and by a framework's source, each with its recorded or written answer."""
+    from entry_points import noir
+
+    def run(commands):
+        if commands[0]["tool"] == "noir":
+            return [{"root": "/work", "returncode": 0, "stdout": json.dumps({"endpoints": endpoints}), "stderr": ""}]
+        return run_source(commands)
+    _, manifest = manifest_of(tmp_path, files)
+    entry_points.write(manifest, sources=(noir, source), runner=run)
+    return flows.cached_links(manifest, [])
+
+
+def line_of(files, file, needle):
+    return next(n for n, text in enumerate(files[file].split("\n"), 1) if needle in text)
+
+
+def on(links, prefix):
+    """The entries and the gaps whose site is in a file: (reader, symbol, method, path) and (site, reason)."""
+    return (sorted((e["reader"], e["symbol"], e.get("method"), e["path"]) for e in links["entries"] if e["site"].startswith(prefix)),
+            sorted((g["site"], g["reason"]) for g in links["gaps"] if g["site"].startswith(prefix) and "noir" in g["reason"]))
+
+
+def test_noir_on_the_file_and_schema_of_a_react_router_route_is_that_route_and_on_another_path_a_route_of_its_own(tmp_path):
+    import test_codebase_map_premap_react_router as rr
+    files, file = rr.project("framework"), "app/routes/shop/order.tsx"
+    line = line_of(files, file, "const loader")
+    links = joined(tmp_path, entry_points.react_router, files, rr.runner_for({".": rr.answer("framework")})[1],
+                   [noir_route("/orders/:id", "GET", file, "loader", line), noir_route("/elsewhere", "GET", file, "loader", line)])
+    entries, gaps = on(links, file)
+    assert [e for e in entries if e[1] == f"{file}::loader"] == [("noir", f"{file}::loader", "GET", "/elsewhere"),
+                                                                  ("react-router", f"{file}::loader", None, "/orders/:id")]
+    assert gaps == []
+
+
+def test_noir_on_the_file_and_schema_of_a_sveltekit_route_is_that_route(tmp_path):
+    import test_codebase_map_premap_sveltekit as sk
+    files, file = sk.project(), "src/routes/api/items/[id]/+server.ts"
+    links = joined(tmp_path, entry_points.sveltekit, files, sk.runner_for(sk.answers())[1],
+                   [noir_route("/api/items/{id}", "GET", file, "GET", line_of(files, file, "export const GET"))])
+    entries, gaps = on(links, file)
+    assert ("sveltekit", f"{file}::GET", None, "/api/items/[id]") in entries and not [e for e in entries if e[0] == "noir"]
+    assert gaps == []
+
+
+def test_noir_on_the_file_and_schema_of_a_nuxt_page_is_that_page(tmp_path):
+    import test_codebase_map_premap_nuxt as nx
+    files, file = nx.project("nuxt3"), "pages/users/[id].vue"
+    links = joined(tmp_path, entry_points.nuxt, files, nx.runner_for({".": nx.answer("nuxt3")})[1],
+                   [noir_route("/users/:id", "GET", file, "default", 1)])
+    assert on(links, file) == ([("nuxt", f"{file}::<module>", None, "/users/:id()")], [])  # the page keeps no method of Noir's
+
+
 # ------------------------------------------------------------------ the pure parts
 
 def row(reader, shape, method="GET", path="/x", symbol="a.py::f", kind="rotta", site="a.py:1", declares=True):

@@ -19,7 +19,7 @@
                    "layout": {"kind": "nessun ingresso"},
                    "root-data": {"kind": "rotta", "exports": ["loader", "action", "clientLoader", "clientAction"]},
                    "layout-data": {"kind": "rotta", "exports": ["loader", "clientLoader"]}},
-  "nuxt": {"server-route": {"kind": "rotta", "exports": ["default"]}, "page": {"kind": "rotta"}},
+  "nuxt": {"server-route": {"kind": "rotta", "exports": ["default"]}, "page": {"kind": "rotta", "page": true}},
   "sveltekit": {"+server": {"kind": "rotta", "exports": ["GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE", "PATCH", "fallback"]},
                 "+page.server": {"kind": "rotta", "exports": ["load", "actions"]},
                 "+page": {"kind": "rotta", "exports": ["load"]},

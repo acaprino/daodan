@@ -21,7 +21,7 @@ from test_codebase_map_container_runner import bound, container, container_runne
 
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/nuxt-routes/fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/nuxt/answers.json").read_text(encoding="utf-8"))
-SOURCE = "nuxt@daodan/premap/v2"
+SOURCE = "nuxt@daodan/premap/v3"  # v3: the route's `schema`, a page is `page`
 GAP = "no function found for the exports the framework starts {} from: default"
 HANDLERS = (  # what the file names for the fixture: (route, method, file); None is a handler with no method in its file name
     ("/api/files/**:path", "GET", "server/api/files/[...path].get.ts"),
@@ -155,6 +155,16 @@ def test_the_route_is_written_as_the_tool_wrote_it_and_no_path_is_derived_from_a
     assert {r["path"] for r in server} == {route for route, _, _ in HANDLERS}
     # `[id]` and `[...path]` of the file names are the tool's `:id` and `**:path`: only its text says so
     assert all("[" not in r["path"] for r in server)
+
+
+def test_the_schema_of_a_route_has_each_parameter_as_one_and_none_where_the_route_or_page_stands_for_several(tmp_path):
+    record, _, _ = read(tmp_path, project("nuxt3"))
+    server = {r["path"]: r["schema"] for r in record["bound"] if r["shape"] == "server-route"}
+    assert server["/api/users/:id"] == "/api/users/{}" and server["/api/files/**:path"] is None and server["/sitemap.xml"] == "/sitemap.xml"
+    pages = {r["path"]: (r["schema"], r.get("page")) for r in record["bound"] if r["shape"] == "page"}
+    assert pages["/users/:id()"] == ("/users/{}", True) and pages["/about"] == ("/about", True)
+    assert pages["/:slug(.*)*"] == (None, True) and pages["/blog/:page?"] == (None, True)  # a catch-all and an optional page
+    assert entry_points.nuxt._route_schema("/api/*/x") == "/api/{}/x" and entry_points.nuxt._route_schema("/api/**") is None
 
 
 def test_a_route_that_nuxt_config_declares_in_code_is_a_row_like_the_others(tmp_path):
@@ -526,7 +536,7 @@ def test_the_source_is_registered_as_one_of_the_sources_that_give_entries_of_the
     assert entry_points.nuxt in entry_points.FRAMEWORK_SOURCES and entry_points.nuxt in entry_points.SOURCES
     assert hasattr(entry_points.nuxt, "commands") and callable(entry_points.nuxt.from_record)
     assert entry_points.nuxt.NAME in entries.QUERIES and entry_points.nuxt.NAME in container_runner.TOOLS  # the table is keyed by the source's name
-    assert entries.QUERIES["nuxt"] == {"server-route": {"kind": "rotta", "exports": ["default"]}, "page": {"kind": "rotta"}}
+    assert entries.QUERIES["nuxt"] == {"server-route": {"kind": "rotta", "exports": ["default"]}, "page": {"kind": "rotta", "page": True}}
 
 
 def test_a_premap_made_before_the_source_is_stale(tmp_path):
@@ -582,17 +592,18 @@ def links(made):
     return flows.cached_links(made, [])
 
 
-def test_the_route_handler_the_snapshot_binds_is_an_entry_with_its_method_and_none_is_an_offered_route(links):
+def test_the_route_handler_the_snapshot_binds_is_an_entry_with_its_method_and_an_offered_route(links):
     found = [(e["path"], e.get("method"), e["symbol"], e["kind"], e["handler_source"]) for e in links["entries"]
              if e["reader"] == "nuxt" and e["shape"] == "server-route"]
     assert found == [("/api/plain", "GET", "server/api/plain.get.ts::plain", "rotta", "nuxt")]
-    assert links["routes"]["offered"] == 0 and links["routes"]["linked"] == 0  # entries, not offered routes
+    assert links["routes"]["offered"] == 1 and links["routes"]["linked"] == 0  # it has a method and a schema: a call would meet it
 
 
 def test_each_page_is_an_entry_of_its_file_as_a_next_page_is_one_with_the_path_and_no_method(links):
     found = {(e["path"], e["site"], e["symbol"], e["kind"]) for e in links["entries"] if e["reader"] == "nuxt" and e["shape"] == "page"}
     assert found == {(path, file, f"{file}::<module>", "rotta") for path, file in NUXT3_PAGES}
     assert not [e for e in links["entries"] if e["reader"] == "nuxt" and e["shape"] == "page" and e.get("method")]
+    assert not [g for g in links["gaps"] if g["site"].startswith("pages/")]  # a page answers any method: no declared route, no gap
 
 
 def test_the_handlers_the_snapshot_cannot_bind_are_gaps_of_the_links_with_what_was_looked_for(links):
