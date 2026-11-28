@@ -15,15 +15,18 @@ import json
 from collections import Counter, defaultdict
 from pathlib import PurePosixPath
 
+import node_model
 from premap.suffix_table import NAMES
 from service_registry import marked, package_key
 from snapshot_store import open_snapshot, resolve_run_snapshot
-from system_levels import NATURES, natures_asked
+from system_levels import NATURES, _contract, natures_asked
 from technologies import module_declaration
 
 STRUCTURE = ("file", "directory", "symbol")
 EVIDENCE = 20  # sites kept per relation, as the envelope keeps
 BUILT = ("codice", "fisico")  # the natures the app builds: files and groups, external nodes
+MODES = ("highlight", "hide")  # what the filter by nature does to the other nodes: dims them, or hides them
+GRADES = ("uncertain", "sampled", "observed", "inferred", "confirmed")  # a relation's statuses, weakest first
 
 
 def headers(run_dir) -> dict:
@@ -144,7 +147,8 @@ def levels(names: list | None) -> tuple:
     return tuple(name for name in NATURES if name in asked)
 
 
-def view(envelope: dict, groups: tuple = (), shown: tuple = BUILT, symbols_of=None) -> dict:
+def view(envelope: dict, groups: tuple = (), shown: tuple = BUILT, symbols_of=None, natures: list | None = None,
+         mode: str = "highlight") -> dict:
     """The graph at the levels `shown` (`levels`) with `groups` open in place: the first grouping's nodes, each open
     group replaced by what it holds (a module or a directory its directories and files, `_contents`; a file its
     outermost symbols, read for that file only by `symbols_of(path)`, and a symbol those its lines hold, `_nested`),
@@ -155,7 +159,14 @@ def view(envelope: dict, groups: tuple = (), shown: tuple = BUILT, symbols_of=No
     calls; a relation with no finer end (a module's own, a file's import) stays on its open group, which `open` lists
     with its parent so that it is drawn around what it holds. So a summary arrow becomes the arrows that make it up,
     with their counts, status and evidence, and the gaps stay. An asked id the graph does not show, or that holds
-    nothing to open (an external node, a symbol holding no other), is refused, ending with the id."""
+    nothing to open (an external node, a symbol holding no other), is refused, ending with the id.
+
+    `natures` (`system_levels.natures_asked`) filters the same view, computed with the opening and never opening a
+    group (`_filter`): `mode` `highlight` keeps every node and dims the others, `hide` keeps only those of the
+    natures and contracts the arrows through the hidden ones; a nature no node has is `absent`."""
+    if mode not in MODES:
+        raise ValueError(f"mode is one of {', '.join(MODES)}")
+    asked = None if natures is None else natures_asked(natures)
     grouping, entities, files, nodes, owner, holder, opened, read = _open(envelope, groups, symbols_of)
     unassigned = _unassigned(entities, files, owner)
     nodes = {ref: {**item, "level": "fisico" if item["location"] == "external" and item["kind"] != "technology" else "codice",
@@ -165,11 +176,74 @@ def view(envelope: dict, groups: tuple = (), shown: tuple = BUILT, symbols_of=No
     files_read = {f"file:{path}" for path in read}  # their calls between files are read again by symbol
     relations = [item for item in envelope["relations"] if not (item["kind"] == "calls" and "origin" not in item and (
         item["source"] in files_read or item["target"] in files_read))] + _calls(read)
-    return {"levels": list(shown), "grouping": grouping, "open": opened,
+    edges = _edges(relations, ends, owner)
+    gaps = [*envelope.get("gaps", []), *(gap for found in read.values() for gap in found["gaps"])]
+    filtered = {}
+    if asked is not None:
+        nodes, edges, absent, lost = _filter(nodes, edges, {group["id"] for group in opened}, entities, asked, mode)
+        gaps += lost
+        filtered = {"natures": asked, "mode": mode, "absent": absent}
+    return {"levels": list(shown), **filtered, "grouping": grouping, "open": opened,
             "nodes": sorted(nodes.values(), key=lambda item: item["name"]),
-            "edges": _edges(relations, ends, owner), "files": len(files), "unassigned": unassigned,
-            "gaps": [*envelope.get("gaps", []), *(gap for found in read.values() for gap in found["gaps"])],
+            "edges": edges, "files": len(files), "unassigned": unassigned, "gaps": gaps,
             "meta": envelope.get("meta", {})}
+
+
+def _natures(node: dict, entities: dict) -> list[str]:
+    """A node's natures (`node_model.natures`): «Tecnologie» and a block of a large group (`more`) have those of
+    what they hold (`_held`)."""
+    if node["kind"] in ("group", "more"):
+        return node_model.natures("gruppo", contained=_held(node, entities))
+    return node_model.natures(node_model.species_of({"type": node["kind"], "node_type": node.get("node_type")}),
+                              node["location"])
+
+
+def _held(node: dict, entities: dict) -> list[list[str]]:
+    """The natures of each thing a closed node holds that the graph knows without reading: its files, unless it is
+    one, and its members (a symbol's outline is read only when its file opens)."""
+    files = [] if node["kind"] == "file" else node["files"]
+    members = [_natures(_node(entities[ref], entities[ref]["name"]), entities) if ref in entities else ["codice"]
+               for ref in node.get("members", ())]
+    return [["codice"]] * len(files) + members
+
+
+def _filter(nodes: dict, edges: list, frames: set, entities: dict, asked: list, mode: str) -> tuple:
+    """The view filtered by the natures `asked`, never opening a group: a node is admitted when it has one of them,
+    and a closed node holding admitted ones says how many (`lit`). `highlight` keeps every node and dims (`dim`)
+    those neither admitted nor lit; `hide` keeps only admitted or lit ones and draws an arrow between two of them
+    (or an open group's frame) through hidden nodes as `system_levels._contract` does (`through`, and the arrows it
+    passes in `steps`, with their sites), its grade the weakest (`GRADES`), a spent path budget a gap. The natures
+    no node has nor holds are `absent`."""
+    own = {ref: set(_natures(item, entities)) for ref, item in nodes.items()}
+    held = {ref: _held(item, entities) for ref, item in nodes.items()}
+    lit = {ref: sum(bool(set(found) & set(asked)) for found in held[ref]) for ref in nodes}
+    absent = [nature for nature in asked
+              if not any(nature in own[ref] or any(nature in found for found in held[ref]) for ref in nodes)]
+    admitted = {ref for ref in nodes if own[ref] & set(asked) or lit[ref]}
+    shown = {ref: {**item, **({"lit": lit[ref]} if lit[ref] else {}), **({} if ref in admitted else {"dim": True})}
+             for ref, item in nodes.items() if mode == "highlight" or ref in admitted}
+    if mode == "highlight":
+        return shown, edges, absent, []
+    visible = admitted | frames
+    kept = [edge for edge in edges if edge["source"] in visible and edge["target"] in visible]
+    by_id = {edge["id"]: edge for edge in edges}
+    steps = [{"from": edge["source"], "to": edge["target"], "data": "", "asserts": [], "via": [], "through": [],
+              "status": edge["status"] + (" conflict" if edge.get("conflict") else ""), "proof": [{"edge": edge["id"]}]}
+             for edge in edges if edge["source"] not in visible or edge["target"] not in visible]
+    arrows, gaps = _contract(visible, steps, set(), GRADES)
+    for arrow in arrows:
+        parts = [by_id[item["edge"]] for item in arrow["proof"]]
+        status, _, conflict = arrow["status"].partition(" ")
+        counts = Counter()
+        for part in parts:
+            counts.update(part["counts"])
+        kept.append({"id": f"{arrow['from']}->{arrow['to']} via" + ("" if arrow["status"] == "confirmed" else f" {arrow['status']}"),
+                     "source": arrow["from"], "target": arrow["to"], "counts": dict(counts), "status": status,
+                     "evidence": [site for part in parts for site in part["evidence"]][:EVIDENCE],
+                     "relations": list(dict.fromkeys(ref for part in parts for ref in part["relations"])),
+                     "through": arrow["through"], "steps": parts, **({"conflict": True} if conflict else {})})
+    lost = [{"refs": [end for end in (gap["from"], gap["to"]) if end], "reason": gap["reason"]} for gap in gaps]
+    return shown, sorted(kept, key=lambda edge: edge["id"]), absent, lost
 
 
 def flow(envelope: dict, ref: str, groups: tuple = (), symbols_of=None) -> dict:

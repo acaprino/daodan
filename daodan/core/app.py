@@ -357,12 +357,18 @@ class App:
 
     def graph(self, query: dict) -> dict:
         """The run's graph at the system map's `levels` (a JSON list; `app_view.levels`: the app builds codice and
-        fisico) with the groups of `open` (a JSON list of node ids) open in place (`app_view.view`); the
-        explorer (`/`) shows it whole."""
+        fisico) with the groups of `open` (a JSON list of node ids) open in place, filtered by the optional `natures`
+        (a JSON list) in the optional `mode` (`highlight`, the default, or `hide`) in the same computation
+        (`app_view.view`); the explorer (`/`) shows it whole."""
         shown = app_view.levels(_listed(query, "levels", "levels is a JSON list of levels"))
         groups = _opened(query)
-        return self._kept(("graph", shown, groups), lambda envelope, run_dir: app_view.view(
-            envelope, groups, shown, self._file_symbols(run_dir)))
+        natures = _listed(query, "natures", "natures is a JSON list of natures")
+        natures = None if natures is None else tuple(app_view.natures_asked(natures))
+        mode = query.get("mode") or "highlight"
+        if mode not in app_view.MODES:
+            raise ValueError(f"mode is one of {', '.join(app_view.MODES)}")
+        return self._kept(("graph", shown, groups, natures, mode), lambda envelope, run_dir: app_view.view(
+            envelope, groups, shown, self._file_symbols(run_dir), None if natures is None else list(natures), mode))
 
     def flow(self, query: dict) -> dict:
         """The run's flow `id` (a `flow:` ref of the envelope) step by step with the groups of `open` open in place,

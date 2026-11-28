@@ -63,8 +63,14 @@ def _item(node: dict) -> dict:
     return {"whole": whole, "symbols": symbols, "others": others}
 
 
-def _contract(visible: set[str], steps: list[dict], entities: set[str]) -> tuple[list[dict], list[dict]]:
-    """Arrows between shown nodes through hidden ones, and the gaps where a path does not hold."""
+GRADES = ("declared", "proved")  # an arrow's grade: the weakest of its steps', weakest first
+
+
+def _contract(visible: set[str], steps: list[dict], entities: set[str],
+              grades: tuple = GRADES) -> tuple[list[dict], list[dict]]:
+    """Arrows between shown nodes through hidden ones, and the gaps where a path does not hold. An arrow has the
+    grade of its weakest step (`grades`, weakest first; one not listed is weaker still): the app's graph passes its
+    own statuses."""
     leaving = defaultdict(list)
     for step in steps:
         leaving[step["from"]].append(step)
@@ -83,7 +89,7 @@ def _contract(visible: set[str], steps: list[dict], entities: set[str]) -> tuple
                 budget -= 1
                 taken = path + [step]
                 if step["to"] in visible:
-                    _close(start, step["to"], taken, entities, arrows, gaps)
+                    _close(start, step["to"], taken, entities, arrows, gaps, grades)
                 else:
                     stack.append((step["to"], taken, seen | {step["to"]}))
     out = []
@@ -96,7 +102,8 @@ def _contract(visible: set[str], steps: list[dict], entities: set[str]) -> tuple
     return sorted(out, key=order), sorted(gaps.values(), key=order)
 
 
-def _close(start: str, end: str, taken: list[dict], entities: set[str], arrows: dict, gaps: dict) -> None:
+def _close(start: str, end: str, taken: list[dict], entities: set[str], arrows: dict, gaps: dict,
+           grades: tuple = GRADES) -> None:
     through = [s["to"] for s in taken[:-1]] + [n for s in taken for n in s["through"]]
     reasons = [f"step {s['from']} -> {s['to']} is refused" for s in taken if s["status"] == "refused"]
     for entering, leaving in zip(taken, taken[1:]):
@@ -107,7 +114,7 @@ def _close(start: str, end: str, taken: list[dict], entities: set[str], arrows: 
         gap = {"from": start, "to": end, "reason": "; ".join(reasons), "through": list(dict.fromkeys(through))}
         gaps.setdefault((start, end, gap["reason"]), gap)
         return
-    status = "declared" if any(s["status"] == "declared" for s in taken) else "proved"
+    status = min((s["status"] for s in taken), key=lambda grade: grades.index(grade) if grade in grades else -1)
     arrow = arrows.setdefault((start, end, status), {"from": start, "to": end, "data": [], "status": status,
                                                      "asserts": set(), "via": set(), "proof": [], "through": []})
     for step in taken:

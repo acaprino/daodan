@@ -1814,3 +1814,74 @@ def test_with_the_arc_inside_the_group_the_flow_through_it_is_proved_step_by_ste
     opened = app_view.view(payments(linked=True), ("build:pay",))
     inside, = [edge for edge in opened["edges"] if edge["source"] == "file:pay/a.py"]
     assert inside["relations"] == ["calls:file:pay/a.py->file:pay/b.py"]
+
+
+def natured() -> dict:
+    """Two modules, a gateway that calls one, the service it uses, and «Tecnologie» holding what the other uses."""
+    def entity(ref, kind, **fields):
+        return {"ref": ref, "type": kind, "name": ref.split(":", 1)[1], **fields}
+
+    def relation(kind, source, target, line):
+        return {"ref": f"{kind}:{source}->{target}", "kind": kind, "source": source, "target": target,
+                "status": "confirmed", "counts": {kind: 1}, "evidence": [{"path": "api/main.py", "line": line}]}
+
+    return {"entities": [entity("build:api", "build"), entity("build:web", "build"),
+                         *[entity(f"file:{path}", "file", path=path) for path in ("api/main.py", "web/app.ts")],
+                         entity("external:gateway", "external", location="external", node_type="gateway"),
+                         entity("external:stripe", "external", location="external", node_type="servizio o API"),
+                         entity("technology:react", "technology", location="external"),
+                         {**entity("group:technologies", "group"), "name": "Tecnologie"}],
+            "relations": [relation("calls", "external:gateway", "build:api", 1),
+                          relation("uses", "file:api/main.py", "external:stripe", 2),
+                          relation("imports", "file:web/app.ts", "file:api/main.py", 3),
+                          relation("uses", "build:web", "technology:react", 4)],
+            "memberships": [{"member": "file:api/main.py", "group": "build:api", "view": "physical"},
+                            {"member": "file:web/app.ts", "group": "build:web", "view": "physical"},
+                            {"member": "technology:react", "group": "group:technologies", "view": "logical"}],
+            "gaps": [], "meta": {}, "technologies": []}
+
+
+def test_opening_closing_and_filtering_in_any_order_give_the_same_view():
+    envelope = natured()
+    for mode in app_view.MODES:
+        first = app_view.view(envelope, ("build:api", "group:technologies"), natures=["fisico", "codice"], mode=mode)
+        second = app_view.view(envelope, ("group:technologies", "build:api", "build:api"), natures=["codice", "fisico"],
+                               mode=mode)
+        assert first == second and first["natures"] == ["codice", "fisico"]
+        # closing a group is the view without it, whatever was opened or filtered before
+        assert app_view.view(envelope, ("build:api",), natures=["codice"], mode=mode) == app_view.view(
+            envelope, ("build:api",), natures=["codice"], mode=mode)
+    with pytest.raises(ValueError, match="mode"):
+        app_view.view(envelope, mode="fade")
+
+
+def test_hiding_keeps_the_nodes_of_the_natures_and_an_arrow_through_a_hidden_one_keeps_its_steps():
+    envelope = natured()
+    found = app_view.view(envelope, natures=["logico"], mode="hide")
+    assert [node["id"] for node in found["nodes"]] == ["external:gateway", "external:stripe"]
+    arrow, = found["edges"]
+    assert (arrow["id"], arrow["source"], arrow["target"], arrow["status"], arrow["through"]) == (
+        "external:gateway->external:stripe via", "external:gateway", "external:stripe", "confirmed", ["build:api"])
+    assert [step["id"] for step in arrow["steps"]] == ["external:gateway->build:api", "build:api->external:stripe"]
+    assert arrow["relations"] == ["calls:external:gateway->build:api", "uses:file:api/main.py->external:stripe"]
+    assert [site["line"] for site in arrow["evidence"]] == [1, 2] and arrow["counts"] == {"calls": 1, "uses": 1}
+    # the filter never opens a group, and an open one shows only the children it admits
+    opened = app_view.view(envelope, ("build:api",), natures=["logico"], mode="hide")
+    assert [group["id"] for group in opened["open"]] == ["build:api"]
+    assert [node["id"] for node in opened["nodes"]] == ["external:gateway", "external:stripe"]
+    code = app_view.view(envelope, ("build:api",), natures=["codice"], mode="hide")
+    assert {node["id"] for node in code["nodes"]} == {"build:web", "file:api/main.py", "group:technologies"}
+    assert app_view.view(envelope, natures=["persone", "logico"], mode="hide")["absent"] == ["persone"]
+
+
+def test_highlighting_dims_the_others_and_lights_a_closed_group_with_how_many_it_holds():
+    envelope = natured()
+    whole = app_view.view(envelope)
+    found = app_view.view(envelope, natures=["logico"])
+    assert [node["id"] for node in found["nodes"]] == [node["id"] for node in whole["nodes"]]
+    assert found["edges"] == whole["edges"] and found["absent"] == []
+    assert {node["id"] for node in found["nodes"] if node.get("dim")} == {"build:api", "build:web", "group:technologies"}
+    code = {node["id"]: node for node in app_view.view(envelope, natures=["codice"])["nodes"]}
+    assert {ref: node.get("lit") for ref, node in code.items() if node.get("lit")} == {
+        "build:api": 1, "build:web": 1, "group:technologies": 1}
+    assert {ref for ref, node in code.items() if node.get("dim")} == {"external:gateway", "external:stripe"}
