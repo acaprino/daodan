@@ -234,9 +234,9 @@ def test_pnpm_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
 def test_pnpm_s_restore_of_a_dependency_with_a_build_script_left_unrun_is_no_gap(tmp_path, monkeypatch, pnpm):
     """hono-open-api-starter: pnpm 11 and later end an install that leaves a dependency's build script unapproved,
     so unrun, with ERR_PNPM_IGNORED_BUILDS (`strictDepBuilds`, pnpm.io/settings/build), the packages installed; the
-    install without scripts that follows, over the same `node_modules`, says it again from pnpm 12. The preparation's
-    line (`scripts`, as `node_prepare`'s) turns that setting off, approving no build: each pnpm installs, no gap;
-    without the setting, pnpm 11 and later leave gaps (`None`: the pnpm corepack takes when the project names none)."""
+    `rebuild` that runs the scripts after the install without them says it from pnpm 12. The preparation's restore
+    and rebuild (as `node_prepare`'s) turn that setting off, approving no build: each pnpm installs, no gap; without
+    the setting, pnpm 12 and later leave a gap (`None`: the pnpm corepack takes when the project names none)."""
     import subprocess
     monkeypatch.setattr(preparation, "LOG", str(tmp_path / "restore.log"))
     node = Path(shutil.which("node")).resolve().parent  # corepack ships beside Node
@@ -255,18 +255,61 @@ def test_pnpm_s_restore_of_a_dependency_with_a_build_script_left_unrun_is_no_gap
         return subprocess.run(["sh", "-c", line], cwd=tmp_path, env=env, capture_output=True, text=True,
                               timeout=900).stderr
 
-    line = preparation.restore("pnpm", ["app"], scripts=True)
+    line = "; ".join([preparation.restore("pnpm", ["app"]),
+                      preparation.rebuild("pnpm", ["app"]).replace(f"{preparation.COREPACK_INSTALL}; ", "")])
     said = run(line, "app")
     version = subprocess.run(["sh", "-c", "cd app && corepack pnpm --version"], cwd=tmp_path, env=env,
                              capture_output=True, text=True, timeout=300).stdout.strip()
     assert (preparation.restore_gaps(said), preparation.generation_gaps(said)) == ([], []), (version, said)
     assert (tmp_path / "app" / "node_modules" / "esbuild" / "package.json").is_file()
-    if int(version.split(".")[0]) >= 11:  # the case: the line without the setting
+    if int(version.split(".")[0]) >= 12:  # measured: pnpm 12's rebuild says it without the setting, 11's does not
         said = run(line.replace(" --config.strict-dep-builds=false", "").replace("'app'", "'before'"), "before")
-        assert "DAODAN-GENERATE-FAILED pnpm before" in said and "ERR_PNPM_IGNORED_BUILDS" in said, (version, said)
-        if int(version.split(".")[0]) >= 12:  # measured: pnpm 11 says it only with the scripts, 12 without too
-            [gap] = preparation.restore_gaps(said)
-            assert "ERR_PNPM_IGNORED_BUILDS" in gap["detail"], (version, gap)
+        [gap] = preparation.generation_gaps(said)
+        assert gap["path"] == "before" and "ERR_PNPM_IGNORED_BUILDS" in gap["detail"], (version, said)
+
+
+def _package(folder: Path, name: str, scripts: dict) -> str:
+    """A package's tarball, as npm packs it (`package/` inside), in `folder`: its file name."""
+    import io
+    import tarfile
+    data = json.dumps({"name": name, "version": "1.0.0", "scripts": scripts}).encode("utf-8")
+    with tarfile.open(folder / f"{name}-1.0.0.tgz", "w:gz") as archive:
+        info = tarfile.TarInfo("package/package.json")
+        info.size = len(data)
+        archive.addfile(info, io.BytesIO(data))
+    return f"{name}-1.0.0.tgz"
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real npm, on Modal (tests/modal_pytest.py)")
+def test_the_lifecycle_scripts_run_with_no_network_and_one_that_downloads_is_a_generation_gap(tmp_path, monkeypatch):
+    """`T3.A.6d`: the restore installs without the lifecycle scripts; `npm rebuild` runs them after with no network
+    (`unshare -rn`, as `run_in_container`'s `generate` phase runs with `--network none`). A dependency whose build
+    script writes a file builds; one whose `postinstall` downloads fails, a `generation_failed` gap with its cause
+    (the owner's decision c: Prisma's engines, Playwright's browsers), and its folder stays restored."""
+    import subprocess
+    monkeypatch.setattr(preparation, "LOG", str(tmp_path / "restore.log"))
+    pkgs = tmp_path / "pkgs"
+    pkgs.mkdir()
+    built = _package(pkgs, "built", {"install": "node -e \"require('fs').writeFileSync('built.txt', 'ok')\""})
+    fetches = _package(pkgs, "fetches", {"postinstall": (
+        "node -e \"require('https').get('https://registry.npmjs.org/', () => process.exit(0))"
+        ".on('error', e => { console.error('npm error download failed: ' + e.code); process.exit(1) })\"")})
+    for folder, dependency in (("app", built), ("fetch", fetches)):
+        (tmp_path / folder).mkdir()
+        (tmp_path / folder / "package.json").write_text(json.dumps(
+            {"name": folder, "version": "1.0.0", "dependencies": {dependency.split("-")[0]: f"file:../pkgs/{dependency}"}}),
+            encoding="utf-8")
+    restored = subprocess.run(["sh", "-c", preparation.restore("npm", ["app", "fetch"])], cwd=tmp_path,
+                              capture_output=True, text=True, timeout=300)
+    assert preparation.restore_gaps(restored.stderr) == [], restored.stderr
+    assert not (tmp_path / "app/node_modules/built/built.txt").exists()  # no script ran in the restore
+    offline = subprocess.run(["unshare", "-rn", "sh", "-c", preparation.rebuild("npm", ["app", "fetch"])],
+                             cwd=tmp_path, capture_output=True, text=True, timeout=300)
+    assert (tmp_path / "app/node_modules/built/built.txt").read_text(encoding="utf-8") == "ok", offline.stderr
+    [gap] = preparation.generation_gaps(offline.stderr)
+    assert (gap["kind"], gap["manager"], gap["path"]) == ("generation_failed", "npm", "fetch"), gap
+    assert "download failed" in gap["detail"], gap
+    assert (tmp_path / "fetch/node_modules/fetches/package.json").is_file()
 
 
 def test_yarn_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
@@ -306,7 +349,7 @@ def test_pnpm_and_yarn_run_a_corepack_with_npms_current_key_and_none_installed_i
         ran = calls.read_text(encoding="utf-8").splitlines()
         assert ran[0] == (f"npm install -g --prefix {tools}/corepack --engine-strict --no-audit --no-fund"
                           " --loglevel=error corepack@>=0.31.0 <=0.36.0")
-        assert ran[1:] == [f"{'bundled' if refuse else 'installed'} corepack pnpm install --frozen-lockfile"
+        assert ran[1:] == [f"{'bundled' if refuse else 'installed'} corepack pnpm install --frozen-lockfile --ignore-scripts"
                           " --config.strict-dep-builds=false"]
         assert preparation.missing(done.stderr) == ([{
             "kind": "toolchain_unavailable", "tool": "corepack", "version": ">=0.31.0",

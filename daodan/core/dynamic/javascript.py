@@ -31,7 +31,7 @@ language's outcome.
 with the registries: Daodan's Node, the Babel the recorder prints with (from npm without its install scripts),
 the Node and the Bun the project states at an exact version (mise, `preparation.toolchains`: a script that runs
 `bun run` or `bunx` runs, and what Bun starts on Node is recorded), then the project's own restore
-with its lifecycle scripts, as the analyzer's (`preparation.node_prepare`). The execution, with no network: each
+and its lifecycle scripts with no network, as the analyzer's (`preparation.node_prepare`). The execution, with no network: each
 script under the recorder, preloaded through NODE_OPTIONS so it starts before any project code, in every process
 and thread the script starts, which writes its sites as it runs and at its exit, so a process killed with SIGKILL
 leaves those of its last write; stopped after `LIMIT` seconds by a signal the recorder writes its sites on, with

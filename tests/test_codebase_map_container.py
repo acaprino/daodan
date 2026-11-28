@@ -662,6 +662,25 @@ class FakeEngineTest(unittest.TestCase):
         self.assertIn("the tools did not install", result["cause"])
         self.assertEqual(len(self.created()), 2)  # the proxy and `own`: no restore, no execution
 
+    def test_the_lifecycle_scripts_run_after_the_preparation_with_no_network_as_its_user(self):
+        """`T3.A.6d`: `generate` (`preparation.rebuild`) runs in a phase of its own after the preparation, with no
+        network, its volumes and its user, its output in `prepare.log`; a preparation that fails has none."""
+        result = self.run_operation(["exit", "0"], prepare=["exit", "0"], generate="npm rebuild")
+        self.assertEqual(result["state"], "done", result)
+        _proxy, prepare, made, execute = self.created()
+        self.assertEqual(made[made.index("--network") + 1], "none")
+        self.assertNotEqual(prepare[prepare.index("--network") + 1], "none")
+        self.assertEqual(self.mounts(made), self.mounts(prepare))
+        self.assertEqual(made[3:made.index("--network")], prepare[3:prepare.index("--network")])
+        self.assertEqual(json.loads((self.state / "containers" / made[2] / "command.json").read_text()),
+                         ["sh", "-c", "npm rebuild"])
+        self.assertIn("started " + made[2], (self.out / "prepare.log").read_text())
+        self.assertIn("started " + execute[2], (self.out / "execute.log").read_text())
+        (self.state / "calls.jsonl").unlink()
+        result = self.run_operation(["exit", "0"], prepare=["exit", "3"], generate="npm rebuild")
+        self.assertEqual(result["state"], "failed")
+        self.assertEqual(len(self.created()), 2)  # the proxy and the preparation
+
     def test_the_volumes_are_removed_by_name_after_a_failed_preparation_or_a_timeout(self):
         for prepare, command, timeout in ((["exit", "3"], ["exit", "0"], 600), (["exit", "0"], ["sleep", "30"], 2)):
             with self.subTest(prepare=prepare, command=command):

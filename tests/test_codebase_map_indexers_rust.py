@@ -96,7 +96,8 @@ def test_the_structure_names_the_containers_runs_and_their_rust():
 def test_the_container_prepares_rust_and_the_crates_then_checks_and_indexes_with_no_network():
     prepare, execute, needs = rust.scripts([".", "ws"], [])
     assert "cargo fetch" in prepare and preparation.restore("cargo", [".", "ws"]) in prepare
-    assert preparation.setup(["rust"])["lines"][0] in prepare  # Daodan's rustc and cargo
+    tools = preparation.setup(["rust"])  # Daodan's rustc and cargo, as root before the preparation (`T3.A.6b`)
+    assert needs["tools"] == {"lines": tools["lines"], "caps": tools["caps"]} and tools["lines"][0] not in prepare
     assert all(name in prepare for name in ("rust-std.tar.xz", "rust-src.tar.xz"))
     assert {name for _url, _digest, name in needs["files"]} >= {"rustc.tar.xz", "cargo.tar.xz", "rust-std.tar.xz",
                                                                  "rust-src.tar.xz"}

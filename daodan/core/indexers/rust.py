@@ -354,7 +354,8 @@ def structure(record: dict) -> dict:
 
 def scripts(boxes: list[str], toolchains: list[dict]) -> tuple[str, str, dict]:
     """The preparation's script, the execution's, and what the preparation needs beside them (`{files, hosts,
-    gaps}`): Daodan's Rust with its standard library and sources, else the one a rustup file names with its
+    gaps, tools}`): Daodan's Rust (`tools`, installed as root before the preparation, which runs as
+    `container.NOBODY`) with its standard library and sources, else the one a rustup file names with its
     sources; each root's crates fetched; then, with no network, each root's check and index."""
     import container
     from dynamic import rust as observer
@@ -365,7 +366,7 @@ def scripts(boxes: list[str], toolchains: list[dict]) -> tuple[str, str, dict]:
                f"echo 'DAODAN-MISSING rust-src@{version}' >&2" for version in versions if chains["lines"]]
     prepare = ["# rust-analyzer prepare", "set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}",
                f"chmod 755 {ANALYZER}",  # the copy carries a file's bytes, not its mode
-               *needs["lines"], observer.STD_SETUP, SRC_SETUP, *chains["lines"], *sources,
+               observer.STD_SETUP, SRC_SETUP, *chains["lines"], *sources,
                preparation.restore("cargo", boxes)]
     check = f"env RUSTC_WRAPPER={ANALYZER} RA_RUSTC_WRAPPER=1 timeout -k 30 {LIMIT} {CHECK}"
     older = check.replace(" --keep-going", "")
@@ -385,7 +386,8 @@ def scripts(boxes: list[str], toolchains: list[dict]) -> tuple[str, str, dict]:
             f" echo $(( $(date +%s) - s )) > $OUT/scip-{n}.seconds"]
     return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n",
             {"files": [*needs["files"], observer.RUST_STD, RUST_SRC, *chains["files"]],
-             "hosts": (*needs["hosts"], *chains["hosts"]), "gaps": chains["gaps"]})
+             "hosts": (*needs["hosts"], *chains["hosts"]), "gaps": chains["gaps"],
+             "tools": {"lines": needs["lines"], "caps": needs["caps"]}})
 
 
 FAILED_SCRIPT = re.compile(r"^error: failed to run custom build command for `(\S+) v(\S+)(?: \((.+)\))?`", re.M)
@@ -538,6 +540,7 @@ def _boxed(project_dir: Path, work_dir: Path, boxes: list[str], toolchains: list
     result = container.run_in_container(
         project_dir, ["sh", "-c", execute], image=IMAGE, out_dir=out, prepare=["sh", "-c", prepare], outputs=[OUT],
         env=preparation.ENV, timeout=BUILD + len(boxes) * 2 * LIMIT, memory=MEMORY, engine=engine, inputs=inputs,
+        tools=needs["tools"],
         registries=container.REGISTRIES + tuple(dict.fromkeys([*needs["hosts"], *declared.get("hosts", ())])))
     if result["state"] == "gap":
         return {"state": "unavailable", "reason": f"rust-analyzer runs only in Daodan's container: {result['cause']}",

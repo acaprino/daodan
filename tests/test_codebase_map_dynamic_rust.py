@@ -603,12 +603,12 @@ class ObserveTest(unittest.TestCase):
         egress.respond("crates.corp.example", str(self.project), "once")  # approved for this analysis: it opens only then
         self.play_run()
         self.observe(declared=("crates.corp.example",))
-        self.assertIn("crates.corp.example", self.created()[0])
+        self.assertIn("crates.corp.example", self.created()[1])  # after `own`: the proxy
 
     def test_the_dependencies_arrive_in_the_preparation_and_the_tests_run_with_no_network(self):
         self.play_run()
         self.observe()
-        proxy, prepare, execute = self.created()
+        _owned, proxy, _tools, prepare, execute = self.created()  # `T3.A`: the copy given to 65532, the recipes as root
         for host in ("index.crates.io", "static.crates.io"):
             self.assertIn(host, proxy)
         self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
@@ -630,7 +630,7 @@ class ObserveTest(unittest.TestCase):
         self.play_run()
         self.observe()
         self.assertEqual(tree_digest(self.project), before)
-        prepare = self.created()[1]
+        prepare = self.created()[0]  # `own`: the copy goes in there, given to 65532
         carried = self.state / "containers" / prepare[prepare.index("--name") + 1] / "fs"
         self.assertEqual((carried / preparation.IN.lstrip("/") / "callgrind_sites.py").read_bytes(),
                          callgrind.READER.read_bytes())
@@ -640,7 +640,7 @@ class ObserveTest(unittest.TestCase):
         prepared = self.script("prepare")  # rustc and cargo alone compile nothing: the standard library beside them
         self.assertIn(observer.STD_SETUP, prepared)
         self.assertIn("rust-std-*/rust-std-*/.", observer.STD_SETUP)
-        self.assertLess(prepared.index("for c in rustc cargo"), prepared.index(observer.STD_SETUP))
+        self.assertNotIn("for c in rustc cargo", prepared)  # rustc and cargo before it, as root (`tools`)
 
     def test_a_rust_version_a_rustup_file_names_is_installed_by_the_preparation(self):
         self.play_run()

@@ -470,7 +470,8 @@ def _planned(project: Path, files: list[str], roots: set[str]) -> tuple[dict, di
 
 def scripts(runs: list[tuple], further: list[tuple]) -> tuple[str, str, dict]:
     """The preparation's script, the execution's, and what the preparation needs beside them (`{files, hosts}`).
-    The preparation: Daodan's Go, scip-go built with it by at most `go_jobs` compilers at once, then `go mod
+    The preparation: Daodan's Go (`tools`, installed as root before it, `container.tool_phase`; the preparation
+    runs as `container.NOBODY`), scip-go built with it by at most `go_jobs` compilers at once, then `go mod
     download` in the folder of each of `runs` (`(folder, patterns)`). The execution, with no network and under
     `OWN`: scip-go on each run's patterns, run `n` leaving `index-n.scip`, its log, its exit code and its seconds;
     then each of `further` (`(folder, variables, patterns, files)`), numbered after them: `go list` there under
@@ -483,7 +484,7 @@ def scripts(runs: list[tuple], further: list[tuple]) -> tuple[str, str, dict]:
              f" GOFLAGS= GOTOOLCHAIN=local {preparation.T}/go/bin/go install -p {engine_tools.go_jobs()}"
              f" github.com/scip-code/scip-go/cmd/scip-go@{VERSION}")  # no build of the project: Daodan's Go alone
     prepare = ["# scip-go prepare", "set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}",
-               *needs["lines"], f"{{ {build} ; }} >&2 || echo 'DAODAN-MISSING scip-go@{VERSION}' >&2",
+               f"{{ {build} ; }} >&2 || echo 'DAODAN-MISSING scip-go@{VERSION}' >&2",
                "export GOFLAGS=-mod=readonly GOTOOLCHAIN=local",  # as the execution: a `toolchain` line brings no Go
                preparation.restore("go", [folder for folder, _patterns in runs])]
 
@@ -514,7 +515,7 @@ def scripts(runs: list[tuple], further: list[tuple]) -> tuple[str, str, dict]:
             f" run {number} {at(folder)} {under} {indexed(number, patterns)}; fi",
             "fi"]
     return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n",
-            {"files": needs["files"], "hosts": needs["hosts"]})
+            {"files": needs["files"], "hosts": needs["hosts"], "tools": {"lines": needs["lines"], "caps": needs["caps"]}})
 
 
 def _said(path: Path) -> str:
@@ -571,7 +572,7 @@ def _boxed(project_dir: Path, work_dir: Path, files: list[str], roots: set[str],
     result = container.run_in_container(
         project_dir, ["sh", "-c", execute], image=IMAGE, out_dir=out, prepare=["sh", "-c", prepare], outputs=[OUT],
         env=preparation.ENV, timeout=600 + (len(runs) + min(len(further), PASSES)) * (LIMIT + 60),
-        prepare_timeout=3600, memory=MEMORY, engine=engine, inputs=inputs,
+        prepare_timeout=3600, memory=MEMORY, engine=engine, inputs=inputs, tools=needs["tools"],
         registries=container.REGISTRIES + tuple(dict.fromkeys([*needs["hosts"], *declared.get("hosts", ())])))
     if result["state"] == "gap":
         return {"state": "unavailable", "reason": f"scip-go runs only in Daodan's container: {result['cause']}",

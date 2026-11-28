@@ -64,6 +64,9 @@ def engine(tmp_path, monkeypatch):
             assert opts["flags"] == container.RESTORE  # as 65532, with no capability
             assert "node.tar.gz" not in command[-1]  # Node installed before, as root
             work.add("node_modules/restored")
+        elif name == "node-generate":  # the lifecycle scripts, with no network, as 65532 (`T3.A.6d`)
+            assert network == "none" and copy is None and opts["flags"] == container.RESTORE
+            assert work == {"node_modules/restored"} and "npm rebuild" in command[-1]
         elif name == "clone-node":
             assert network == "none" and all(v.endswith(":ro") for v in volumes[2:])
             with tarfile.open(copy) as bundle:
@@ -109,6 +112,7 @@ def test_tsc_index_and_observer_share_one_restore_and_isolate_every_consumer(tmp
             typescript.index(project, tmp_path / "index", roots={"."}, engine=fake)
         javascript.observe(project, plan, tmp_path / "observe", fake)
         assert [name for name, _, _ in phases].count("node-restore") == 1
+        assert [name for name, _, _ in phases].count("node-generate") == 1
         assert len({mounts[0] for name, mounts, _ in phases if name == "clone-node"}) == 3
         assert len(volumes) == 2
         lock.write_text('{"lockfileVersion":3,"packages":{"":{}}}', encoding="utf-8")

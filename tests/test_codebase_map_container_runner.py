@@ -133,7 +133,7 @@ def test_tsc_reads_the_tsconfigs_after_the_packages_are_restored_with_what_their
                                                                                                     no_download):
     """A tsconfig extends a file of an installed package, or one a framework generates when the packages are
     installed (SvelteKit's `.svelte-kit/tsconfig.json`): the setup restores each package folder of the snapshot the
-    project's own way, lifecycle scripts included, before any `tsc --showConfig`; the commands stay tsc's own."""
+    project's own way, its lifecycle scripts after with no network, before any `tsc --showConfig`; the commands stay tsc's own."""
     import preparation
     from snapshot_store import open_snapshot
     project, manifest = manifest_of(tmp_path, SVELTEKIT)
@@ -152,7 +152,8 @@ def test_tsc_reads_the_tsconfigs_after_the_packages_are_restored_with_what_their
     assert first["network"] == "registries" and first["cwd"] == "."
     assert setup.index("typescript@6.0.3") < setup.index(f"( {plan['lines'][0]} )") < setup.index(
         f"( {plan['lines'][1]} )")
-    assert "npm install --no-audit --no-fund" in plan["lines"][0]  # with its lifecycle scripts, in the container
+    assert "npm install --ignore-scripts" in plan["lines"][0]  # the lifecycle scripts after, with no network
+    assert calls[0]["generate"] == "\n".join(plan["generate"])
     assert set(calls[0]["registries"]) - set(container.REGISTRIES) == set()  # corepack's host is a registry now
     assert "repo.yarnpkg.com" in calls[0]["registries"]
     assert calls[0]["memory"] == 3 * 2**30
@@ -163,8 +164,8 @@ FIXTURE = ROOT / "benchmarks/project-model/fixtures/js-sveltekit"
 
 def test_a_package_with_only_its_manifest_is_installed_by_npm_with_its_lifecycle_scripts(tmp_path, no_download):
     """js-sveltekit: a package.json with devDependencies, no lockfile, no `packageManager`. npm, the default
-    manager, resolves and installs there with the lifecycle scripts (SvelteKit's writes the tsconfig the project's
-    extends) before tsc reads it."""
+    manager, resolves and installs there without the lifecycle scripts, on the proxy's network; `npm rebuild` then
+    runs them with no network (SvelteKit's writes the tsconfig the project's extends) before tsc reads it."""
     import preparation
     from snapshot_store import open_snapshot
     files = {path.relative_to(FIXTURE).as_posix(): path.read_text(encoding="utf-8")
@@ -177,9 +178,11 @@ def test_a_package_with_only_its_manifest_is_installed_by_npm_with_its_lifecycle
     with mock.patch.object(container, "run_commands", fake):
         [answer] = container_runner.runner(manifest)(asked)
     first = calls[0]["commands"][0]
-    line = preparation.restore("npm", ["."], scripts=True)
-    assert "timeout 600 sh -c 'if [ -f package-lock.json ]" in line and "npm install --no-audit --no-fund" in line
+    line = preparation.restore("npm", ["."])
+    assert "npm install --ignore-scripts --no-audit --no-fund" in line and "timeout" not in line
     assert f"( {line} )" in first["argv"][-1] and first["network"] == "registries"
+    assert calls[0]["generate"] == preparation.rebuild("npm", ["."])  # with no network (`run_in_container`)
+    assert "timeout 600 sh -c 'npm rebuild'" in calls[0]["generate"]
     assert "gaps" not in answer
 
 
@@ -196,7 +199,7 @@ def test_each_nested_app_with_its_own_lockfile_is_restored_beside_the_root_and_n
     calls, fake = recorder()
     with mock.patch.object(container, "run_commands", fake):
         [answer] = container_runner.runner(manifest)([command("tsc")])
-    line = preparation.restore("npm", [".", *apps], scripts=True)
+    line = preparation.restore("npm", [".", *apps])
     assert f"( {line} )" in calls[0]["commands"][0]["argv"][-1]
     assert "gaps" not in answer
 
@@ -216,7 +219,7 @@ def test_a_folder_the_pre_map_refused_for_its_yarn_lock_is_not_restored(tmp_path
     with mock.patch.object(container, "run_commands", fake):
         [answer] = container_runner.runner(manifest)([command("tsc")], refused=refused)
     setup = calls[0]["commands"][0]["argv"][-1]
-    assert preparation.restore("yarn", ["ok"], scripts=True) in setup and "'out'" not in setup
+    assert preparation.restore("yarn", ["ok"]) in setup and "'out'" not in setup
     assert "gaps" not in answer  # the refusal is the pre-map's gap, not said again
 
 

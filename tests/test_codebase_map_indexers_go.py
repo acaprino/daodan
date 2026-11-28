@@ -313,7 +313,9 @@ def test_the_container_builds_scip_go_and_fetches_the_modules_then_indexes_with_
         [(".", {"GOOS": "darwin", "GOARCH": "amd64", "CGO_ENABLED": "1"}, ["./store"], ["store/backend_other.go"])])
     assert [name for _url, _digest, name in needs["files"]] == ["go.tar.gz"]
     assert go._target() == TARGET  # the build of the Go the container runs, whatever this machine is
-    assert preparation.setup(["go"])["lines"][0] in prepare and "mise" not in prepare
+    tools = preparation.setup(["go"])  # Daodan's Go, as root before the preparation, which runs as 65532 (`T3.A.6b`)
+    assert needs["tools"] == {"lines": tools["lines"], "caps": tools["caps"]} and tools["lines"][0] not in prepare
+    assert "mise" not in prepare
     # scip-go's build is no build of the project: Daodan's Go alone, at most four compilers at once.
     assert (f"GOFLAGS= GOTOOLCHAIN=local {preparation.T}/go/bin/go install -p {jobs} "
             f"github.com/scip-code/scip-go/cmd/scip-go@{go.VERSION}") in prepare

@@ -2,7 +2,7 @@
 
 `commands` describes one `tsc --showConfig` per `tsconfig*.json` of the snapshot, in its folder: tsc reads JSON
 only, follows `extends`, and runs nothing of the project. Before them the runner's setup restores the project's
-packages the project's own way, lifecycle scripts included (`container_runner.TOOLS`, `preparation.node_prepare`),
+packages the project's own way, lifecycle scripts after, with no network (`container_runner.TOOLS`, `preparation.node_prepare`),
 so an `extends` into `node_modules` or into a file a framework generates at install (SvelteKit's
 `.svelte-kit/tsconfig.json`) is there. `read` gives each tsconfig to the unit of its nearest
 folder holding a `project.json` (nx-project), a `deno.json` or `deno.jsonc` (deno-project) or a `package.json`

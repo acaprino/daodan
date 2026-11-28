@@ -82,11 +82,12 @@ def plan(record: dict, files: list[str], read) -> dict:
 
 def scripts(planned: dict) -> tuple[str, str, dict]:
     """The preparation's script, the execution's, and what the preparation needs beside them (`{files, hosts,
-    gaps}`: the downloads the copy carries, the hosts beside the registries, the toolchains no installer has)."""
+    gaps, tools}`: the downloads the copy carries, the hosts beside the registries, the toolchains no installer has,
+    Daodan's Go, installed as root before the preparation, which runs as `container.NOBODY`)."""
     roots = [run["root"] for run in planned["runs"]]
     chains = preparation.toolchains(planned.get("toolchains") or [])
     needs = preparation.setup(["go"])  # Daodan's Go builds the recorder, and runs the tests where none is stated
-    prepare = ["# dynamic-go prepare", "set -u", f"mkdir -p {T}/bin {preparation.ENV['HOME']}", *needs["lines"],
+    prepare = ["# dynamic-go prepare", "set -u", f"mkdir -p {T}/bin {preparation.ENV['HOME']}",
                *chains["lines"], preparation.restore("go", roots)]
     words = " ".join(shlex.quote(root) for root in roots)
     own = "GOTOOLCHAIN=local GOFLAGS= GOWORK=off"  # the recorder's build is no build of the project
@@ -102,7 +103,7 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
                     f"  echo $? > $OUT/tests-{number}.code"]
     return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "fi", "exit 0"]) + "\n",
             {"files": [*needs["files"], *chains["files"]], "hosts": (*needs["hosts"], *chains["hosts"]),
-             "gaps": chains["gaps"]})
+             "gaps": chains["gaps"], "tools": {"lines": needs["lines"], "caps": needs["caps"]}})
 
 
 def read(folder: Path, root: str = WORK) -> tuple[list[dict], dict]:
@@ -214,6 +215,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     result = container.run_in_container(
         project, ["sh", "-c", execute], image=IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare], outputs=[OUT],
         env=preparation.ENV, timeout=BUILD + len(runs) * (LIMIT + 60), memory=MEMORY, engine=engine, inputs=inputs,
+        tools=needs["tools"],
         registries=container.REGISTRIES + tuple(dict.fromkeys(  # with the hosts the project declares (`dynamic.run`)
             [*needs["hosts"], *(planned.get("declared") or {}).get("hosts", ())])))
     if result["state"] == "gap":

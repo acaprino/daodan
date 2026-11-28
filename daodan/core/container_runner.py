@@ -83,7 +83,7 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
            "runs_on": ("python",)},
     "npm": {"files": [NODE], "setup": [UNPACK["node"]], "runs_on": ("node",)},
     # a tsconfig extends files of the installed packages and files their install generates: `restores`, the
-    # family of `preparation.RESTORES` whose packages the setup restores first, lifecycle scripts included
+    # family of `preparation.RESTORES` whose packages the setup restores first, their lifecycle scripts after with no network
     "tsc": {"files": [NODE], "setup": [UNPACK["node"], _npm("typescript@6.0.3")], "registries": True,
             "runs_on": ("node",), "restores": "node", "memory": 3},
     # the project's own `next` is in the packages the setup restores: no install of its own, but a preparation, where
@@ -279,11 +279,13 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         if not answers or answers[0]["returncode"] != 0:
             raise RuntimeError(f"the {tool} setup failed: "
                                f"{(answers[0]['stderr'] if answers else '').strip()[-400:] or 'no answer'}")
-        # the preparation's gaps ride on the first answer, the tools' on the log of the preparation they began
-        began = Path(result["record"]).parent / "prepare.log" if tools and result.get("record") else None
+        # the preparation's gaps ride on the first answer, the tools' and the lifecycle scripts' (`generate`, with no
+        # network) on the log of the preparation
+        began = Path(result["record"]).parent / "prepare.log" if result.get("record") else None
         said = began.read_text(encoding="utf-8", errors="replace") if began and began.is_file() else ""
-        gaps += (preparation.missing(said) + preparation.missing(answers[0]["stderr"]) + preparation.restore_gaps(answers[0]["stderr"])
-                 + preparation.generation_gaps(answers[0]["stderr"])
+        gaps += ((preparation.missing(said) if tools else []) + preparation.missing(answers[0]["stderr"])
+                 + preparation.restore_gaps(answers[0]["stderr"])
+                 + preparation.generation_gaps(f"{answers[0]['stderr']}\n{said}")
                  + list(result.get("gaps") or ()))  # and what the copy left out (`container.copy_perimeter`)
         if tool == "gradle":  # the repositories its builds declare (`gradle.retry`) that nobody decided: asked, the result stands
             waiting, _ = egress.preflight(str(project.resolve()), tuple(h for a in answers[1:] for h in gradle.retry(a)))

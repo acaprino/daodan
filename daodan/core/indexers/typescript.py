@@ -11,10 +11,11 @@ are `unavailable`, with the gap's cause and remedy.
   the pre-map names that no other holds, and in each with a lockfile of its own, with the manager the lockfile
   names, else the one its manifest names (`packageManager`, through corepack), else npm; a Yarn project on
   Plug'n'Play is laid out in node_modules, which TypeScript's resolver reads (`_prepared`, a `build_edited` gap
-  says so). The install runs with
-  its lifecycle scripts, as a CI's does: there a framework generates what the compiler reads (SvelteKit's
-  `.svelte-kit/tsconfig.json`, Nuxt's `.nuxt`). They are project code, which may run in the preparation and
-  stays in the container (spec, section 4); an install they break is done again without them. Last, the type
+  says so). The install runs without
+  its lifecycle scripts; the manager's own `rebuild` runs them after, with no network (`preparation.rebuild`), as a
+  CI's install does: there a framework generates what the compiler reads (SvelteKit's
+  `.svelte-kit/tsconfig.json`, Nuxt's `.nuxt`). They are project code, which stays in the container (spec,
+  section 4); a script that fails, or downloads, is a `generation_failed` gap. Last, the type
   packages the project lacks (`typescript_types.py`): `@types/node` at the major of the Node the project runs on,
   and `@types/<package>` for a declared package that ships no types, each installed apart and linked where
   TypeScript looks last, Node's named in a file the generated tsconfig includes (`REFERENCES`); the indexer's
@@ -549,8 +550,9 @@ def node_modules(project_dir: Path, restored: dict, why: str) -> dict:
                 (project_dir / folder / ".yarnrc.yml").read_text(encoding="utf-8", errors="replace"))]
     if not plug:
         return restored
-    return {**restored, "lines": [f"export YARN_NODE_LINKER=node-modules; {line}" if "corepack yarn" in line else line
-                                  for line in restored["lines"]],
+    linked = [f"export YARN_NODE_LINKER=node-modules; {line}" if "corepack yarn" in line else line
+              for line in (*restored["lines"], *restored["generate"])]
+    return {**restored, "lines": linked[:len(restored["lines"])], "generate": linked[len(restored["lines"]):],
             "gaps": [*restored["gaps"], *({"kind": "build_edited", "path": folder, "detail": (
                 "Yarn's Plug'n'Play (.yarnrc.yml sets no nodeLinker, or pnp): the index's restore lays the same "
                 f"lockfile out in node_modules (YARN_NODE_LINKER=node-modules) in the container's copy, as {why}")}

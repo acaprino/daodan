@@ -152,7 +152,7 @@ def test_the_preparation_restores_the_declared_dependencies_and_the_execution_ru
     tests = [{"root": ".", "runner": "pytest", "declared_in": "tests/conftest.py", "args": ["tests"]}]
     planned, prepare, execute = scripts_of(tests, ["scripts/requirements.txt", "tests/conftest.py"])
     assert preparation.restore("pip", ["scripts"]) in prepare  # the shared preparation's own line
-    assert preparation.UNPACK_UV in prepare
+    assert preparation.UNPACK_UV in observer.scripts(planned)[2]["tools"]["lines"][0] and preparation.UNPACK_UV not in prepare
     venv = f"{preparation.VENVS}/scripts/bin/python"
     # the runner the project declares and does not install is brought at Daodan's pin, and said
     assert f"pytest=={observer.PYTEST}" in prepare and "brought pytest" in prepare
@@ -191,6 +191,13 @@ def test_the_declared_vcs_requirements_bring_git_and_their_hosts_and_nothing_els
     planned, prepare, _execute = scripts_of([PYTEST], ["requirements.txt"], texts={"requirements.txt": "click\n"})
     assert planned["vcs"] == {"names": [], "hosts": []} and "apt-get" not in prepare
     assert f"> {preparation.WITHOUT}" not in prepare and "github.com" not in observer.scripts(planned)[2]["hosts"]
+    # Without git, which apt installs into the image, uv installs as root before the preparation, which runs as
+    # 65532 (`T3.A`, `preparer:dynamic.python` of `benchmarks/egress/modal_hardening.py`); with it, all as root.
+    uv = preparation.setup(["uv"])
+    assert observer.scripts(planned)[2]["tools"] == {"lines": uv["lines"], "caps": uv["caps"]}
+    assert uv["lines"][0] not in prepare
+    planned, prepare, _execute = scripts_of([PYTEST], ["requirements.txt", "tests/test_a.py"], texts=texts)
+    assert observer.scripts(planned)[2]["tools"] is None and uv["lines"][0] in prepare
 
 
 def test_an_empty_environment_is_made_for_tests_no_manifest_holds():

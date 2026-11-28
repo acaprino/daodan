@@ -120,12 +120,13 @@ def plan(record: dict, files: list[str], read) -> dict:
 
 def scripts(planned: dict) -> tuple[str, str, dict]:
     """The preparation's script, the execution's, and what the preparation needs beside them (`{files, hosts,
-    gaps}`: the downloads the copy carries, the hosts beside the registries, the toolchains no installer has)."""
+    gaps, tools}`: the downloads the copy carries, the hosts beside the registries, the toolchains no installer has,
+    Daodan's Rust, installed as root before the preparation, which runs as `container.NOBODY`)."""
     roots = [run["root"] for run in planned["runs"]]
     chains = preparation.toolchains(planned.get("toolchains") or [])
     needs = preparation.setup(["rust"])  # Daodan's Rust runs the tests where no rustup file names one
     prepare = ["# dynamic-rust prepare", "set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}",
-               *needs["lines"], STD_SETUP, callgrind.SETUP, *chains["lines"], preparation.restore("cargo", roots)]
+               STD_SETUP, callgrind.SETUP, *chains["lines"], preparation.restore("cargo", roots)]
     runner = " ".join([callgrind.VALGRIND_BIN, *callgrind.OPTIONS])
     execute = ["# dynamic-rust execute", "set -u", *(f"export {key}={value}" for key, value in ENV.items()),
                f"export {RUNNER_VARIABLE}={shlex.quote(runner)}", f"OUT={OUT}", "mkdir -p $OUT",
@@ -136,7 +137,7 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
     execute += [f"  {line}" for line in callgrind.symbolize("$OUT")]
     return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "fi", "exit 0"]) + "\n",
             {"files": [*needs["files"], RUST_STD, *chains["files"]], "hosts": (*needs["hosts"], *chains["hosts"]),
-             "gaps": chains["gaps"]})
+             "gaps": chains["gaps"], "tools": {"lines": needs["lines"], "caps": needs["caps"]}})
 
 
 def _text(path: Path) -> str:
@@ -201,7 +202,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     result = container.run_in_container(
         project, ["sh", "-c", execute], image=IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare], outputs=[OUT],
         env=preparation.ENV, timeout=BUILD + callgrind.SYMBOLIZE + len(runs) * (LIMIT + 60), memory=MEMORY,
-        engine=engine, inputs=inputs,
+        engine=engine, inputs=inputs, tools=needs["tools"],
         registries=container.REGISTRIES + tuple(dict.fromkeys(  # with the hosts the project declares (`dynamic.run`)
             [*needs["hosts"], *(planned.get("declared") or {}).get("hosts", ())])))
     if result["state"] == "gap":

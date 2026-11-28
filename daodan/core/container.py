@@ -1713,7 +1713,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                      engine: Engine | str | None = None,
                      inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None,
                      keep_root: bool = False, dotenv_env: list[tuple[str, str]] = (), blind: bool = False,
-                     node_restore: dict | None = None, tools: dict | None = None) -> dict:
+                     node_restore: dict | None = None, tools: dict | None = None,
+                     generate: str | None = None) -> dict:
     """Run `command` in a container over a copy of `project`; `prepare` first, with the registries open.
 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
@@ -1744,6 +1745,9 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     restore (`T3.A.6b`): the copy goes into the volumes, given to `NOBODY` (`own`); `tools` install as root into the
     state volume alone (`tool_phase`); the preparation runs as `NOBODY` with no capability (`RESTORE`), unless the
     CI's steps run in it. Without, one preparation as root, as a CI's job runs.
+    With `generate` (`preparation.rebuild`'s lines: the lifecycle scripts of the packages the preparation restored
+    without them), a phase with no network runs it after the preparation, as its user, its output in `prepare.log`;
+    the CI's steps then run in a phase of their own after it (`T3.A.6d`).
     """
     project, out_dir = Path(project).resolve(), Path(out_dir).resolve()
     if out_dir == project or project in out_dir.parents:
@@ -1898,14 +1902,31 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                                                  copy)
                     else:
                         served, pinned = served + unstarted(failure), []
+                user = RESTORE if split and not (steps or kept_image) else ()
+                inside = steps and not generate  # with `generate`, the steps run after it, in a phase of their own
                 row = phase(found, "prepare", image=image, network=joined or network,
-                            command=["sh", "-c", steps_script(steps, timeout, token), "sh", *prepare] if steps
+                            command=["sh", "-c", steps_script(steps, timeout, token), "sh", *prepare] if inside
                             else prepare, env=proxied, limits=limits,
-                            timeout=prepare_timeout + (timeout if steps else 0), copy=prepare_copy, outputs=[],
-                            out_dir=out_dir, volumes=mounts, commit=kept_image,
-                            flags=RESTORE if split and not (steps or kept_image) else (), log="prepare")
-                read_refusals()  # before the proxy goes: `egress.collect` turns them into requests and gaps
+                            timeout=prepare_timeout + (timeout if inside else 0), copy=prepare_copy, outputs=[],
+                            out_dir=out_dir, volumes=mounts, commit=kept_image, flags=user, log="prepare")
                 append_record(record, {**hidden(row), "copy": digest})
+                last = row  # the row of the container committed as `kept_image`
+                if generate and row["outcome"] == "exited" and row["exit_code"] == 0 and (
+                        not kept_image or "committed" in row):
+                    for name, net, argv, seconds, given in (
+                            ("generate", "none", ["sh", "-c", generate], prepare_timeout,
+                             {**env, **exported_values, **proxy_environment("")}),
+                            *((("steps", joined or network, ["sh", "-c", steps_script(steps, timeout, token), "sh",
+                                                             "true"], timeout, proxied),) if steps else ())):
+                        row = phase(found, name, image=kept_image or image, network=net, command=argv, env=given,
+                                    limits=limits, timeout=seconds, copy=None, outputs=[], out_dir=out_dir,
+                                    volumes=mounts, commit=kept_image if name == "steps" else None, flags=user,
+                                    log="prepare")
+                        append_record(record, hidden(row))
+                        last = row if name == "steps" else last
+                        if row["outcome"] != "exited" or row["exit_code"] != 0:
+                            break
+                read_refusals()  # before the proxy goes: `egress.collect` turns them into requests and gaps
                 if steps:
                     log = Path(row["log"]).read_bytes().decode("utf-8", "replace") if row.get("log") else ""
                     said_steps = stepped(log, steps, token, timeout)
@@ -1915,8 +1936,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         f" with code {row['exit_code']}" if row["exit_code"] is not None else "") + f"; see {row['log']}")
                     report()
                     return result
-                if kept_image and "committed" not in row:
-                    raise Gap(f"{found.name} did not commit the preparation's container: {row.get('commit_failed')}",
+                if kept_image and "committed" not in last:
+                    raise Gap(f"{found.name} did not commit the preparation's container: {last.get('commit_failed')}",
                               "run Daodan with an engine that commits a container (Docker, Podman)")
                 run_copy, based, image = None, image, kept_image or image
                 if joined:  # the proxy goes and the pod leaves the network: the tests reach the services, and only them

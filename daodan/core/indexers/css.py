@@ -255,7 +255,7 @@ def tailwind_runner(project_dir: Path, work_dir: Path, refused=()):
         result = container.run_in_container(
             project_dir, ["sh", "-c", execute], image=IMAGE, out_dir=box, prepare=["sh", "-c", prepare],
             outputs=[OUT], env={**preparation.ENV, "NODE_OPTIONS": NODE_OPTIONS}, timeout=TIMEOUT,
-            prepare_timeout=3600, memory=3 * 2**30,
+            prepare_timeout=3600, memory=3 * 2**30, generate="\n".join(restored["generate"]) or None,
             registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *node["hosts"]])),
             inputs=lambda: {**{f"{preparation.IN}/{script.name}": script for script, _ in calls},
                             **{f"{preparation.IN}/{script.stem}-in.json": work_dir / f"{script.stem}-in.json"

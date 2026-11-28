@@ -305,7 +305,7 @@ def test_the_components_are_turned_into_typescript_in_the_run_and_their_index_gi
     prepare, execute = seen["prepare"][2], seen["command"][2]
     # Daodan's Vue tool, installed after the restore: the execution takes the project's where it has one.
     [install] = components.install(LISTED)
-    assert prepare.index(install) > prepare.index(preparation.restore("npm", ["."], scripts=True))
+    assert prepare.index(install) > prepare.index(preparation.restore("npm", ["."]))
     # The generated files come before the indexer, in the copy, with no network, once the tsconfig is in place.
     generate = execute.index(components.generate(typescript.WORK, INDEXER))
     assert execute.index(f"cp {typescript.CONFIG} tsconfig.json") < generate < execute.index('scip-typescript)" index')
@@ -350,7 +350,7 @@ def test_sveltekit_writes_its_tsconfig_in_the_preparation_with_the_projects_kit(
                             brought=False)
     prepare = seen["prepare"][2]
     sync = typescript.generator(".", typescript.GENERATORS[".svelte-kit"])
-    assert prepare.index(sync) > prepare.index(preparation.restore("npm", ["."], scripts=True))
+    assert prepare.index(sync) > prepare.index(preparation.restore("npm", ["."]))
     assert "npx --no -- svelte-kit sync" in sync and "npx --no -- svelte-kit --version" in sync  # the project's kit
     assert result["indexer"]["generated"] == [{"command": "svelte-kit sync", "path": ".", "version": "2.8.0"}]
     assert not [gap for gap in result.get("gaps", ()) if gap["kind"] == "config_not_generated"]
