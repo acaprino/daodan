@@ -40,6 +40,9 @@ that passes its own parameter to a proved wrapper) is not proved here: it needs 
 rule yet. A table entry for another language needs its reader to declare assignment targets and to leave unresolved what it
 cannot read.
 
+`flows.link_facts` applies the proposed rules with no model (`applied`), and reads a call of the table made outside a wrapper
+as a rule would (`asked`): both ask for a route with `service(rules)`, and meet the routes `find_entry_points` declares.
+
     python flows.py wrappers MANIFEST [--rules RULES]
 """
 from __future__ import annotations
@@ -64,12 +67,29 @@ from snapshot_store import _unpack, open_snapshot  # noqa: E402
 CLIENTS = json.loads((SCRIPT_DIR.parent / "data" / "http-clients.json").read_text(encoding="utf-8"))["clients"]
 _TABLE = {(item["manager"], item["package"], item["descriptors"]): item for item in CLIENTS}
 NAMEABLE = ("function", "method", "class", "binding")  # what a rule's `callee` can name: not an overload's `unknown`
+# The service of a call no rule names (a call of the table, a wrapper's rule with no single service): no rule offers it, so
+# it meets only the routes `find_entry_points` declares, of the service `flows.ANY_SERVICE`, and only with no loose hole.
+UNNAMED = ""
 
 
 def client(symbol: str) -> dict | None:
     """The table's entry for a symbol of the engine, whatever the version of its package; None for any other."""
     parts = code_graph.split_symbol(symbol)
     return _TABLE.get((parts[1], parts[2], parts[4])) if parts else None
+
+
+def asked(ref: dict) -> dict | None:
+    """The table's entry a call of the view is a call of: every sure end of it (`external_symbols`, which the view gives only
+    when all the ends of the call are certain and external) a function of the table, all read alike; None for any other."""
+    found = [client(symbol) for symbol in ref.get("external_symbols") or ()]
+    return found[0] if found and all(found) and len({(item["url"], item["method"]) for item in found}) == 1 else None
+
+
+def service(rules: list[dict]) -> str:
+    """The service a call of the client asks with when no rule names its own: the one service the recorded `offre` rules
+    name, else `UNNAMED`."""
+    services = _services(rules)
+    return services[0] if len(services) == 1 else UNNAMED
 
 
 def _inside(owner: dict, line: int, column: int) -> bool:
@@ -265,7 +285,7 @@ def prove(facts: flows.Facts, view: dict) -> tuple[list[dict], list[dict]]:
                                 f"file, at line {', '.join(str(item['line']) for item in others)}: a rule would reach both")
             continue
         proofs.append({"symbol": owner["id"], "callee": facts.named(owner["id"]), "index": index,
-                       "method": method.upper(), "site": site})
+                       "method": method.upper(), "site": site, "at": (ref["file"], *ref["span"][:2])})
     return proofs, gaps
 
 
@@ -308,6 +328,27 @@ def _readable(facts: flows.Facts, refs: list[dict], index: int) -> int:
     return count
 
 
+def _proposed(proofs: list[dict], gaps: list[dict], ruled: set[str]) -> list[tuple]:
+    """`(callee, index, method, first proof)` of each proved wrapper no recorded rule names (`ruled`) and no gap blocks, by
+    callee; a wrapper whose calls of the client read the route differently is a gap, added to `gaps`."""
+    blocked = {gap["symbol"] for gap in gaps}
+    by_callee = defaultdict(list)
+    for proof in proofs:
+        by_callee[proof["callee"]].append(proof)
+    out = []
+    for callee, found in sorted(by_callee.items()):
+        if callee in ruled or callee in blocked:
+            continue
+        first = min(found, key=lambda proof: (proof["site"].rpartition(":")[0], int(proof["site"].rpartition(":")[2])))
+        reads = sorted({(proof["index"], proof["method"]) for proof in found})
+        if len(reads) != 1:
+            gaps.append({"site": first["site"], "symbol": callee, "reason": "its calls of the client read the route "
+                         "differently: " + ", ".join(f"argument {index} with {method}" for index, method in reads)})
+            continue
+        out.append((callee, *reads[0], first))
+    return out
+
+
 def report(facts: flows.Facts, view: dict, rules: list[dict]) -> dict:
     """The candidates and the gaps of a snapshot under the recorded rules, and the engine's `coverage` (with `why`, the view's
     reasons, when it gave no answer).
@@ -320,21 +361,9 @@ def report(facts: flows.Facts, view: dict, rules: list[dict]) -> dict:
     proofs, gaps = prove(facts, view)
     calls, services = _calls(view), _services(rules)
     ruled = _ruled(facts, calls, rules)
-    blocked = {gap["symbol"] for gap in gaps}
-    by_callee = defaultdict(list)
-    for proof in proofs:
-        by_callee[proof["callee"]].append(proof)
     candidates = []
-    for callee, found in sorted(by_callee.items()):
-        if callee in ruled or callee in blocked:
-            continue
-        first = min(found, key=lambda proof: (proof["site"].rpartition(":")[0], int(proof["site"].rpartition(":")[2])))
-        reads = sorted({(proof["index"], proof["method"]) for proof in found})
-        if len(reads) != 1:
-            gaps.append({"site": first["site"], "symbol": callee, "reason": "its calls of the client read the route "
-                         "differently: " + ", ".join(f"argument {index} with {method}" for index, method in reads)})
-            continue
-        (index, method), refs = reads[0], calls.get(first["symbol"], [])
+    for callee, index, method, first in _proposed(proofs, gaps, ruled):
+        refs = calls.get(first["symbol"], [])
         route = {"method": method, "path": f"arg{index}"}
         if len(services) == 1:
             route = {"service": services[0], **route}
@@ -351,6 +380,17 @@ def report(facts: flows.Facts, view: dict, rules: list[dict]) -> dict:
             "coverage": status,
             # no engine answer is no wrapper: a store the snapshot rejects shows nothing else, so its reason is here
             **({"why": view["gaps"]} if status not in ("complete", "lower-bound") else {})}
+
+
+def applied(facts: flows.Facts, view: dict, rules: list[dict]) -> tuple[list[dict], set[tuple]]:
+    """What `flows.link_facts` applies with no model: the `rotta` rule each proved wrapper proposes, with `service(rules)`
+    where the candidate names none, and the calls of the client the proofs stand on, `(file, line, column)`: their URL is
+    the wrapper's parameter, read at the wrapper's own calls, so they ask for no route of their own."""
+    proofs, gaps = prove(facts, view)
+    asking = service(rules)
+    proposed = [{"callee": callee, "link": "rotta", "route": {"service": asking, "method": method, "path": f"arg{index}"}}
+                for callee, index, method, _ in _proposed(proofs, gaps, _ruled(facts, _calls(view), rules))]
+    return proposed, {proof["at"] for proof in proofs}
 
 
 def wrappers(manifest: Path, rules: list[dict]) -> dict:

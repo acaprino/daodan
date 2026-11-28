@@ -56,7 +56,10 @@ one is a gap, never a guess. A store link needs the same store and key, a route
 link the same service and method and a path schema that meets: the most literal
 route wins, a tie is an uncertain link, a gap with its candidates. A route `find_entry_points` declares (a route
 handler, not a page, on a function the snapshot resolves) is offered too, with the service `*`: it meets a call of
-any service, and a route of the call's own service, from a rule, comes before it; a catch-all path is a gap. The services of others the brief lists (the
+any service, and a route of the call's own service, from a rule, comes before it; a catch-all path is a gap. A call the
+engine resolves into the HTTP client table (`daodan/data/http-clients.json`) asks for a route with no rule, its URL and method
+read where the table says, as a rule reads them, and so does a call of a wrapper `http_wrappers.py` proves, by the rule it
+proposes; with no rule naming one service, they ask with none and meet only the declared routes. The services of others the brief lists (the
 stack step's technologies and the external modules of the module graph, by id) are nodes too: a symbol in a file
 a service cites as evidence uses it (`dichiarato`), except in a file where an engine resolved a call into a package
 the stack step ties to that service: there the function that makes such a call uses it, once per service and at its
@@ -1056,6 +1059,13 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         declared, source_gaps = evidence(manifest)
         resolver = semantic_store._Resolver(db)
         declared = bind_declared(declared, facts, view, rules, manifest)
+        # The HTTP calls the engine resolves into the client table, read with no model: the rule each proved wrapper
+        # proposes, and a call of the client outside them, read as a `rotta` rule reads it (`http_wrappers.asked`).
+        import http_wrappers
+        proposed, proved = http_wrappers.applied(facts, view, rules)
+        for rule in proposed:
+            by_callee[rule["callee"]].append(rule)
+        asking = http_wrappers.service(rules)
         declared = entry_points.one_entry(declared)  # one route, one entry: the step's own rows decide
         # A route only a specification declares has no function to hold it: it is no entry and no gap, a point offered below.
         spec_rows = [item for item in declared if item.get("spec_only") and item.get("gap")]
@@ -1124,6 +1134,10 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                 holders = facts.targets(parts[0], ref["file"], -1, -1, ("binding",))
                 target = facts.named(holders[0]) if holders else None
             matched = by_callee.get(target or "", []) + [rule for rule in written if _written(rule, parts, ref["file"])]
+            if (spec := http_wrappers.asked(ref)) and (ref["file"], *span[:2]) not in proved \
+                    and not any(rule["link"] == "rotta" for rule in matched):
+                matched.append({"link": "rotta", "route": {"service": asking, "method": spec["method"],
+                                                           "path": f"arg{spec['url']}"}})
             if not matched:
                 if ref["resolution"] != "resolved":
                     if ref.get("last_name") in wanted:
@@ -1259,7 +1273,8 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
     for call, found in join(REST, route_calls, routes_offered):
         if len(found) != 1:
             gap = {"site": call["site"], "symbol": call["symbol"],
-                   "reason": f"route {' '.join(call['key'])}: {'several handlers' if found else 'no handler'}"}
+                   "reason": f"route {' '.join(part for part in call['key'] if part)}: "
+                             f"{'several handlers' if found else 'no handler'}"}
             gaps.append({**gap, "key": list(call["key"]), "candidates": sorted(o["symbol"] for o in found),
                          "offered": sorted(o["site"] for o in found)} if found else gap)
             continue
@@ -1345,7 +1360,8 @@ def _links_reader_digest() -> str:
                  *(Path(source.__file__) for source in (*FRAMEWORK_SOURCES, *TEMPLATE_SOURCES)),
                  SCRIPT_DIR / "entry_points" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",
                  SCRIPT_DIR / "premap" / "python_build.py", SCRIPT_DIR / "languages" / "rust.py",
-                 SCRIPT_DIR / "engine_pass.py", SCRIPT_DIR.parent / "data" / "entry-queries.json"):
+                 SCRIPT_DIR / "engine_pass.py", SCRIPT_DIR.parent / "data" / "entry-queries.json",
+                 SCRIPT_DIR / "http_wrappers.py", SCRIPT_DIR.parent / "data" / "http-clients.json"):
         digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
     return digest.hexdigest()
 
