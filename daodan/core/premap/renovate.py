@@ -17,6 +17,14 @@ at it (`WRITTEN_ELSEWHERE`), never resolved: each analyzer's build tool resolves
 shared table writes (a pnpm or Yarn catalog, Cargo's `[workspace.dependencies]`) is one fact at the table's file, with
 `used_in` the files whose dependency takes it (`catalog:`, `{ workspace = true }`; `_central`, `_uses`).
 
+The local platform reads the project's own Renovate config whatever `requireConfig` says (its `initPlatform` answers
+`optional`, over `ENV`'s `ignored`: lib/modules/platform/local/index.ts, lib/modules/platform/index.ts), and resolves
+the presets it extends. One on a host the run does not reach (`github>…`, with the network blocked) ends the repository
+before any file is read, and Renovate still exits 0 with an empty extraction: in `--dry-run=extract` only Renovate's
+error handling gives the report's repository a `status` (`processResult`, lib/workers/repository/index.ts), so a
+repository with one is a `model_failed` gap with its `problems` (`_ended`), never an empty answer
+(measured: `benchmarks/project-model/results/renovate-network.json`).
+
 Of a service container a GitHub Actions job declares, Renovate's github-actions manager keeps the image alone
 (`lib/modules/manager/github-actions/schema.ts`). When a regular YAML workflow exists in `.github/workflows`,
 a second command reads each workflow in the container's
@@ -868,6 +876,8 @@ def read(context, commands, results):
             "detail": f"renovate: {(result['stderr'] or result['stdout']).strip()[-400:]}"}]}
     report = json.loads(result["stdout"])
     repository = (report.get("repositories") or {}).get("local") or {}
+    if "status" in repository:  # Renovate's error handling ended the repository before its files were read
+        return {"facts": declared, "gaps": [*gaps, _ended(repository)]}
 
     def text(rel: str) -> str:
         try:
@@ -936,6 +946,19 @@ def read(context, commands, results):
     packages += _uses(central, uses, seen_pkgs)
     facts = {"toolchains": toolchains, **({"packages": packages} if packages else {}), **declared}
     return {"facts": facts, **({"gaps": gaps} if gaps else {})}
+
+
+def _ended(repository: dict) -> dict:
+    """The gap of a repository Renovate's error handling ended (the module's docstring): its `status` and its
+    `problems`, each the message, the error's and the URL it asked for."""
+    said = []
+    for problem in repository.get("problems") or ():
+        err = problem.get("err") if isinstance(problem.get("err"), dict) else {}
+        options = err.get("options") if isinstance(err.get("options"), dict) else {}
+        said.append(": ".join(str(part) for part in (problem.get("msg"), err.get("message"), options.get("url")) if part))
+    return {"kind": "model_failed", "path": ".",
+            "detail": f"renovate ended the repository ({repository['status']}) before reading its files: "
+                      f"{'; '.join(said) or 'no problem said'}"[:600]}
 
 
 def _central(manager: str, dep: dict) -> tuple[str | None, bool]:

@@ -437,6 +437,7 @@ def _inputs(digest, root, sources) -> str:
         value.append("workflow-triggers-v1")
         value.append("package-roles-v1")
         value.append("package-tables-v1")
+        value.append("renovate-ended-v1")
     if maven in sources:
         value.append("maven-managed-versions-v1")
     if gradle in sources:
