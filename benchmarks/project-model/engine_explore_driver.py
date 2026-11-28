@@ -15,6 +15,7 @@ os.environ.pop("DAODAN_CONTAINER", None)
 
 import container  # noqa: E402
 import container_runner  # noqa: E402
+import egress  # noqa: E402
 import premap  # noqa: E402
 from premap import renovate  # noqa: E402
 import snapshot  # noqa: E402
@@ -43,6 +44,8 @@ controls = [{"name": c["name"], "state": c.get("state"), "calls": [[x["source"],
             for data in explored.values() for page in data["pages"] for c in page["controls"]]
 print("RESULT", json.dumps({"engine": engine.name, "plan": told, "state": seen["state"], "apps": seen["apps"], "gaps": seen["gaps"],
                             "cause": seen.get("cause"), "remedy": seen.get("remedy"),
+                            # the hosts the proxy refused that nobody answered yet: the app's question (`egress`)
+                            "asked": egress.pending(egress.name(project)),
                             "totals": [data["totals"] for data in explored.values()], "controls": controls,
                             "logs": {name: (out / name).read_text(encoding="utf-8", errors="replace")[-1500:]
                                      for name in ("prepare.log", "execute.log") if (out / name).is_file()},
