@@ -517,7 +517,7 @@ try {
     assert.equal(await doing.getAttribute('aria-valuetext'), '25%');
     await run.getByText('Chiamate: go', { exact: true }).first().waitFor();
     assert.match(await actions.innerText(), /Chiamate: python[\s\S]*no container engine answers · Rimedio: start Docker or Podman[\s\S]*Non possibile/);
-    await says(run, 'Che cosa manca');  // what the step cannot do, a fact of it
+    await says(run, /Che cosa manca/);  // what the step cannot do, a fact of it: a note's title follows its tone's word
     await forward('Continua').and(page.locator(':enabled')).waitFor();  // a step goes on to the next one, under way or not
     const log = run.getByRole('list', { name: 'Ultimi eventi', exact: true }).getByRole('listitem');
     assert.equal(await log.count(), 1);  // the events of the step alone: the journal is its chronicle, the plan says how it is

@@ -262,7 +262,7 @@ test('a step the plan does not have is no place: the analysis goes back to the r
   const { model, sources, now } = setup({}, { ...DEFAULTS, analysisStage: 'run_and_observe', runId: 'r1' });
   model.start();
   assert.equal(now().kept.analysisStage, 'run_and_observe');  // nothing is known yet
-  sources[0].send('app', { ...ready, run: { pass: { state: 'running' }, plan: { ...DONE, steps: DONE.steps.slice(0, 7) } } });
+  sources[0].send('app', { ...ready, run: { pass: { state: 'running' }, plan: { ...DONE, steps: DONE.steps.filter((step: { id: string }) => step.id !== 'run_and_observe') } } });
   assert.equal(now().kept.analysisStage, 'repository');
   model.selectStage('assemble_graph');
   sources[0].send('app', { ...ready, run: { pass: { state: 'running' }, plan: PLAN } });
