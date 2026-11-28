@@ -22,20 +22,30 @@ A row per route: `reader` `express`, `shape` (`method` or `route`, the data's fo
 to the one function of the snapshot with that span (`binder.bind`); `registered` keeps where the route is registered. A path that is no literal, a handler that is no function of the
 snapshot, a router mounted under a prefix that is no literal and a router no app mounts are gaps with the cause, at the registration.
 It runs on the host with no container (spec «Strumenti nativi»), once the snapshot is read; not run by the step: `T1.C.9` measured it short of Noir.
+
+Hono (`T1.C.10`: `inspectRoutes` of `hono/dev` did not pass, `benchmarks/hono-routes/README.md`) is the same code on the data of its
+section (`SECTIONS`), no branch of its own: an app is `new Hono()`, `route(prefix, app)` mounts, `basePath(prefix)` gives an app whose
+routes, and the apps it mounts, are under the base path, and a verb returns its app; an app no one mounts is a root, as Express's.
+The reader of a row is its section (`express`, `hono`).
 """
 from __future__ import annotations
 
 from collections import defaultdict
 
 NAME = "express"
-VERSION = "2"
+VERSION = "3"
+# The libraries this module reads, each a section of `entry-queries.json` with its forms: the packages, the instances they make (`call`
+# of a member, `new` of a class; `default` for the package's default export), the verb that mounts (`mount`), the one that builds a
+# `route(path)` (`chain`), the one that gives an app under a base path (`prefix`), whether a verb returns its app (`chained`), the
+# methods, and the stack's registry id (`id`). The query, the loader and the CommonJS exports are the JavaScript forms of `express`.
+SECTIONS = ("express", "hono")
 DEPTH = 24  # how many values one evaluation may follow (names, imports, exports, calls): a cycle ends there, unknown
 PREFIXES = 64  # the prefixes one app or router may be mounted under: past them its routes are a gap
 
 
 def _forms() -> dict:
     import entries
-    return entries.QUERIES[NAME]
+    return {section: entries.QUERIES[section] for section in SECTIONS}
 
 
 def _unknown(cause: str) -> tuple:
@@ -45,8 +55,12 @@ def _unknown(cause: str) -> tuple:
 class _Reader:
     """The values of one snapshot's JavaScript and TypeScript files, evaluated on demand and kept."""
 
-    def __init__(self, facts):
-        self.facts, self.forms = facts, _forms()
+    def __init__(self, facts, sections=SECTIONS):
+        self.facts, every = facts, _forms()
+        self.sections = {section: every[section] for section in sections}
+        self.forms = every[NAME]  # the JavaScript forms: the query, the loader, the CommonJS exports
+        self.packages = {package: section for section, forms in self.sections.items() for package in forms["packages"]}
+        self.based: dict[tuple, str | None] = {}  # an app made by `prefix` (`basePath`): the base path of its routes, None if no literal
         self.trees, self.calls, self.exported = {}, {}, {}
         self.scopes: dict[str, set[str]] = {}
         self.values: dict[tuple, tuple] = {}
@@ -112,7 +126,7 @@ class _Reader:
     # ------------------------------------------------------------ values
 
     def value(self, file: str, node, depth: int = 0) -> tuple:
-        """What an expression is, as a tuple: `("package", member)`, `("instance", kind, key)`, `("route", instance, path)`,
+        """What an expression is, as a tuple: `("package", section, member)`, `("instance", kind, key, section)`, `("route", instance, path)`,
         `("function", id)`, `("param", function id, index)`, `("module", file)`, `("object", file, node)`, `("array", values)`,
         `("loader",)`, `("external", module)` (a value of a package outside the project), else `("unknown", cause)`."""
         import flows
@@ -144,6 +158,10 @@ class _Reader:
             return self.member(self.value(file, node.child_by_field_name("object"), depth), entries._text(tree.source, name), depth)
         if node.type == "call_expression":
             return self.call(file, node, depth)
+        if node.type == "new_expression":
+            held = self.value(file, node.child_by_field_name("constructor"), depth)
+            made = self.made(held, "new", file, node)
+            return made or (held if held[0] in ("unknown", "external") else _unknown(f"a new of a {held[0]}"))
         if node.type in entries.FUNCTIONS:
             written = self.facts.written_function(file, *entries._at(node))
             return ("function", written["id"]) if written else _unknown("a function the snapshot does not record")
@@ -167,8 +185,8 @@ class _Reader:
         if kind == "import":
             if value.get("type_only"):
                 return _unknown("a type")
-            if value["module"] in self.forms["packages"]:
-                return ("package", None if value["mode"] in ("default", "namespace") else value["imported"])
+            if value["module"] in self.packages:
+                return ("package", self.packages[value["module"]], None if value["mode"] in ("default", "namespace") else value["imported"])
             targets = self.facts.resolver.targets(file, value["module"])
             if not targets:
                 return ("external", value["module"])
@@ -234,7 +252,7 @@ class _Reader:
 
     def member(self, held: tuple, name: str, depth: int) -> tuple:
         if held[0] == "package":
-            return ("package", name) if held[1] is None else _unknown(f"a member of {held[1]}")
+            return ("package", held[1], name) if held[2] is None else _unknown(f"a member of {held[2]}")
         if held[0] == "module":
             return self.export(held[1], name, depth)
         if held[0] == "object":
@@ -284,8 +302,8 @@ class _Reader:
         module = self.facts.literal(arguments[0], self.trees[file]) if len(arguments) == 1 else None
         if module is None:
             return _unknown("the loader's module is no literal")
-        if module in self.forms["packages"]:
-            return ("package", None)
+        if module in self.packages:
+            return ("package", self.packages[module], None)
         targets = self.facts.resolver.targets(file, module)
         if not targets:
             return ("external", module)
@@ -294,23 +312,35 @@ class _Reader:
         whole = self.exported[targets[0]].get(None, ())
         return self.value(targets[0], whole[0], depth) if len(whole) == 1 else ("module", targets[0])
 
+    def made(self, held: tuple, how: str, file: str, node) -> tuple | None:
+        """The app or router a `call` or a `new` of a package's value makes, by the data of its section; else None."""
+        if held[0] != "package":
+            return None
+        kind = self.sections[held[1]]["instances"].get(how, {}).get(held[2] or "default")
+        return ("instance", kind, (file, node.start_byte), held[1]) if kind else None
+
     def call(self, file: str, node, depth: int) -> tuple:
         import entries
         callee = node.child_by_field_name("function")
         held = self.value(file, callee, depth)
         if held == ("loader",):
             return self.loaded(file, node, depth)
-        if held == ("package", None):
-            return ("instance", "app", (file, node.start_byte))
-        if held == ("package", self.forms["router"]):
-            return ("instance", "router", (file, node.start_byte))
+        if (made := self.made(held, "call", file, node)) is not None:
+            return made
         if callee.type == "member_expression":
             verb = entries._text(self.trees[file].source, callee.child_by_field_name("property"))
             receiver = self.value(file, callee.child_by_field_name("object"), depth)
-            if verb == self.forms["chain"] and receiver[0] in ("instance", "param"):
-                arguments = [item for item in node.child_by_field_name("arguments").named_children if not item.is_extra]
+            forms = self.sections[receiver[3]] if receiver[0] == "instance" else {}
+            arguments = [item for item in node.child_by_field_name("arguments").named_children if not item.is_extra]
+            if verb == forms.get("chain") or receiver[0] == "param" and verb in {f.get("chain") for f in self.sections.values()}:
                 return ("route", receiver, self.path(file, arguments[0]) if arguments else None)
-            if verb in self.forms["methods"] and receiver[0] == "route":
+            if verb == forms.get("prefix"):  # `basePath(p)`: another app, whose routes are under the base path
+                own, written = self.based.get(receiver[2], ""), self.path(file, arguments[0]) if arguments else None
+                self.based[(file, node.start_byte)] = None if own is None or written is None else _join(own, written)
+                return ("instance", receiver[1], (file, node.start_byte), receiver[3])
+            if forms.get("chained") and (verb in forms["methods"] or verb == forms["mount"]):
+                return receiver  # `app.get(p, h).post(p2, h2)`: the verb returns the app
+            if receiver[0] == "route" and any(verb in f["methods"] for f in self.sections.values()):
                 return receiver  # `route(path).get(h).post(h2)`: each verb on the same route
         if held[0] == "function":  # a function that builds an app or a router: what it returns
             returned = self.returned(held[1], depth)
@@ -387,14 +417,13 @@ def _join(prefix: str, path: str) -> str:
     return prefix.rstrip("/") + path if prefix else path
 
 
-
-
-def rows(facts) -> list[dict]:
-    """The routes of the snapshot's Express apps, each a row the binder ties by the span of its handler, or a gap with the cause."""
+def rows(facts, sections=SECTIONS) -> list[dict]:
+    """The routes of the snapshot's apps of `sections` (Express, Hono), each a row the binder ties by the span of its handler, or a gap
+    with the cause. The reader of a row is its section."""
     import entries
     import flows
-    reader = _Reader(facts)
-    forms = reader.forms
+    reader = _Reader(facts, sections)
+    verbs = {verb for forms in reader.sections.values() for verb in (forms["mount"], *forms["methods"])}
     routes, mounts, created = [], defaultdict(list), {}
     for file in reader.files():
         if reader.tree(file) is None:
@@ -405,47 +434,52 @@ def rows(facts) -> list[dict]:
             if callee.type != "member_expression" or (verb := callee.child_by_field_name("property")) is None:
                 continue
             verb = entries._text(source, verb)
-            if verb != forms["mount"] and verb not in forms["methods"]:
+            if verb not in verbs:
                 continue
             receiver = reader.value(file, callee.child_by_field_name("object"))
             site = f"{file}:{entries._at(node)[0]}"
             arguments = [item for item in node.child_by_field_name("arguments").named_children if not item.is_extra]
             chained = receiver[0] == "route"
             places = reader.instances(receiver[1] if chained else receiver)
-            if not places:  # not an app or a router of Express: a map's `get`, an HTTP client's `post`
-                continue
-            for place in places:
+            for place in places:  # none: not an app or a router of these libraries (a map's `get`, an HTTP client's `post`)
                 created.setdefault(place[2], place[1])
-            if verb == forms["mount"]:
-                if not chained:
-                    _mount(reader, file, arguments, places, site, mounts, created)
-                continue
-            written, handlers = (receiver[2], arguments) if chained else \
-                (reader.path(file, arguments[0]) if arguments else None, arguments[1:])
-            if not handlers:  # one argument alone: Express's getter of a setting, `app.get('env')`
-                continue
-            handler = (_flat(reader.value(file, handlers[-1])) or [_unknown("an empty array")])[-1]
-            routes += [{"place": place[2], "method": forms["methods"][verb], "path": written, "shape": "route" if chained else "method",
-                        "site": site, "handler": handler, "file": file} for place in places]
+            for section in sorted({place[3] for place in places}):
+                forms, here = reader.sections[section], [place for place in places if place[3] == section]
+                if verb == forms["mount"]:
+                    if not chained:
+                        _mount(reader, file, arguments, here, site, mounts, created)
+                    continue
+                if verb not in forms["methods"] or chained and not forms.get("chain"):
+                    continue
+                written, handlers = (receiver[2], arguments) if chained else \
+                    (reader.path(file, arguments[0]) if arguments else None, arguments[1:])
+                if not handlers:  # one argument alone: Express's getter of a setting, `app.get('env')`
+                    continue
+                handler = (_flat(reader.value(file, handlers[-1])) or [_unknown("an empty array")])[-1]
+                routes += [{"place": place[2], "reader": section, "method": forms["methods"][verb], "path": written,
+                            "base": reader.based.get(place[2], ""), "shape": "route" if chained else "method", "site": site,
+                            "handler": handler, "file": file} for place in here]
     reached = _prefixes(created, mounts)
     out = []
     for route in routes:
-        base = {"reader": NAME, "shape": route["shape"], "kind": "rotta", "method": route["method"],
+        base = {"reader": route["reader"], "shape": route["shape"], "kind": "rotta", "method": route["method"],
                 "symbol": f"{route['file']}::{flows.MODULE}", "site": route["site"]}
         handler, (prefixes, causes) = route["handler"], reached.get(route["place"], ([], ["a router no app mounts"]))
 
         def gap(why: str, path=route["path"]):
             written = "(computed)" if path is None else path
-            return {**base, "path": path, "gap": f"express route {route['method'] or 'ANY'} {written}: {why}"}
+            return {**base, "path": path, "gap": f"{route['reader']} route {route['method'] or 'ANY'} {written}: {why}"}
 
         if route["path"] is None:
             out.append(gap("the path is no literal"))
+        elif route["base"] is None:
+            out.append(gap("the base path of its app is no literal"))
         elif handler[0] != "function":
             out.append(gap("the handler is no function of the snapshot: " + (handler[1] if handler[0] == "unknown" else f"a {handler[0]}")))
         else:
             declaration = facts.declarations[handler[1]]
             for prefix in prefixes:
-                path = _join(prefix, route["path"])
+                path = _join(prefix, _join(route["base"], route["path"]))
                 out.append({**base, "path": path, "schema": flows.path_schema(path),
                             "site": f"{declaration['file']}:{declaration['line']}", "span": list(declaration["span"]),
                             "registered": route["site"]})
@@ -469,7 +503,14 @@ def _mount(reader, file: str, arguments: list, places: list, site: str, mounts: 
     for argument in children:
         for child in (found for item in _flat(reader.value(file, argument)) for found in reader.instances(item)):
             created.setdefault(child[2], child[1])
-            mounts[child[2]] += [(place[2], prefix, site) for place in places]
+            mounts[child[2]] += [(place[2], _based(reader.based.get(place[2], ""), prefix), site) for place in places]
+
+
+def _based(base: str | None, prefix: str | None) -> str | None:
+    """The prefix a mount on an app with a base path gives (Hono's `route` on a `basePath` app): under the base too; None if unknown."""
+    if not base:
+        return None if base is None else prefix
+    return None if prefix is None else _join(base, prefix)
 
 
 def _prefixes(created: dict, mounts: dict) -> dict:

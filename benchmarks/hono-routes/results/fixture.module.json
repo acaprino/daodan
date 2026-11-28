@@ -1,0 +1,190 @@
+{
+ "compare": {
+  "common_routes": 4,
+  "express_bound": 4,
+  "express_gaps": {},
+  "express_rows": 4,
+  "noir_bound": 4,
+  "noir_gaps": 0,
+  "noir_rows": 4,
+  "only_express": [],
+  "only_noir": [],
+  "same_function_other_path": 0,
+  "same_route_and_function": 4
+ },
+ "express_peak_mb": 92.9,
+ "express_rows": [
+  {
+   "function": "src/api.js::function@10:23",
+   "method": "POST",
+   "path": "/api/v1/users/:id",
+   "reader": "hono",
+   "registered": "src/api.js:10",
+   "schema": "/api/v1/users/{}",
+   "shape": "method",
+   "site": "src/api.js:10",
+   "span": [
+    10,
+    23,
+    10,
+    69
+   ],
+   "symbol": "src/api.js::POST /api/v1/users/:id"
+  },
+  {
+   "function": "src/api.js::function@5:7",
+   "method": "GET",
+   "path": "/api/v1/users",
+   "reader": "hono",
+   "registered": "src/api.js:9",
+   "schema": "/api/v1/users",
+   "shape": "method",
+   "site": "src/api.js:5",
+   "span": [
+    5,
+    7,
+    7,
+    1
+   ],
+   "symbol": "src/api.js::listUsers"
+  },
+  {
+   "function": "src/index.js::function@12:0",
+   "method": "GET",
+   "path": "/health",
+   "reader": "hono",
+   "registered": "src/index.js:17",
+   "schema": "/health",
+   "shape": "method",
+   "site": "src/index.js:12",
+   "span": [
+    12,
+    0,
+    14,
+    1
+   ],
+   "symbol": "src/index.js::health"
+  },
+  {
+   "function": "src/index.js::function@18:19",
+   "method": "GET",
+   "path": "/inline",
+   "reader": "hono",
+   "registered": "src/index.js:18",
+   "schema": "/inline",
+   "shape": "method",
+   "site": "src/index.js:18",
+   "span": [
+    18,
+    19,
+    18,
+    42
+   ],
+   "symbol": "src/index.js::GET /inline"
+  }
+ ],
+ "express_seconds": 0.0,
+ "name": "fixture",
+ "noir": {
+  "argv": [
+   "noir",
+   "scan",
+   "/work",
+   "-f",
+   "json",
+   "--no-log"
+  ],
+  "returncode": 0,
+  "seconds": 0.8,
+  "stderr_tail": ""
+ },
+ "noir_outside": 0,
+ "noir_rows": [
+  {
+   "function": "src/api.js::function@5:7",
+   "handler": "listUsers",
+   "method": "GET",
+   "path": "/api/v1/users",
+   "reader": "noir",
+   "schema": "/api/v1/users",
+   "shape": "http",
+   "site": "src/api.js:5",
+   "symbol": "src/api.js::listUsers"
+  },
+  {
+   "function": "src/api.js::function@10:23",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/api/v1/users/:id",
+   "reader": "noir",
+   "schema": "/api/v1/users/{}",
+   "shape": "http",
+   "site": "src/api.js:10",
+   "symbol": "src/api.js::POST /api/v1/users/:id"
+  },
+  {
+   "function": "src/index.js::function@12:0",
+   "handler": "health",
+   "method": "GET",
+   "path": "/health",
+   "reader": "noir",
+   "schema": "/health",
+   "shape": "http",
+   "site": "src/index.js:12",
+   "symbol": "src/index.js::health"
+  },
+  {
+   "function": "src/index.js::function@18:19",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/inline",
+   "reader": "noir",
+   "schema": "/inline",
+   "shape": "http",
+   "site": "src/index.js:18",
+   "symbol": "src/index.js::GET /inline"
+  }
+ ],
+ "sections": [
+  "hono"
+ ],
+ "sites": {
+  "src/api.js::function@10:23": [
+   "src/api.js:10",
+   [
+    10,
+    23,
+    10,
+    69
+   ]
+  ],
+  "src/api.js::function@5:7": [
+   "src/api.js:5",
+   [
+    5,
+    7,
+    7,
+    1
+   ]
+  ],
+  "src/index.js::function@12:0": [
+   "src/index.js:12",
+   [
+    12,
+    0,
+    14,
+    1
+   ]
+  ],
+  "src/index.js::function@18:19": [
+   "src/index.js:18",
+   [
+    18,
+    19,
+    18,
+    42
+   ]
+  ]
+ },
+ "snapshot_seconds": 0.3
+}

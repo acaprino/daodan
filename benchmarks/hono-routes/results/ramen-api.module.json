@@ -1,0 +1,619 @@
+{
+ "compare": {
+  "common_routes": 11,
+  "express_bound": 12,
+  "express_gaps": {
+   "the path is no literal": 1
+  },
+  "express_rows": 13,
+  "noir_bound": 19,
+  "noir_gaps": 0,
+  "noir_rows": 19,
+  "only_express": [
+   [
+    null,
+    "/mcp",
+    "src/mcp.ts::function@72:13"
+   ]
+  ],
+  "only_noir": [
+   [
+    "DELETE",
+    "/mcp",
+    "src/mcp.ts::function@72:13"
+   ],
+   [
+    "GET",
+    "/content/{}",
+    "test/mockApp.ts::function@67:32"
+   ],
+   [
+    "GET",
+    "/mcp",
+    "src/mcp.ts::function@72:13"
+   ],
+   [
+    "HEAD",
+    "/mcp",
+    "src/mcp.ts::function@72:13"
+   ],
+   [
+    "OPTIONS",
+    "/mcp",
+    "src/mcp.ts::function@72:13"
+   ],
+   [
+    "PATCH",
+    "/mcp",
+    "src/mcp.ts::function@72:13"
+   ],
+   [
+    "POST",
+    "/mcp",
+    "src/mcp.ts::function@72:13"
+   ],
+   [
+    "PUT",
+    "/mcp",
+    "src/mcp.ts::function@72:13"
+   ]
+  ],
+  "same_function_other_path": 0,
+  "same_route_and_function": 11
+ },
+ "express_peak_mb": 111.5,
+ "express_rows": [
+  {
+   "function": "src/index.ts::function@101:2",
+   "method": "GET",
+   "path": "/images/:shopId/:filename",
+   "reader": "hono",
+   "registered": "src/index.ts:90",
+   "schema": "/images/{}/{}",
+   "shape": "method",
+   "site": "src/index.ts:101",
+   "span": [
+    101,
+    2,
+    111,
+    3
+   ],
+   "symbol": "src/index.ts::GET /images/:shopId/:filename"
+  },
+  {
+   "function": "src/index.ts::function@31:22",
+   "method": "GET",
+   "path": "/content/*",
+   "reader": "hono",
+   "registered": "src/index.ts:31",
+   "schema": "/content/*",
+   "shape": "method",
+   "site": "src/index.ts:31",
+   "span": [
+    31,
+    22,
+    31,
+    41
+   ],
+   "symbol": "src/index.ts::GET /content/*"
+  },
+  {
+   "function": "src/index.ts::function@40:13",
+   "method": "GET",
+   "path": "/",
+   "reader": "hono",
+   "registered": "src/index.ts:40",
+   "schema": "/",
+   "shape": "method",
+   "site": "src/index.ts:40",
+   "span": [
+    40,
+    13,
+    44,
+    1
+   ],
+   "symbol": "src/index.ts::GET /"
+  },
+  {
+   "function": "src/index.ts::function@46:18",
+   "method": "GET",
+   "path": "/shops",
+   "reader": "hono",
+   "registered": "src/index.ts:46",
+   "schema": "/shops",
+   "shape": "method",
+   "site": "src/index.ts:46",
+   "span": [
+    46,
+    18,
+    57,
+    1
+   ],
+   "symbol": "src/index.ts::GET /shops"
+  },
+  {
+   "function": "src/index.ts::function@59:22",
+   "method": "GET",
+   "path": "/shops/:id",
+   "reader": "hono",
+   "registered": "src/index.ts:59",
+   "schema": "/shops/{}",
+   "shape": "method",
+   "site": "src/index.ts:59",
+   "span": [
+    59,
+    22,
+    76,
+    1
+   ],
+   "symbol": "src/index.ts::GET /shops/:id"
+  },
+  {
+   "function": "src/index.ts::function@78:24",
+   "method": "GET",
+   "path": "/authors/:id",
+   "reader": "hono",
+   "registered": "src/index.ts:78",
+   "schema": "/authors/{}",
+   "shape": "method",
+   "site": "src/index.ts:78",
+   "span": [
+    78,
+    24,
+    88,
+    1
+   ],
+   "symbol": "src/index.ts::GET /authors/:id"
+  },
+  {
+   "function": "src/mcp.ts::function@72:13",
+   "path": "/mcp",
+   "reader": "hono",
+   "registered": "src/mcp.ts:72",
+   "schema": "/mcp",
+   "shape": "method",
+   "site": "src/mcp.ts:72",
+   "span": [
+    72,
+    13,
+    77,
+    1
+   ],
+   "symbol": "src/mcp.ts::ANY /mcp"
+  },
+  {
+   "function": "test/mockApp.ts::function@11:40",
+   "method": "GET",
+   "path": "/content/shops/yoshimuraya/info.json",
+   "reader": "hono",
+   "registered": "test/mockApp.ts:11",
+   "schema": "/content/shops/yoshimuraya/info.json",
+   "shape": "method",
+   "site": "test/mockApp.ts:11",
+   "span": [
+    11,
+    40,
+    25,
+    1
+   ],
+   "symbol": "test/mockApp.ts::GET /content/shops/yoshimuraya/info.json"
+  },
+  {
+   "function": "test/mockApp.ts::function@27:37",
+   "method": "GET",
+   "path": "/content/shops/sugitaya/info.json",
+   "reader": "hono",
+   "registered": "test/mockApp.ts:27",
+   "schema": "/content/shops/sugitaya/info.json",
+   "shape": "method",
+   "site": "test/mockApp.ts:27",
+   "span": [
+    27,
+    37,
+    41,
+    1
+   ],
+   "symbol": "test/mockApp.ts::GET /content/shops/sugitaya/info.json"
+  },
+  {
+   "function": "test/mockApp.ts::function@43:39",
+   "method": "GET",
+   "path": "/content/shops/takasagoya/info.json",
+   "reader": "hono",
+   "registered": "test/mockApp.ts:43",
+   "schema": "/content/shops/takasagoya/info.json",
+   "shape": "method",
+   "site": "test/mockApp.ts:43",
+   "span": [
+    43,
+    39,
+    57,
+    1
+   ],
+   "symbol": "test/mockApp.ts::GET /content/shops/takasagoya/info.json"
+  },
+  {
+   "function": "test/mockApp.ts::function@5:23",
+   "method": "GET",
+   "path": "/content/shops.json",
+   "reader": "hono",
+   "registered": "test/mockApp.ts:5",
+   "schema": "/content/shops.json",
+   "shape": "method",
+   "site": "test/mockApp.ts:5",
+   "span": [
+    5,
+    23,
+    9,
+    1
+   ],
+   "symbol": "test/mockApp.ts::GET /content/shops.json"
+  },
+  {
+   "function": "test/mockApp.ts::function@59:39",
+   "method": "GET",
+   "path": "/content/authors/yusukebe/info.json",
+   "reader": "hono",
+   "registered": "test/mockApp.ts:59",
+   "schema": "/content/authors/yusukebe/info.json",
+   "shape": "method",
+   "site": "test/mockApp.ts:59",
+   "span": [
+    59,
+    39,
+    65,
+    1
+   ],
+   "symbol": "test/mockApp.ts::GET /content/authors/yusukebe/info.json"
+  },
+  {
+   "gap": "hono route GET (computed): the path is no literal",
+   "method": "GET",
+   "reader": "hono",
+   "shape": "method",
+   "site": "test/mockApp.ts:67",
+   "symbol": "test/mockApp.ts::<module>"
+  }
+ ],
+ "express_seconds": 0.1,
+ "name": "ramen-api",
+ "noir": {
+  "argv": [
+   "noir",
+   "scan",
+   "/work",
+   "-f",
+   "json",
+   "--no-log"
+  ],
+  "returncode": 0,
+  "seconds": 1.0,
+  "stderr_tail": ""
+ },
+ "noir_outside": 0,
+ "noir_rows": [
+  {
+   "function": "src/index.ts::function@31:22",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/content/*",
+   "reader": "noir",
+   "schema": "/content/*",
+   "shape": "http",
+   "site": "src/index.ts:31",
+   "symbol": "src/index.ts::GET /content/*"
+  },
+  {
+   "function": "src/index.ts::function@40:13",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/",
+   "reader": "noir",
+   "schema": "/",
+   "shape": "http",
+   "site": "src/index.ts:40",
+   "symbol": "src/index.ts::GET /"
+  },
+  {
+   "function": "src/index.ts::function@46:18",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/shops",
+   "reader": "noir",
+   "schema": "/shops",
+   "shape": "http",
+   "site": "src/index.ts:46",
+   "symbol": "src/index.ts::GET /shops"
+  },
+  {
+   "function": "src/index.ts::function@59:22",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/shops/:id",
+   "reader": "noir",
+   "schema": "/shops/{}",
+   "shape": "http",
+   "site": "src/index.ts:59",
+   "symbol": "src/index.ts::GET /shops/:id"
+  },
+  {
+   "function": "src/index.ts::function@78:24",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/authors/:id",
+   "reader": "noir",
+   "schema": "/authors/{}",
+   "shape": "http",
+   "site": "src/index.ts:78",
+   "symbol": "src/index.ts::GET /authors/:id"
+  },
+  {
+   "function": "src/index.ts::function@101:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/images/:shopId/:filename",
+   "reader": "noir",
+   "schema": "/images/{}/{}",
+   "shape": "http",
+   "site": "src/index.ts:101",
+   "symbol": "src/index.ts::GET /images/:shopId/:filename"
+  },
+  {
+   "function": "src/mcp.ts::function@72:13",
+   "handler": "closure",
+   "method": "DELETE",
+   "path": "/mcp/",
+   "reader": "noir",
+   "schema": "/mcp",
+   "shape": "http",
+   "site": "src/mcp.ts:72",
+   "symbol": "src/mcp.ts::DELETE /mcp/"
+  },
+  {
+   "function": "src/mcp.ts::function@72:13",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/mcp/",
+   "reader": "noir",
+   "schema": "/mcp",
+   "shape": "http",
+   "site": "src/mcp.ts:72",
+   "symbol": "src/mcp.ts::DELETE /mcp/"
+  },
+  {
+   "function": "src/mcp.ts::function@72:13",
+   "handler": "closure",
+   "method": "HEAD",
+   "path": "/mcp/",
+   "reader": "noir",
+   "schema": "/mcp",
+   "shape": "http",
+   "site": "src/mcp.ts:72",
+   "symbol": "src/mcp.ts::DELETE /mcp/"
+  },
+  {
+   "function": "src/mcp.ts::function@72:13",
+   "handler": "closure",
+   "method": "OPTIONS",
+   "path": "/mcp/",
+   "reader": "noir",
+   "schema": "/mcp",
+   "shape": "http",
+   "site": "src/mcp.ts:72",
+   "symbol": "src/mcp.ts::DELETE /mcp/"
+  },
+  {
+   "function": "src/mcp.ts::function@72:13",
+   "handler": "closure",
+   "method": "PATCH",
+   "path": "/mcp/",
+   "reader": "noir",
+   "schema": "/mcp",
+   "shape": "http",
+   "site": "src/mcp.ts:72",
+   "symbol": "src/mcp.ts::DELETE /mcp/"
+  },
+  {
+   "function": "src/mcp.ts::function@72:13",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/mcp/",
+   "reader": "noir",
+   "schema": "/mcp",
+   "shape": "http",
+   "site": "src/mcp.ts:72",
+   "symbol": "src/mcp.ts::DELETE /mcp/"
+  },
+  {
+   "function": "src/mcp.ts::function@72:13",
+   "handler": "closure",
+   "method": "PUT",
+   "path": "/mcp/",
+   "reader": "noir",
+   "schema": "/mcp",
+   "shape": "http",
+   "site": "src/mcp.ts:72",
+   "symbol": "src/mcp.ts::DELETE /mcp/"
+  },
+  {
+   "function": "test/mockApp.ts::function@5:23",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/content/shops.json",
+   "reader": "noir",
+   "schema": "/content/shops.json",
+   "shape": "http",
+   "site": "test/mockApp.ts:5",
+   "symbol": "test/mockApp.ts::GET /content/shops.json"
+  },
+  {
+   "function": "test/mockApp.ts::function@11:40",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/content/shops/yoshimuraya/info.json",
+   "reader": "noir",
+   "schema": "/content/shops/yoshimuraya/info.json",
+   "shape": "http",
+   "site": "test/mockApp.ts:11",
+   "symbol": "test/mockApp.ts::GET /content/shops/yoshimuraya/info.json"
+  },
+  {
+   "function": "test/mockApp.ts::function@27:37",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/content/shops/sugitaya/info.json",
+   "reader": "noir",
+   "schema": "/content/shops/sugitaya/info.json",
+   "shape": "http",
+   "site": "test/mockApp.ts:27",
+   "symbol": "test/mockApp.ts::GET /content/shops/sugitaya/info.json"
+  },
+  {
+   "function": "test/mockApp.ts::function@43:39",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/content/shops/takasagoya/info.json",
+   "reader": "noir",
+   "schema": "/content/shops/takasagoya/info.json",
+   "shape": "http",
+   "site": "test/mockApp.ts:43",
+   "symbol": "test/mockApp.ts::GET /content/shops/takasagoya/info.json"
+  },
+  {
+   "function": "test/mockApp.ts::function@59:39",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/content/authors/yusukebe/info.json",
+   "reader": "noir",
+   "schema": "/content/authors/yusukebe/info.json",
+   "shape": "http",
+   "site": "test/mockApp.ts:59",
+   "symbol": "test/mockApp.ts::GET /content/authors/yusukebe/info.json"
+  },
+  {
+   "function": "test/mockApp.ts::function@67:32",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/content/:filename{.+\\.jpg}",
+   "reader": "noir",
+   "schema": "/content/{}",
+   "shape": "http",
+   "site": "test/mockApp.ts:67",
+   "symbol": "test/mockApp.ts::GET /content/:filename{.+\\.jpg}"
+  }
+ ],
+ "sections": [
+  "hono"
+ ],
+ "sites": {
+  "src/index.ts::function@101:2": [
+   "src/index.ts:101",
+   [
+    101,
+    2,
+    111,
+    3
+   ]
+  ],
+  "src/index.ts::function@31:22": [
+   "src/index.ts:31",
+   [
+    31,
+    22,
+    31,
+    41
+   ]
+  ],
+  "src/index.ts::function@40:13": [
+   "src/index.ts:40",
+   [
+    40,
+    13,
+    44,
+    1
+   ]
+  ],
+  "src/index.ts::function@46:18": [
+   "src/index.ts:46",
+   [
+    46,
+    18,
+    57,
+    1
+   ]
+  ],
+  "src/index.ts::function@59:22": [
+   "src/index.ts:59",
+   [
+    59,
+    22,
+    76,
+    1
+   ]
+  ],
+  "src/index.ts::function@78:24": [
+   "src/index.ts:78",
+   [
+    78,
+    24,
+    88,
+    1
+   ]
+  ],
+  "src/mcp.ts::function@72:13": [
+   "src/mcp.ts:72",
+   [
+    72,
+    13,
+    77,
+    1
+   ]
+  ],
+  "test/mockApp.ts::function@11:40": [
+   "test/mockApp.ts:11",
+   [
+    11,
+    40,
+    25,
+    1
+   ]
+  ],
+  "test/mockApp.ts::function@27:37": [
+   "test/mockApp.ts:27",
+   [
+    27,
+    37,
+    41,
+    1
+   ]
+  ],
+  "test/mockApp.ts::function@43:39": [
+   "test/mockApp.ts:43",
+   [
+    43,
+    39,
+    57,
+    1
+   ]
+  ],
+  "test/mockApp.ts::function@59:39": [
+   "test/mockApp.ts:59",
+   [
+    59,
+    39,
+    65,
+    1
+   ]
+  ],
+  "test/mockApp.ts::function@5:23": [
+   "test/mockApp.ts:5",
+   [
+    5,
+    23,
+    9,
+    1
+   ]
+  ]
+ },
+ "snapshot_seconds": 2.5
+}

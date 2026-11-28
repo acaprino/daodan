@@ -1,4 +1,4 @@
-"""The pure counts of `summarize.py` on rows written by hand (no Modal, no project):
+"""The pure counts of `counts.py` on rows written by hand (no Modal, no project):
 `modal run tests/modal_pytest.py --args "benchmarks/express-routes/test_express_compare.py -q"`."""
 import importlib.util
 import sys
@@ -9,7 +9,7 @@ sys.path[:0] = [str(HERE), str(HERE.parents[1] / "daodan/core")]
 
 import cases  # noqa: E402
 import flows  # noqa: E402
-import summarize  # noqa: E402
+import counts  # noqa: E402
 
 EXPRESS = [
     {"method": "GET", "path": "/v1/users", "symbol": "routes/users.js::list"},
@@ -32,19 +32,19 @@ NOIR = [
 
 
 def test_a_bound_route_is_its_method_schema_and_symbol_once():
-    assert summarize.bound(EXPRESS, flows.path_schema) == {
+    assert counts.bound(EXPRESS, flows.path_schema) == {
         ("GET", flows.path_schema("/v1/users"), "routes/users.js::list"), ("POST", flows.path_schema("/v1/users/:id"), "routes/users.js::update"),
         ("GET", flows.path_schema("/v1/health"), "app.js::health"), (None, flows.path_schema("/v1/any"), "app.js::ANY /v1/any")}
 
 
 def test_the_cause_of_a_gap_leaves_out_the_route_and_the_sites():
-    assert [summarize.cause(row["gap"]) for row in EXPRESS if row.get("gap")] == [
+    assert [counts.cause(row["gap"]) for row in EXPRESS if row.get("gap")] == [
         "the path is no literal", "the handler is no function of the snapshot", "the handler is no function of the snapshot",
         "mounted under a prefix that is no literal"]
 
 
 def test_compare_counts_routes_functions_and_discordances():
-    out = summarize.compare(EXPRESS, NOIR, flows.path_schema)
+    out = counts.compare(EXPRESS, NOIR, flows.path_schema)
     assert (out["express_rows"], out["express_bound"], out["noir_rows"], out["noir_bound"]) == (9, 4, 5, 4)
     assert (out["common_routes"], out["same_route_and_function"], out["same_function_other_path"]) == (2, 1, 1)
     assert out["express_gaps"] == {"the handler is no function of the snapshot": 2, "the path is no literal": 1,
@@ -59,8 +59,8 @@ def test_compare_counts_routes_functions_and_discordances():
 def test_the_sample_is_fixed_by_its_seed_and_drawn_from_every_application():
     compared = {"a": {"only_express": [["GET", "/a/{}", f"a.js::f{i}"] for i in range(15)]},
                 "b": {"only_express": [["POST", "/b", f"b.js::g{i}"] for i in range(15)]}}
-    first = summarize.sample(compared)
-    assert first == summarize.sample(compared) and len(first) == summarize.SAMPLE
+    first = counts.sample(compared)
+    assert first == counts.sample(compared) and len(first) == counts.SAMPLE
     assert {item["application"] for item in first} == {"a", "b"}
 
 

@@ -67,3 +67,34 @@ Fuori dalla regola, da sapere:
 | `summarize.py` | conteggi puri (rotte senza middleware, gestore legabile, confronto per metodo e `flows.path_schema`) |
 | `test_hono_routes.py` | `summarize.py` su righe scritte a mano: 3 test, verdi su Modal |
 | `fixture/` | `new Hono()`, `app.route('/api', sub)`, `basePath('/v1')`, gestori con nome e scritti sul posto, un middleware; `package-lock.json` fatto su Modal |
+
+## Il modulo nostro contro Noir (`T1.C.10`)
+
+`inspectRoutes` non è passato (sopra): il modulo di `T1.C.8` (`daodan/core/entry_points/express.py`) legge anche Hono, dalla sezione `hono` di `daodan/data/entry-queries.json` (`new Hono()` e `new OpenAPIHono()`, `route(prefisso, app)` che monta, `basePath(prefisso)` che dà un'app con il prefisso, i verbi che restituiscono l'app stessa); stesso codice, nessun ramo per libreria oltre ai dati.
+
+### Regola di decisione (scritta il 28 novembre 2026, prima della corsa)
+
+La stessa di `T1.C.9` (`benchmarks/express-routes/README.md`, «Il modulo contro Noir»): una rotta legata è una terna distinta (metodo, schema o percorso, funzione); il modulo **si collega per l'id `honojs`** solo se, **in ognuna delle tre applicazioni reali** (`real-stack-documenso`, `ramen-api`, `hono-open-api-starter`), lega almeno tante rotte quante Noir ne lega **nei file che importano un pacchetto della sezione `hono`** (le righe di Noir di tRPC, Next.js, ts-rest o dei file statici non sono di Hono e non contano, come in `T1.C.1`), e se il campione (fino a 20 rotte legate solo dal modulo, seme 24, lette a mano sul sorgente) ha 0 legami sbagliati. La fixture prova lo strumento e non entra nella regola.
+
+```
+modal run benchmarks/hono-routes/modal_probe.py --compare      # results/<applicazione>.module.json
+modal run benchmarks/hono-routes/modal_probe.py --compare --sample
+```
+
+### Esito (Modal, 28 novembre 2026, app `ap-pQcQvvrDYHJTCLyh5Yc3Vj`; campione `ap-ZFL4Ez2miN2x3oNoB4cR3H`)
+
+| Applicazione | Righe del modulo | Legate dal modulo | Righe `http` di Noir nei file di Hono (fuori) | Legate da Noir | Stessa rotta e funzione | Stessa funzione, percorso diverso | Solo del modulo / solo di Noir | Tempo del modulo |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `real-stack-documenso` | 61 | **35** | 84 (341) | 84 | 8 | 27 | 0 / 49 | 50,7 s |
+| `ramen-api` | 13 | **12** | 19 (0) | 19 | 11 | 0 | 1 / 8 | 0,1 s |
+| `hono-open-api-starter` | 1 | **0** | 6 (1) | 0 | 0 | 0 | 0 / 0 | 0,0 s |
+| fixture | 4 | 4 | 4 (0) | 4 | 4 | 0 | 0 / 0 | 0,0 s |
+
+**Decisione: non collegato** per `honojs`. Il criterio delle rotte non passa in Documenso (35 contro 84) né in `ramen-api` (12 contro 19); il campione (l'unica rotta solo del modulo, `ALL /mcp` di `ramen-api`, `app.all('/', ...)` di `src/mcp.ts` montato su `/mcp`) ha 0 legami sbagliati. In `hono-open-api-starter` nessuno dei due lega (le rotte sono `openapi(route, handler)`, che la sezione non legge; l'unica riga, `GET /reference`, ha per gestore il valore di un pacchetto, `Scalar(...)`).
+
+Le cause:
+
+- **Documenso: il prefisso base viene dall'ambiente.** L'app radice è `new Hono().basePath(basePath || '/')` con `basePath` da `NEXT_PUBLIC_BASE_PATH` (`apps/remix/server/router.ts:51-53`): ogni `route()` su di essa ha un prefisso non letterale, e le sue rotte e quelle delle app che monta sono lacune («mounted under a prefix that is no literal», 15; «mounted by no app the reader reaches», 9; «the base path of its app is no literal», 2). È la risposta giusta del metodo: il percorso vero dipende da una variabile d'ambiente. Noir dà le stesse rotte senza nessun prefisso (`GET /accounts` per `GET /api/auth/accounts`), e le lega; dove il modulo lega, compone i prefissi di `route()` e `basePath` fra file (27 rotte con la stessa funzione di Noir e il percorso completo).
+- **`all` contro i metodi uno per uno:** Noir scrive `app.all('/mcp', ...)` come sette righe (una per metodo), il modulo come una sola rotta di ogni metodo; il conteggio per terne dà a Noir 7 rotte dove il modulo ne ha 1 (`ramen-api`, e le tre `zapier` di Documenso). Anche contando `all` una volta, `ramen-api` resta 12 contro 13: la rotta di `test/mockApp.ts` ha un percorso scritto con un template (lacuna «the path is no literal»).
+
+Il modulo per Hono resta nel codice, provato dalla fixture (`tests/test_codebase_map_entry_points_hono.py`), fuori dallo step come quello di Express (`T1.C.9`).

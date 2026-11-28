@@ -44,12 +44,18 @@ FRAMEWORK_SOURCES = (nextjs, react_router, nuxt, sveltekit)
 TEMPLATE_SOURCES = (angular, astro)
 # The readers of the snapshot's trees, on the host and with no container (spec «Strumenti nativi»): their rows are routes of their own,
 # beside those of `FRAMEWORK_SOURCES` in the union with Noir (`one_entry`), each with the span of its handler for the binder. Not yet
-# run by the step: on four Express applications it binds 342 routes where Noir binds 842 (`benchmarks/express-routes/README.md`, `T1.C.9`).
+# run by the step: on four Express applications it binds 342 routes where Noir binds 842 (`benchmarks/express-routes/README.md`, `T1.C.9`),
+# on Hono 47 where Noir binds 103 (`benchmarks/hono-routes/README.md`, `T1.C.10`).
 TREE_SOURCES = (express,)
 IDENTITY = {  # individual observations: no two rows are one fact
     "noir_entries": (),  # of a single scanner
     "framework_entries": (),  # of a framework's own tool (`next`, `react-router`, `angular`)
 }
+
+
+def tree_readers() -> tuple:
+    """The readers the rows of `TREE_SOURCES` carry: each library a tree source reads (`express.SECTIONS`: Express, Hono)."""
+    return tuple(name for source in TREE_SOURCES for name in source.SECTIONS)
 
 
 def path(manifest: Path) -> Path:
@@ -159,7 +165,7 @@ def one_entry(declared: list[dict]) -> list[dict]:
     `FRAMEWORK_SOURCES` and `TREE_SOURCES` (Noir) on the schema of a bound row of one of them (the text of the path where a row has no schema), in
     the file or on the function that row starts, provided its method is the row's or the row has none (a page answers any;
     Noir's method is not copied onto it). Another path, or a method no row of that file and path carries, is a route of its own."""
-    framework = {source.NAME for source in (*FRAMEWORK_SOURCES, *TREE_SOURCES)}
+    framework = {source.NAME for source in FRAMEWORK_SOURCES} | set(tree_readers())
 
     def file_of(site: str) -> str:
         file, _, line = site.rpartition(":")

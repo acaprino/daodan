@@ -103,7 +103,7 @@ Altrimenti resta scollegato e la causa va qui. Le due lacune aperte da `T1.C.8` 
 | Snapshot | `snapshot.read_project` (quello di `snapshot.py write --no-engine --no-index --no-modules`), rete bloccata, nulla del progetto eseguito |
 | Noir | `noir scan` 1.5.0 come lo dà `noir.commands`, la risposta registrata con `entry_points.write(sources=(noir,))` e legata da `entry_points.bound` |
 | Modulo | `express.rows(facts)` legato da `binder.bind` sugli stessi `flows.Facts` (nuovi), tempo misurato |
-| Conteggi (`summarize.py`, provati in `test_express_compare.py`) | per applicazione: righe e rotte legate di ciascuno, comuni per metodo e schema, stessa funzione, lacune del modulo per causa, discordanze; il campione |
+| Conteggi (`counts.py`, provati in `test_express_compare.py`) | per applicazione: righe e rotte legate di ciascuno, comuni per metodo e schema, stessa funzione, lacune del modulo per causa, discordanze; il campione |
 
 ```
 modal run benchmarks/express-routes/modal_compare.py                       # le quattro applicazioni: results/<applicazione>.json

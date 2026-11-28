@@ -1,0 +1,2357 @@
+{
+ "compare": {
+  "common_routes": 8,
+  "express_bound": 35,
+  "express_gaps": {
+   "mounted by no app the reader reaches": 9,
+   "mounted under a prefix that is no literal": 15,
+   "the base path of its app is no literal": 2
+  },
+  "express_rows": 61,
+  "noir_bound": 84,
+  "noir_gaps": 0,
+  "noir_rows": 84,
+  "only_express": [],
+  "only_noir": [
+   [
+    "DELETE",
+    "/zapier/list-documents",
+    "packages/api/hono.ts::function@24:33"
+   ],
+   [
+    "DELETE",
+    "/zapier/subscribe",
+    "packages/api/hono.ts::function@25:28"
+   ],
+   [
+    "DELETE",
+    "/zapier/unsubscribe",
+    "packages/api/hono.ts::function@26:30"
+   ],
+   [
+    "GET",
+    "/api/files/envelope/{}/dataContent/{}/image",
+    "apps/remix/server/api/files/routes/get-data-content-image.ts::function@30:2"
+   ],
+   [
+    "GET",
+    "/api/files/envelope/{}/envelopeItem/{}",
+    "apps/remix/server/api/files/files.ts::function@69:4"
+   ],
+   [
+    "GET",
+    "/api/files/envelope/{}/envelopeItem/{}/dataId/{}/{}/item.pdf",
+    "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts::function@35:2"
+   ],
+   [
+    "GET",
+    "/api/files/envelope/{}/envelopeItem/{}/download/{}",
+    "apps/remix/server/api/files/files.ts::function@143:4"
+   ],
+   [
+    "GET",
+    "/api/files/token/{}/envelope/{}/dataContent/{}/image",
+    "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts::function@21:2"
+   ],
+   [
+    "GET",
+    "/api/files/token/{}/envelope/{}/envelopeItem/{}/dataId/{}/{}/item.pdf",
+    "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts::function@26:2"
+   ],
+   [
+    "GET",
+    "/api/files/token/{}/envelopeItem/{}",
+    "apps/remix/server/api/files/files.ts::function@244:4"
+   ],
+   [
+    "GET",
+    "/api/files/token/{}/envelopeItem/{}/download/{}",
+    "apps/remix/server/api/files/files.ts::function@296:4"
+   ],
+   [
+    "GET",
+    "/api/v2-beta/openapi.json",
+    "apps/remix/server/router.ts::function@154:37"
+   ],
+   [
+    "GET",
+    "/api/v2/openapi.json",
+    "apps/remix/server/router.ts::function@144:32"
+   ],
+   [
+    "GET",
+    "/csrf",
+    "packages/auth/server/index.ts::function@32:16"
+   ],
+   [
+    "GET",
+    "/document/{}/download",
+    "apps/remix/server/api/download/download.ts::function@322:100"
+   ],
+   [
+    "GET",
+    "/envelope/item/{}/download",
+    "apps/remix/server/api/download/download.ts::function@59:4"
+   ],
+   [
+    "GET",
+    "/envelope/{}/audit-log/download",
+    "apps/remix/server/api/download/download.ts::function@151:4"
+   ],
+   [
+    "GET",
+    "/envelope/{}/certificate/download",
+    "apps/remix/server/api/download/download.ts::function@225:4"
+   ],
+   [
+    "GET",
+    "/envelope/{}/dataContent/{}/image",
+    "apps/remix/server/api/files/routes/get-data-content-image.ts::function@30:2"
+   ],
+   [
+    "GET",
+    "/envelope/{}/envelopeItem/{}/dataId/{}/{}/item.pdf",
+    "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts::function@35:2"
+   ],
+   [
+    "GET",
+    "/me",
+    "packages/api/hono.ts::function@20:14"
+   ],
+   [
+    "GET",
+    "/oauth/authorize",
+    "packages/ee/server-only/signing/csc/hono/oauth-authorize.ts::function@61:2"
+   ],
+   [
+    "GET",
+    "/oauth/callback",
+    "packages/ee/server-only/signing/csc/hono/oauth-callback.ts::function@79:2"
+   ],
+   [
+    "GET",
+    "/openapi",
+    "packages/api/hono.ts::function@18:19"
+   ],
+   [
+    "GET",
+    "/openapi.json",
+    "packages/api/hono.ts::function@19:24"
+   ],
+   [
+    "GET",
+    "/session-status",
+    "packages/ee/server-only/signing/csc/hono/session-status.ts::function@27:2"
+   ],
+   [
+    "GET",
+    "/token/{}/envelope/{}/dataContent/{}/image",
+    "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts::function@21:2"
+   ],
+   [
+    "GET",
+    "/token/{}/envelope/{}/envelopeItem/{}/dataId/{}/{}/item.pdf",
+    "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts::function@26:2"
+   ],
+   [
+    "GET",
+    "/zapier/list-documents",
+    "packages/api/hono.ts::function@24:33"
+   ],
+   [
+    "GET",
+    "/zapier/subscribe",
+    "packages/api/hono.ts::function@25:28"
+   ],
+   [
+    "GET",
+    "/zapier/unsubscribe",
+    "packages/api/hono.ts::function@26:30"
+   ],
+   [
+    "HEAD",
+    "/zapier/list-documents",
+    "packages/api/hono.ts::function@24:33"
+   ],
+   [
+    "HEAD",
+    "/zapier/subscribe",
+    "packages/api/hono.ts::function@25:28"
+   ],
+   [
+    "HEAD",
+    "/zapier/unsubscribe",
+    "packages/api/hono.ts::function@26:30"
+   ],
+   [
+    "OPTIONS",
+    "/zapier/list-documents",
+    "packages/api/hono.ts::function@24:33"
+   ],
+   [
+    "OPTIONS",
+    "/zapier/subscribe",
+    "packages/api/hono.ts::function@25:28"
+   ],
+   [
+    "OPTIONS",
+    "/zapier/unsubscribe",
+    "packages/api/hono.ts::function@26:30"
+   ],
+   [
+    "PATCH",
+    "/zapier/list-documents",
+    "packages/api/hono.ts::function@24:33"
+   ],
+   [
+    "PATCH",
+    "/zapier/subscribe",
+    "packages/api/hono.ts::function@25:28"
+   ],
+   [
+    "PATCH",
+    "/zapier/unsubscribe",
+    "packages/api/hono.ts::function@26:30"
+   ],
+   [
+    "POST",
+    "/api/files/upload-pdf",
+    "apps/remix/server/api/files/files.ts::function@32:68"
+   ],
+   [
+    "POST",
+    "/detect-fields",
+    "apps/remix/server/api/ai/detect-fields.ts::function@18:2"
+   ],
+   [
+    "POST",
+    "/detect-recipients",
+    "apps/remix/server/api/ai/detect-recipients.ts::function@18:2"
+   ],
+   [
+    "POST",
+    "/zapier/list-documents",
+    "packages/api/hono.ts::function@24:33"
+   ],
+   [
+    "POST",
+    "/zapier/subscribe",
+    "packages/api/hono.ts::function@25:28"
+   ],
+   [
+    "POST",
+    "/zapier/unsubscribe",
+    "packages/api/hono.ts::function@26:30"
+   ],
+   [
+    "PUT",
+    "/zapier/list-documents",
+    "packages/api/hono.ts::function@24:33"
+   ],
+   [
+    "PUT",
+    "/zapier/subscribe",
+    "packages/api/hono.ts::function@25:28"
+   ],
+   [
+    "PUT",
+    "/zapier/unsubscribe",
+    "packages/api/hono.ts::function@26:30"
+   ]
+  ],
+  "same_function_other_path": 27,
+  "same_route_and_function": 8
+ },
+ "express_peak_mb": 1352.4,
+ "express_rows": [
+  {
+   "gap": "hono route POST /: mounted by no app the reader reaches",
+   "method": "POST",
+   "path": "/",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/ai/detect-fields.ts:15",
+   "symbol": "apps/remix/server/api/ai/detect-fields.ts::<module>"
+  },
+  {
+   "gap": "hono route POST /: mounted by no app the reader reaches",
+   "method": "POST",
+   "path": "/",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/ai/detect-recipients.ts:15",
+   "symbol": "apps/remix/server/api/ai/detect-recipients.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /document/:documentId/download: mounted under a prefix that is no literal at apps/remix/server/router.ts:146, apps/remix/server/router.ts:156",
+   "method": "GET",
+   "path": "/document/:documentId/download",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/download/download.ts:50",
+   "symbol": "apps/remix/server/api/download/download.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /envelope/:envelopeId/audit-log/download: mounted under a prefix that is no literal at apps/remix/server/router.ts:146, apps/remix/server/router.ts:156",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/audit-log/download",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/download/download.ts:50",
+   "symbol": "apps/remix/server/api/download/download.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /envelope/:envelopeId/certificate/download: mounted under a prefix that is no literal at apps/remix/server/router.ts:146, apps/remix/server/router.ts:156",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/certificate/download",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/download/download.ts:50",
+   "symbol": "apps/remix/server/api/download/download.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /envelope/item/:envelopeItemId/download: mounted under a prefix that is no literal at apps/remix/server/router.ts:146, apps/remix/server/router.ts:156",
+   "method": "GET",
+   "path": "/envelope/item/:envelopeItemId/download",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/download/download.ts:50",
+   "symbol": "apps/remix/server/api/download/download.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /envelope/:envelopeId/envelopeItem/:envelopeItemId: mounted under a prefix that is no literal at apps/remix/server/router.ts:127",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/envelopeItem/:envelopeItemId",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/files/files.ts:27",
+   "symbol": "apps/remix/server/api/files/files.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /envelope/:envelopeId/envelopeItem/:envelopeItemId/download/:version?: mounted under a prefix that is no literal at apps/remix/server/router.ts:127",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/envelopeItem/:envelopeItemId/download/:version?",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/files/files.ts:27",
+   "symbol": "apps/remix/server/api/files/files.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /token/:token/envelopeItem/:envelopeItemId: mounted under a prefix that is no literal at apps/remix/server/router.ts:127",
+   "method": "GET",
+   "path": "/token/:token/envelopeItem/:envelopeItemId",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/files/files.ts:27",
+   "symbol": "apps/remix/server/api/files/files.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /token/:token/envelopeItem/:envelopeItemId/download/:version?: mounted under a prefix that is no literal at apps/remix/server/router.ts:127",
+   "method": "GET",
+   "path": "/token/:token/envelopeItem/:envelopeItemId/download/:version?",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/files/files.ts:27",
+   "symbol": "apps/remix/server/api/files/files.ts::<module>"
+  },
+  {
+   "gap": "hono route POST /upload-pdf: mounted under a prefix that is no literal at apps/remix/server/router.ts:127",
+   "method": "POST",
+   "path": "/upload-pdf",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/files/files.ts:27",
+   "symbol": "apps/remix/server/api/files/files.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /token/:token/envelope/:envelopeId/dataContent/:dataContentId/image: mounted by no app the reader reaches",
+   "method": "GET",
+   "path": "/token/:token/envelope/:envelopeId/dataContent/:dataContentId/image",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts:18",
+   "symbol": "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /envelope/:envelopeId/dataContent/:dataContentId/image: mounted by no app the reader reaches",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/dataContent/:dataContentId/image",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/files/routes/get-data-content-image.ts:26",
+   "symbol": "apps/remix/server/api/files/routes/get-data-content-image.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /token/:token/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf: mounted by no app the reader reaches",
+   "method": "GET",
+   "path": "/token/:token/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts:23",
+   "symbol": "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf: mounted by no app the reader reaches",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts:31",
+   "symbol": "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /api/v2/openapi.json: the base path of its app is no literal",
+   "method": "GET",
+   "path": "/api/v2/openapi.json",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/router.ts:144",
+   "symbol": "apps/remix/server/router.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /api/v2-beta/openapi.json: the base path of its app is no literal",
+   "method": "GET",
+   "path": "/api/v2-beta/openapi.json",
+   "reader": "hono",
+   "shape": "method",
+   "site": "apps/remix/server/router.ts:154",
+   "symbol": "apps/remix/server/router.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /me: mounted under a prefix that is no literal at apps/remix/server/router.ts:137",
+   "method": "GET",
+   "path": "/me",
+   "reader": "hono",
+   "shape": "method",
+   "site": "packages/api/hono.ts:17",
+   "symbol": "packages/api/hono.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /openapi: mounted under a prefix that is no literal at apps/remix/server/router.ts:137",
+   "method": "GET",
+   "path": "/openapi",
+   "reader": "hono",
+   "shape": "method",
+   "site": "packages/api/hono.ts:17",
+   "symbol": "packages/api/hono.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /openapi.json: mounted under a prefix that is no literal at apps/remix/server/router.ts:137",
+   "method": "GET",
+   "path": "/openapi.json",
+   "reader": "hono",
+   "shape": "method",
+   "site": "packages/api/hono.ts:17",
+   "symbol": "packages/api/hono.ts::<module>"
+  },
+  {
+   "gap": "hono route ANY /zapier/list-documents: mounted under a prefix that is no literal at apps/remix/server/router.ts:137",
+   "path": "/zapier/list-documents",
+   "reader": "hono",
+   "shape": "method",
+   "site": "packages/api/hono.ts:23",
+   "symbol": "packages/api/hono.ts::<module>"
+  },
+  {
+   "gap": "hono route ANY /zapier/subscribe: mounted under a prefix that is no literal at apps/remix/server/router.ts:137",
+   "path": "/zapier/subscribe",
+   "reader": "hono",
+   "shape": "method",
+   "site": "packages/api/hono.ts:23",
+   "symbol": "packages/api/hono.ts::<module>"
+  },
+  {
+   "gap": "hono route ANY /zapier/unsubscribe: mounted under a prefix that is no literal at apps/remix/server/router.ts:137",
+   "path": "/zapier/unsubscribe",
+   "reader": "hono",
+   "shape": "method",
+   "site": "packages/api/hono.ts:23",
+   "symbol": "packages/api/hono.ts::<module>"
+  },
+  {
+   "function": "packages/auth/server/routes/account.ts::function@11:20",
+   "method": "GET",
+   "path": "/accounts",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/account.ts:7",
+   "schema": "/accounts",
+   "shape": "method",
+   "site": "packages/auth/server/routes/account.ts:11",
+   "span": [
+    11,
+    20,
+    15,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/account.ts::GET /accounts"
+  },
+  {
+   "function": "packages/auth/server/routes/account.ts::function@19:33",
+   "method": "DELETE",
+   "path": "/account/:accountId",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/account.ts:7",
+   "schema": "/account/{}",
+   "shape": "method",
+   "site": "packages/auth/server/routes/account.ts:19",
+   "span": [
+    19,
+    33,
+    25,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/account.ts::DELETE /account/:accountId"
+  },
+  {
+   "function": "packages/auth/server/routes/callback.ts::function@17:16",
+   "method": "GET",
+   "path": "/oidc",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/callback.ts:13",
+   "schema": "/oidc",
+   "shape": "method",
+   "site": "packages/auth/server/routes/callback.ts:17",
+   "span": [
+    17,
+    16,
+    17,
+    90
+   ],
+   "symbol": "packages/auth/server/routes/callback.ts::GET /oidc"
+  },
+  {
+   "function": "packages/auth/server/routes/callback.ts::function@22:28",
+   "method": "GET",
+   "path": "/oidc/org/:orgUrl",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/callback.ts:13",
+   "schema": "/oidc/org/{}",
+   "shape": "method",
+   "site": "packages/auth/server/routes/callback.ts:22",
+   "span": [
+    22,
+    28,
+    42,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/callback.ts::GET /oidc/org/:orgUrl"
+  },
+  {
+   "function": "packages/auth/server/routes/callback.ts::function@47:18",
+   "method": "GET",
+   "path": "/google",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/callback.ts:13",
+   "schema": "/google",
+   "shape": "method",
+   "site": "packages/auth/server/routes/callback.ts:47",
+   "span": [
+    47,
+    18,
+    47,
+    94
+   ],
+   "symbol": "packages/auth/server/routes/callback.ts::GET /google"
+  },
+  {
+   "function": "packages/auth/server/routes/callback.ts::function@52:21",
+   "method": "GET",
+   "path": "/microsoft",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/callback.ts:13",
+   "schema": "/microsoft",
+   "shape": "method",
+   "site": "packages/auth/server/routes/callback.ts:52",
+   "span": [
+    52,
+    21,
+    52,
+    100
+   ],
+   "symbol": "packages/auth/server/routes/callback.ts::GET /microsoft"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@192:54",
+   "method": "POST",
+   "path": "/signup",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/signup",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:192",
+   "span": [
+    192,
+    54,
+    247,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /signup"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@251:71",
+   "method": "POST",
+   "path": "/update-password",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/update-password",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:251",
+   "span": [
+    251,
+    71,
+    309,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /update-password"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@313:65",
+   "method": "POST",
+   "path": "/verify-email",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/verify-email",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:313",
+   "span": [
+    313,
+    65,
+    341,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /verify-email"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@345:78",
+   "method": "POST",
+   "path": "/resend-verify-email",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/resend-verify-email",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:345",
+   "span": [
+    345,
+    78,
+    371,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /resend-verify-email"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@375:71",
+   "method": "POST",
+   "path": "/forgot-password",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/forgot-password",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:375",
+   "span": [
+    375,
+    71,
+    408,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /forgot-password"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@412:69",
+   "method": "POST",
+   "path": "/reset-password",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/reset-password",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:412",
+   "span": [
+    412,
+    69,
+    473,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /reset-password"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@477:22",
+   "method": "POST",
+   "path": "/2fa/setup",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/2fa/setup",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:477",
+   "span": [
+    477,
+    22,
+    489,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /2fa/setup"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@501:4",
+   "method": "POST",
+   "path": "/2fa/enable",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/2fa/enable",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:501",
+   "span": [
+    501,
+    4,
+    534,
+    5
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /2fa/enable"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@548:4",
+   "method": "POST",
+   "path": "/2fa/disable",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/2fa/disable",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:548",
+   "span": [
+    548,
+    4,
+    580,
+    5
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /2fa/disable"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@593:4",
+   "method": "POST",
+   "path": "/2fa/view-recovery-codes",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/2fa/view-recovery-codes",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:593",
+   "span": [
+    593,
+    4,
+    624,
+    5
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /2fa/view-recovery-codes"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@66:57",
+   "method": "POST",
+   "path": "/authorize",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/email-password.ts:62",
+   "schema": "/authorize",
+   "shape": "method",
+   "site": "packages/auth/server/routes/email-password.ts:66",
+   "span": [
+    66,
+    57,
+    188,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /authorize"
+  },
+  {
+   "function": "packages/auth/server/routes/embed.ts::function@107:4",
+   "method": "POST",
+   "path": "/start",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/embed.ts:96",
+   "schema": "/start",
+   "shape": "method",
+   "site": "packages/auth/server/routes/embed.ts:107",
+   "span": [
+    107,
+    4,
+    180,
+    5
+   ],
+   "symbol": "packages/auth/server/routes/embed.ts::POST /start"
+  },
+  {
+   "function": "packages/auth/server/routes/embed.ts::function@187:20",
+   "method": "GET",
+   "path": "/complete",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/embed.ts:96",
+   "schema": "/complete",
+   "shape": "method",
+   "site": "packages/auth/server/routes/embed.ts:187",
+   "span": [
+    187,
+    20,
+    207,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/embed.ts::GET /complete"
+  },
+  {
+   "function": "packages/auth/server/routes/embed.ts::function@217:4",
+   "method": "POST",
+   "path": "/redeem",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/embed.ts:96",
+   "schema": "/redeem",
+   "shape": "method",
+   "site": "packages/auth/server/routes/embed.ts:217",
+   "span": [
+    217,
+    4,
+    266,
+    5
+   ],
+   "symbol": "packages/auth/server/routes/embed.ts::POST /redeem"
+  },
+  {
+   "function": "packages/auth/server/routes/oauth.ts::function@18:72",
+   "method": "POST",
+   "path": "/authorize/google",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/oauth.ts:14",
+   "schema": "/authorize/google",
+   "shape": "method",
+   "site": "packages/auth/server/routes/oauth.ts:18",
+   "span": [
+    18,
+    72,
+    26,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/oauth.ts::POST /authorize/google"
+  },
+  {
+   "function": "packages/auth/server/routes/oauth.ts::function@31:75",
+   "method": "POST",
+   "path": "/authorize/microsoft",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/oauth.ts:14",
+   "schema": "/authorize/microsoft",
+   "shape": "method",
+   "site": "packages/auth/server/routes/oauth.ts:31",
+   "span": [
+    31,
+    75,
+    39,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/oauth.ts::POST /authorize/microsoft"
+  },
+  {
+   "function": "packages/auth/server/routes/oauth.ts::function@44:70",
+   "method": "POST",
+   "path": "/authorize/oidc",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/oauth.ts:14",
+   "schema": "/authorize/oidc",
+   "shape": "method",
+   "site": "packages/auth/server/routes/oauth.ts:44",
+   "span": [
+    44,
+    70,
+    52,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/oauth.ts::POST /authorize/oidc"
+  },
+  {
+   "function": "packages/auth/server/routes/oauth.ts::function@56:39",
+   "method": "POST",
+   "path": "/authorize/oidc/org/:orgUrl",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/oauth.ts:14",
+   "schema": "/authorize/oidc/org/{}",
+   "shape": "method",
+   "site": "packages/auth/server/routes/oauth.ts:56",
+   "span": [
+    56,
+    39,
+    69,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/oauth.ts::POST /authorize/oidc/org/:orgUrl"
+  },
+  {
+   "function": "packages/auth/server/routes/passkey.ts::function@25:67",
+   "method": "POST",
+   "path": "/authorize",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/passkey.ts:21",
+   "schema": "/authorize",
+   "shape": "method",
+   "site": "packages/auth/server/routes/passkey.ts:25",
+   "span": [
+    25,
+    67,
+    145,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/passkey.ts::POST /authorize"
+  },
+  {
+   "function": "packages/auth/server/routes/session.ts::function@13:20",
+   "method": "GET",
+   "path": "/sessions",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/session.ts:7",
+   "schema": "/sessions",
+   "shape": "method",
+   "site": "packages/auth/server/routes/session.ts:13",
+   "span": [
+    13,
+    20,
+    17,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/session.ts::GET /sessions"
+  },
+  {
+   "function": "packages/auth/server/routes/session.ts::function@18:24",
+   "method": "GET",
+   "path": "/session-json",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/session.ts:7",
+   "schema": "/session-json",
+   "shape": "method",
+   "site": "packages/auth/server/routes/session.ts:18",
+   "span": [
+    18,
+    24,
+    22,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/session.ts::GET /session-json"
+  },
+  {
+   "function": "packages/auth/server/routes/session.ts::function@8:19",
+   "method": "GET",
+   "path": "/session",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/session.ts:7",
+   "schema": "/session",
+   "shape": "method",
+   "site": "packages/auth/server/routes/session.ts:8",
+   "span": [
+    8,
+    19,
+    12,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/session.ts::GET /session"
+  },
+  {
+   "function": "packages/auth/server/routes/sign-out.ts::function@15:20",
+   "method": "POST",
+   "path": "/signout",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/sign-out.ts:14",
+   "schema": "/signout",
+   "shape": "method",
+   "site": "packages/auth/server/routes/sign-out.ts:15",
+   "span": [
+    15,
+    20,
+    43,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/sign-out.ts::POST /signout"
+  },
+  {
+   "function": "packages/auth/server/routes/sign-out.ts::function@44:24",
+   "method": "POST",
+   "path": "/signout-all",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/sign-out.ts:14",
+   "schema": "/signout-all",
+   "shape": "method",
+   "site": "packages/auth/server/routes/sign-out.ts:44",
+   "span": [
+    44,
+    24,
+    85,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/sign-out.ts::POST /signout-all"
+  },
+  {
+   "function": "packages/auth/server/routes/sign-out.ts::function@86:71",
+   "method": "POST",
+   "path": "/signout-session",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/sign-out.ts:14",
+   "schema": "/signout-session",
+   "shape": "method",
+   "site": "packages/auth/server/routes/sign-out.ts:86",
+   "span": [
+    86,
+    71,
+    118,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/sign-out.ts::POST /signout-session"
+  },
+  {
+   "function": "packages/auth/server/routes/two-factor.ts::function@115:94",
+   "method": "POST",
+   "path": "/view-recovery-codes",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/two-factor.ts:19",
+   "schema": "/view-recovery-codes",
+   "shape": "method",
+   "site": "packages/auth/server/routes/two-factor.ts:115",
+   "span": [
+    115,
+    94,
+    146,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/two-factor.ts::POST /view-recovery-codes"
+  },
+  {
+   "function": "packages/auth/server/routes/two-factor.ts::function@23:18",
+   "method": "POST",
+   "path": "/setup",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/two-factor.ts:19",
+   "schema": "/setup",
+   "shape": "method",
+   "site": "packages/auth/server/routes/two-factor.ts:23",
+   "span": [
+    23,
+    18,
+    35,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/two-factor.ts::POST /setup"
+  },
+  {
+   "function": "packages/auth/server/routes/two-factor.ts::function@40:70",
+   "method": "POST",
+   "path": "/enable",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/two-factor.ts:19",
+   "schema": "/enable",
+   "shape": "method",
+   "site": "packages/auth/server/routes/two-factor.ts:40",
+   "span": [
+    40,
+    70,
+    73,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/two-factor.ts::POST /enable"
+  },
+  {
+   "function": "packages/auth/server/routes/two-factor.ts::function@78:72",
+   "method": "POST",
+   "path": "/disable",
+   "reader": "hono",
+   "registered": "packages/auth/server/routes/two-factor.ts:19",
+   "schema": "/disable",
+   "shape": "method",
+   "site": "packages/auth/server/routes/two-factor.ts:78",
+   "span": [
+    78,
+    72,
+    110,
+    3
+   ],
+   "symbol": "packages/auth/server/routes/two-factor.ts::POST /disable"
+  },
+  {
+   "gap": "hono route GET /: mounted by no app the reader reaches",
+   "method": "GET",
+   "path": "/",
+   "reader": "hono",
+   "shape": "method",
+   "site": "packages/ee/server-only/signing/csc/hono/oauth-authorize.ts:58",
+   "symbol": "packages/ee/server-only/signing/csc/hono/oauth-authorize.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /: mounted by no app the reader reaches",
+   "method": "GET",
+   "path": "/",
+   "reader": "hono",
+   "shape": "method",
+   "site": "packages/ee/server-only/signing/csc/hono/oauth-callback.ts:76",
+   "symbol": "packages/ee/server-only/signing/csc/hono/oauth-callback.ts::<module>"
+  },
+  {
+   "gap": "hono route GET /: mounted by no app the reader reaches",
+   "method": "GET",
+   "path": "/",
+   "reader": "hono",
+   "shape": "method",
+   "site": "packages/ee/server-only/signing/csc/hono/session-status.ts:24",
+   "symbol": "packages/ee/server-only/signing/csc/hono/session-status.ts::<module>"
+  }
+ ],
+ "express_seconds": 50.7,
+ "name": "real-stack-documenso",
+ "noir": {
+  "argv": [
+   "noir",
+   "scan",
+   "/work",
+   "-f",
+   "json",
+   "--no-log"
+  ],
+  "returncode": 0,
+  "seconds": 2.8,
+  "stderr_tail": ""
+ },
+ "noir_outside": 341,
+ "noir_rows": [
+  {
+   "function": "apps/remix/server/api/ai/detect-fields.ts::function@18:2",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/detect-fields/",
+   "reader": "noir",
+   "schema": "/detect-fields",
+   "shape": "http",
+   "site": "apps/remix/server/api/ai/detect-fields.ts:18",
+   "symbol": "apps/remix/server/api/ai/detect-fields.ts::POST /detect-fields/"
+  },
+  {
+   "function": "apps/remix/server/api/ai/detect-recipients.ts::function@18:2",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/detect-recipients/",
+   "reader": "noir",
+   "schema": "/detect-recipients",
+   "shape": "http",
+   "site": "apps/remix/server/api/ai/detect-recipients.ts:18",
+   "symbol": "apps/remix/server/api/ai/detect-recipients.ts::POST /detect-recipients/"
+  },
+  {
+   "function": "apps/remix/server/api/download/download.ts::function@59:4",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/envelope/item/:envelopeItemId/download",
+   "reader": "noir",
+   "schema": "/envelope/item/{}/download",
+   "shape": "http",
+   "site": "apps/remix/server/api/download/download.ts:59",
+   "symbol": "apps/remix/server/api/download/download.ts::GET /envelope/item/:envelopeItemId/download"
+  },
+  {
+   "function": "apps/remix/server/api/download/download.ts::function@151:4",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/audit-log/download",
+   "reader": "noir",
+   "schema": "/envelope/{}/audit-log/download",
+   "shape": "http",
+   "site": "apps/remix/server/api/download/download.ts:151",
+   "symbol": "apps/remix/server/api/download/download.ts::GET /envelope/:envelopeId/audit-log/download"
+  },
+  {
+   "function": "apps/remix/server/api/download/download.ts::function@225:4",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/certificate/download",
+   "reader": "noir",
+   "schema": "/envelope/{}/certificate/download",
+   "shape": "http",
+   "site": "apps/remix/server/api/download/download.ts:225",
+   "symbol": "apps/remix/server/api/download/download.ts::GET /envelope/:envelopeId/certificate/download"
+  },
+  {
+   "function": "apps/remix/server/api/download/download.ts::function@322:100",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/document/:documentId/download",
+   "reader": "noir",
+   "schema": "/document/{}/download",
+   "shape": "http",
+   "site": "apps/remix/server/api/download/download.ts:322",
+   "symbol": "apps/remix/server/api/download/download.ts::GET /document/:documentId/download"
+  },
+  {
+   "function": "apps/remix/server/api/files/files.ts::function@32:68",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/api/files/upload-pdf",
+   "reader": "noir",
+   "schema": "/api/files/upload-pdf",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/files.ts:32",
+   "symbol": "apps/remix/server/api/files/files.ts::POST /api/files/upload-pdf"
+  },
+  {
+   "function": "apps/remix/server/api/files/files.ts::function@69:4",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/files/envelope/:envelopeId/envelopeItem/:envelopeItemId",
+   "reader": "noir",
+   "schema": "/api/files/envelope/{}/envelopeItem/{}",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/files.ts:69",
+   "symbol": "apps/remix/server/api/files/files.ts::GET /api/files/envelope/:envelopeId/envelopeItem/:envelopeItemId"
+  },
+  {
+   "function": "apps/remix/server/api/files/files.ts::function@143:4",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/files/envelope/:envelopeId/envelopeItem/:envelopeItemId/download/:version?",
+   "reader": "noir",
+   "schema": "/api/files/envelope/{}/envelopeItem/{}/download/{}",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/files.ts:143",
+   "symbol": "apps/remix/server/api/files/files.ts::GET /api/files/envelope/:envelopeId/envelopeItem/:envelopeItemId/download/:version?"
+  },
+  {
+   "function": "apps/remix/server/api/files/files.ts::function@244:4",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/files/token/:token/envelopeItem/:envelopeItemId",
+   "reader": "noir",
+   "schema": "/api/files/token/{}/envelopeItem/{}",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/files.ts:244",
+   "symbol": "apps/remix/server/api/files/files.ts::GET /api/files/token/:token/envelopeItem/:envelopeItemId"
+  },
+  {
+   "function": "apps/remix/server/api/files/files.ts::function@296:4",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/files/token/:token/envelopeItem/:envelopeItemId/download/:version?",
+   "reader": "noir",
+   "schema": "/api/files/token/{}/envelopeItem/{}/download/{}",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/files.ts:296",
+   "symbol": "apps/remix/server/api/files/files.ts::GET /api/files/token/:token/envelopeItem/:envelopeItemId/download/:version?"
+  },
+  {
+   "function": "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts::function@21:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/files/token/:token/envelope/:envelopeId/dataContent/:dataContentId/image",
+   "reader": "noir",
+   "schema": "/api/files/token/{}/envelope/{}/dataContent/{}/image",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts:21",
+   "symbol": "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts::GET /api/files/token/:token/envelope/:envelopeId/dataContent/:dataContentId/image"
+  },
+  {
+   "function": "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts::function@21:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/token/:token/envelope/:envelopeId/dataContent/:dataContentId/image",
+   "reader": "noir",
+   "schema": "/token/{}/envelope/{}/dataContent/{}/image",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts:21",
+   "symbol": "apps/remix/server/api/files/routes/get-data-content-image-by-token.ts::GET /api/files/token/:token/envelope/:envelopeId/dataContent/:dataContentId/image"
+  },
+  {
+   "function": "apps/remix/server/api/files/routes/get-data-content-image.ts::function@30:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/files/envelope/:envelopeId/dataContent/:dataContentId/image",
+   "reader": "noir",
+   "schema": "/api/files/envelope/{}/dataContent/{}/image",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/routes/get-data-content-image.ts:30",
+   "symbol": "apps/remix/server/api/files/routes/get-data-content-image.ts::GET /api/files/envelope/:envelopeId/dataContent/:dataContentId/image"
+  },
+  {
+   "function": "apps/remix/server/api/files/routes/get-data-content-image.ts::function@30:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/dataContent/:dataContentId/image",
+   "reader": "noir",
+   "schema": "/envelope/{}/dataContent/{}/image",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/routes/get-data-content-image.ts:30",
+   "symbol": "apps/remix/server/api/files/routes/get-data-content-image.ts::GET /api/files/envelope/:envelopeId/dataContent/:dataContentId/image"
+  },
+  {
+   "function": "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts::function@26:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/files/token/:token/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf",
+   "reader": "noir",
+   "schema": "/api/files/token/{}/envelope/{}/envelopeItem/{}/dataId/{}/{}/item.pdf",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts:26",
+   "symbol": "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts::GET /api/files/token/:token/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf"
+  },
+  {
+   "function": "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts::function@26:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/token/:token/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf",
+   "reader": "noir",
+   "schema": "/token/{}/envelope/{}/envelopeItem/{}/dataId/{}/{}/item.pdf",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts:26",
+   "symbol": "apps/remix/server/api/files/routes/get-envelope-item-pdf-by-token.ts::GET /api/files/token/:token/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf"
+  },
+  {
+   "function": "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts::function@35:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/files/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf",
+   "reader": "noir",
+   "schema": "/api/files/envelope/{}/envelopeItem/{}/dataId/{}/{}/item.pdf",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts:35",
+   "symbol": "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts::GET /api/files/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf"
+  },
+  {
+   "function": "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts::function@35:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf",
+   "reader": "noir",
+   "schema": "/envelope/{}/envelopeItem/{}/dataId/{}/{}/item.pdf",
+   "shape": "http",
+   "site": "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts:35",
+   "symbol": "apps/remix/server/api/files/routes/get-envelope-item-pdf.ts::GET /api/files/envelope/:envelopeId/envelopeItem/:envelopeItemId/dataId/:documentDataId/:version/item.pdf"
+  },
+  {
+   "function": "apps/remix/server/router.ts::function@144:32",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/v2/openapi.json",
+   "reader": "noir",
+   "schema": "/api/v2/openapi.json",
+   "shape": "http",
+   "site": "apps/remix/server/router.ts:144",
+   "symbol": "apps/remix/server/router.ts::GET /api/v2/openapi.json"
+  },
+  {
+   "function": "apps/remix/server/router.ts::function@154:37",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/api/v2-beta/openapi.json",
+   "reader": "noir",
+   "schema": "/api/v2-beta/openapi.json",
+   "shape": "http",
+   "site": "apps/remix/server/router.ts:154",
+   "symbol": "apps/remix/server/router.ts::GET /api/v2-beta/openapi.json"
+  },
+  {
+   "function": "packages/api/hono.ts::function@18:19",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/openapi",
+   "reader": "noir",
+   "schema": "/openapi",
+   "shape": "http",
+   "site": "packages/api/hono.ts:18",
+   "symbol": "packages/api/hono.ts::GET /openapi"
+  },
+  {
+   "function": "packages/api/hono.ts::function@19:24",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/openapi.json",
+   "reader": "noir",
+   "schema": "/openapi.json",
+   "shape": "http",
+   "site": "packages/api/hono.ts:19",
+   "symbol": "packages/api/hono.ts::GET /openapi.json"
+  },
+  {
+   "function": "packages/api/hono.ts::function@20:14",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/me",
+   "reader": "noir",
+   "schema": "/me",
+   "shape": "http",
+   "site": "packages/api/hono.ts:20",
+   "symbol": "packages/api/hono.ts::GET /me"
+  },
+  {
+   "function": "packages/api/hono.ts::function@24:33",
+   "handler": "closure",
+   "method": "DELETE",
+   "path": "/zapier/list-documents",
+   "reader": "noir",
+   "schema": "/zapier/list-documents",
+   "shape": "http",
+   "site": "packages/api/hono.ts:24",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/list-documents"
+  },
+  {
+   "function": "packages/api/hono.ts::function@24:33",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/zapier/list-documents",
+   "reader": "noir",
+   "schema": "/zapier/list-documents",
+   "shape": "http",
+   "site": "packages/api/hono.ts:24",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/list-documents"
+  },
+  {
+   "function": "packages/api/hono.ts::function@24:33",
+   "handler": "closure",
+   "method": "HEAD",
+   "path": "/zapier/list-documents",
+   "reader": "noir",
+   "schema": "/zapier/list-documents",
+   "shape": "http",
+   "site": "packages/api/hono.ts:24",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/list-documents"
+  },
+  {
+   "function": "packages/api/hono.ts::function@24:33",
+   "handler": "closure",
+   "method": "OPTIONS",
+   "path": "/zapier/list-documents",
+   "reader": "noir",
+   "schema": "/zapier/list-documents",
+   "shape": "http",
+   "site": "packages/api/hono.ts:24",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/list-documents"
+  },
+  {
+   "function": "packages/api/hono.ts::function@24:33",
+   "handler": "closure",
+   "method": "PATCH",
+   "path": "/zapier/list-documents",
+   "reader": "noir",
+   "schema": "/zapier/list-documents",
+   "shape": "http",
+   "site": "packages/api/hono.ts:24",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/list-documents"
+  },
+  {
+   "function": "packages/api/hono.ts::function@24:33",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/zapier/list-documents",
+   "reader": "noir",
+   "schema": "/zapier/list-documents",
+   "shape": "http",
+   "site": "packages/api/hono.ts:24",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/list-documents"
+  },
+  {
+   "function": "packages/api/hono.ts::function@24:33",
+   "handler": "closure",
+   "method": "PUT",
+   "path": "/zapier/list-documents",
+   "reader": "noir",
+   "schema": "/zapier/list-documents",
+   "shape": "http",
+   "site": "packages/api/hono.ts:24",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/list-documents"
+  },
+  {
+   "function": "packages/api/hono.ts::function@25:28",
+   "handler": "closure",
+   "method": "DELETE",
+   "path": "/zapier/subscribe",
+   "reader": "noir",
+   "schema": "/zapier/subscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:25",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/subscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@25:28",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/zapier/subscribe",
+   "reader": "noir",
+   "schema": "/zapier/subscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:25",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/subscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@25:28",
+   "handler": "closure",
+   "method": "HEAD",
+   "path": "/zapier/subscribe",
+   "reader": "noir",
+   "schema": "/zapier/subscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:25",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/subscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@25:28",
+   "handler": "closure",
+   "method": "OPTIONS",
+   "path": "/zapier/subscribe",
+   "reader": "noir",
+   "schema": "/zapier/subscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:25",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/subscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@25:28",
+   "handler": "closure",
+   "method": "PATCH",
+   "path": "/zapier/subscribe",
+   "reader": "noir",
+   "schema": "/zapier/subscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:25",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/subscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@25:28",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/zapier/subscribe",
+   "reader": "noir",
+   "schema": "/zapier/subscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:25",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/subscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@25:28",
+   "handler": "closure",
+   "method": "PUT",
+   "path": "/zapier/subscribe",
+   "reader": "noir",
+   "schema": "/zapier/subscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:25",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/subscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@26:30",
+   "handler": "closure",
+   "method": "DELETE",
+   "path": "/zapier/unsubscribe",
+   "reader": "noir",
+   "schema": "/zapier/unsubscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:26",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/unsubscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@26:30",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/zapier/unsubscribe",
+   "reader": "noir",
+   "schema": "/zapier/unsubscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:26",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/unsubscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@26:30",
+   "handler": "closure",
+   "method": "HEAD",
+   "path": "/zapier/unsubscribe",
+   "reader": "noir",
+   "schema": "/zapier/unsubscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:26",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/unsubscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@26:30",
+   "handler": "closure",
+   "method": "OPTIONS",
+   "path": "/zapier/unsubscribe",
+   "reader": "noir",
+   "schema": "/zapier/unsubscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:26",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/unsubscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@26:30",
+   "handler": "closure",
+   "method": "PATCH",
+   "path": "/zapier/unsubscribe",
+   "reader": "noir",
+   "schema": "/zapier/unsubscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:26",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/unsubscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@26:30",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/zapier/unsubscribe",
+   "reader": "noir",
+   "schema": "/zapier/unsubscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:26",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/unsubscribe"
+  },
+  {
+   "function": "packages/api/hono.ts::function@26:30",
+   "handler": "closure",
+   "method": "PUT",
+   "path": "/zapier/unsubscribe",
+   "reader": "noir",
+   "schema": "/zapier/unsubscribe",
+   "shape": "http",
+   "site": "packages/api/hono.ts:26",
+   "symbol": "packages/api/hono.ts::DELETE /zapier/unsubscribe"
+  },
+  {
+   "function": "packages/auth/server/index.ts::function@32:16",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/csrf",
+   "reader": "noir",
+   "schema": "/csrf",
+   "shape": "http",
+   "site": "packages/auth/server/index.ts:32",
+   "symbol": "packages/auth/server/index.ts::GET /csrf"
+  },
+  {
+   "function": "packages/auth/server/routes/account.ts::function@11:20",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/accounts",
+   "reader": "noir",
+   "schema": "/accounts",
+   "shape": "http",
+   "site": "packages/auth/server/routes/account.ts:11",
+   "symbol": "packages/auth/server/routes/account.ts::GET /accounts"
+  },
+  {
+   "function": "packages/auth/server/routes/account.ts::function@19:33",
+   "handler": "closure",
+   "method": "DELETE",
+   "path": "/account/:accountId",
+   "reader": "noir",
+   "schema": "/account/{}",
+   "shape": "http",
+   "site": "packages/auth/server/routes/account.ts:19",
+   "symbol": "packages/auth/server/routes/account.ts::DELETE /account/:accountId"
+  },
+  {
+   "function": "packages/auth/server/routes/callback.ts::function@17:16",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/callback/oidc",
+   "reader": "noir",
+   "schema": "/callback/oidc",
+   "shape": "http",
+   "site": "packages/auth/server/routes/callback.ts:17",
+   "symbol": "packages/auth/server/routes/callback.ts::GET /callback/oidc"
+  },
+  {
+   "function": "packages/auth/server/routes/callback.ts::function@22:28",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/callback/oidc/org/:orgUrl",
+   "reader": "noir",
+   "schema": "/callback/oidc/org/{}",
+   "shape": "http",
+   "site": "packages/auth/server/routes/callback.ts:22",
+   "symbol": "packages/auth/server/routes/callback.ts::GET /callback/oidc/org/:orgUrl"
+  },
+  {
+   "function": "packages/auth/server/routes/callback.ts::function@47:18",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/callback/google",
+   "reader": "noir",
+   "schema": "/callback/google",
+   "shape": "http",
+   "site": "packages/auth/server/routes/callback.ts:47",
+   "symbol": "packages/auth/server/routes/callback.ts::GET /callback/google"
+  },
+  {
+   "function": "packages/auth/server/routes/callback.ts::function@52:21",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/callback/microsoft",
+   "reader": "noir",
+   "schema": "/callback/microsoft",
+   "shape": "http",
+   "site": "packages/auth/server/routes/callback.ts:52",
+   "symbol": "packages/auth/server/routes/callback.ts::GET /callback/microsoft"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@66:57",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/authorize",
+   "reader": "noir",
+   "schema": "/email-password/authorize",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:66",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/authorize"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@192:54",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/signup",
+   "reader": "noir",
+   "schema": "/email-password/signup",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:192",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/signup"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@251:71",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/update-password",
+   "reader": "noir",
+   "schema": "/email-password/update-password",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:251",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/update-password"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@313:65",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/verify-email",
+   "reader": "noir",
+   "schema": "/email-password/verify-email",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:313",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/verify-email"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@345:78",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/resend-verify-email",
+   "reader": "noir",
+   "schema": "/email-password/resend-verify-email",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:345",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/resend-verify-email"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@375:71",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/forgot-password",
+   "reader": "noir",
+   "schema": "/email-password/forgot-password",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:375",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/forgot-password"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@412:69",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/reset-password",
+   "reader": "noir",
+   "schema": "/email-password/reset-password",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:412",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/reset-password"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@477:22",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/2fa/setup",
+   "reader": "noir",
+   "schema": "/email-password/2fa/setup",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:477",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/2fa/setup"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@501:4",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/2fa/enable",
+   "reader": "noir",
+   "schema": "/email-password/2fa/enable",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:501",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/2fa/enable"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@548:4",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/2fa/disable",
+   "reader": "noir",
+   "schema": "/email-password/2fa/disable",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:548",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/2fa/disable"
+  },
+  {
+   "function": "packages/auth/server/routes/email-password.ts::function@593:4",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/email-password/2fa/view-recovery-codes",
+   "reader": "noir",
+   "schema": "/email-password/2fa/view-recovery-codes",
+   "shape": "http",
+   "site": "packages/auth/server/routes/email-password.ts:593",
+   "symbol": "packages/auth/server/routes/email-password.ts::POST /email-password/2fa/view-recovery-codes"
+  },
+  {
+   "function": "packages/auth/server/routes/embed.ts::function@107:4",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/embed/start",
+   "reader": "noir",
+   "schema": "/embed/start",
+   "shape": "http",
+   "site": "packages/auth/server/routes/embed.ts:107",
+   "symbol": "packages/auth/server/routes/embed.ts::POST /embed/start"
+  },
+  {
+   "function": "packages/auth/server/routes/embed.ts::function@187:20",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/embed/complete",
+   "reader": "noir",
+   "schema": "/embed/complete",
+   "shape": "http",
+   "site": "packages/auth/server/routes/embed.ts:187",
+   "symbol": "packages/auth/server/routes/embed.ts::GET /embed/complete"
+  },
+  {
+   "function": "packages/auth/server/routes/embed.ts::function@217:4",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/embed/redeem",
+   "reader": "noir",
+   "schema": "/embed/redeem",
+   "shape": "http",
+   "site": "packages/auth/server/routes/embed.ts:217",
+   "symbol": "packages/auth/server/routes/embed.ts::POST /embed/redeem"
+  },
+  {
+   "function": "packages/auth/server/routes/oauth.ts::function@18:72",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/oauth/authorize/google",
+   "reader": "noir",
+   "schema": "/oauth/authorize/google",
+   "shape": "http",
+   "site": "packages/auth/server/routes/oauth.ts:18",
+   "symbol": "packages/auth/server/routes/oauth.ts::POST /oauth/authorize/google"
+  },
+  {
+   "function": "packages/auth/server/routes/oauth.ts::function@31:75",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/oauth/authorize/microsoft",
+   "reader": "noir",
+   "schema": "/oauth/authorize/microsoft",
+   "shape": "http",
+   "site": "packages/auth/server/routes/oauth.ts:31",
+   "symbol": "packages/auth/server/routes/oauth.ts::POST /oauth/authorize/microsoft"
+  },
+  {
+   "function": "packages/auth/server/routes/oauth.ts::function@44:70",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/oauth/authorize/oidc",
+   "reader": "noir",
+   "schema": "/oauth/authorize/oidc",
+   "shape": "http",
+   "site": "packages/auth/server/routes/oauth.ts:44",
+   "symbol": "packages/auth/server/routes/oauth.ts::POST /oauth/authorize/oidc"
+  },
+  {
+   "function": "packages/auth/server/routes/oauth.ts::function@56:39",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/oauth/authorize/oidc/org/:orgUrl",
+   "reader": "noir",
+   "schema": "/oauth/authorize/oidc/org/{}",
+   "shape": "http",
+   "site": "packages/auth/server/routes/oauth.ts:56",
+   "symbol": "packages/auth/server/routes/oauth.ts::POST /oauth/authorize/oidc/org/:orgUrl"
+  },
+  {
+   "function": "packages/auth/server/routes/passkey.ts::function@25:67",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/passkey/authorize",
+   "reader": "noir",
+   "schema": "/passkey/authorize",
+   "shape": "http",
+   "site": "packages/auth/server/routes/passkey.ts:25",
+   "symbol": "packages/auth/server/routes/passkey.ts::POST /passkey/authorize"
+  },
+  {
+   "function": "packages/auth/server/routes/session.ts::function@8:19",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/session",
+   "reader": "noir",
+   "schema": "/session",
+   "shape": "http",
+   "site": "packages/auth/server/routes/session.ts:8",
+   "symbol": "packages/auth/server/routes/session.ts::GET /session"
+  },
+  {
+   "function": "packages/auth/server/routes/session.ts::function@13:20",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/sessions",
+   "reader": "noir",
+   "schema": "/sessions",
+   "shape": "http",
+   "site": "packages/auth/server/routes/session.ts:13",
+   "symbol": "packages/auth/server/routes/session.ts::GET /sessions"
+  },
+  {
+   "function": "packages/auth/server/routes/session.ts::function@18:24",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/session-json",
+   "reader": "noir",
+   "schema": "/session-json",
+   "shape": "http",
+   "site": "packages/auth/server/routes/session.ts:18",
+   "symbol": "packages/auth/server/routes/session.ts::GET /session-json"
+  },
+  {
+   "function": "packages/auth/server/routes/sign-out.ts::function@15:20",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/signout",
+   "reader": "noir",
+   "schema": "/signout",
+   "shape": "http",
+   "site": "packages/auth/server/routes/sign-out.ts:15",
+   "symbol": "packages/auth/server/routes/sign-out.ts::POST /signout"
+  },
+  {
+   "function": "packages/auth/server/routes/sign-out.ts::function@44:24",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/signout-all",
+   "reader": "noir",
+   "schema": "/signout-all",
+   "shape": "http",
+   "site": "packages/auth/server/routes/sign-out.ts:44",
+   "symbol": "packages/auth/server/routes/sign-out.ts::POST /signout-all"
+  },
+  {
+   "function": "packages/auth/server/routes/sign-out.ts::function@86:71",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/signout-session",
+   "reader": "noir",
+   "schema": "/signout-session",
+   "shape": "http",
+   "site": "packages/auth/server/routes/sign-out.ts:86",
+   "symbol": "packages/auth/server/routes/sign-out.ts::POST /signout-session"
+  },
+  {
+   "function": "packages/auth/server/routes/two-factor.ts::function@23:18",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/two-factor/setup",
+   "reader": "noir",
+   "schema": "/two-factor/setup",
+   "shape": "http",
+   "site": "packages/auth/server/routes/two-factor.ts:23",
+   "symbol": "packages/auth/server/routes/two-factor.ts::POST /two-factor/setup"
+  },
+  {
+   "function": "packages/auth/server/routes/two-factor.ts::function@40:70",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/two-factor/enable",
+   "reader": "noir",
+   "schema": "/two-factor/enable",
+   "shape": "http",
+   "site": "packages/auth/server/routes/two-factor.ts:40",
+   "symbol": "packages/auth/server/routes/two-factor.ts::POST /two-factor/enable"
+  },
+  {
+   "function": "packages/auth/server/routes/two-factor.ts::function@78:72",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/two-factor/disable",
+   "reader": "noir",
+   "schema": "/two-factor/disable",
+   "shape": "http",
+   "site": "packages/auth/server/routes/two-factor.ts:78",
+   "symbol": "packages/auth/server/routes/two-factor.ts::POST /two-factor/disable"
+  },
+  {
+   "function": "packages/auth/server/routes/two-factor.ts::function@115:94",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/two-factor/view-recovery-codes",
+   "reader": "noir",
+   "schema": "/two-factor/view-recovery-codes",
+   "shape": "http",
+   "site": "packages/auth/server/routes/two-factor.ts:115",
+   "symbol": "packages/auth/server/routes/two-factor.ts::POST /two-factor/view-recovery-codes"
+  },
+  {
+   "function": "packages/ee/server-only/signing/csc/hono/oauth-authorize.ts::function@61:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/oauth/authorize/",
+   "reader": "noir",
+   "schema": "/oauth/authorize",
+   "shape": "http",
+   "site": "packages/ee/server-only/signing/csc/hono/oauth-authorize.ts:61",
+   "symbol": "packages/ee/server-only/signing/csc/hono/oauth-authorize.ts::GET /oauth/authorize/"
+  },
+  {
+   "function": "packages/ee/server-only/signing/csc/hono/oauth-callback.ts::function@79:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/oauth/callback/",
+   "reader": "noir",
+   "schema": "/oauth/callback",
+   "shape": "http",
+   "site": "packages/ee/server-only/signing/csc/hono/oauth-callback.ts:79",
+   "symbol": "packages/ee/server-only/signing/csc/hono/oauth-callback.ts::GET /oauth/callback/"
+  },
+  {
+   "function": "packages/ee/server-only/signing/csc/hono/session-status.ts::function@27:2",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/session-status/",
+   "reader": "noir",
+   "schema": "/session-status",
+   "shape": "http",
+   "site": "packages/ee/server-only/signing/csc/hono/session-status.ts:27",
+   "symbol": "packages/ee/server-only/signing/csc/hono/session-status.ts::GET /session-status/"
+  }
+ ],
+ "sections": [
+  "hono"
+ ],
+ "sites": {
+  "packages/auth/server/routes/account.ts::function@11:20": [
+   "packages/auth/server/routes/account.ts:11",
+   [
+    11,
+    20,
+    15,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/account.ts::function@19:33": [
+   "packages/auth/server/routes/account.ts:19",
+   [
+    19,
+    33,
+    25,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/callback.ts::function@17:16": [
+   "packages/auth/server/routes/callback.ts:17",
+   [
+    17,
+    16,
+    17,
+    90
+   ]
+  ],
+  "packages/auth/server/routes/callback.ts::function@22:28": [
+   "packages/auth/server/routes/callback.ts:22",
+   [
+    22,
+    28,
+    42,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/callback.ts::function@47:18": [
+   "packages/auth/server/routes/callback.ts:47",
+   [
+    47,
+    18,
+    47,
+    94
+   ]
+  ],
+  "packages/auth/server/routes/callback.ts::function@52:21": [
+   "packages/auth/server/routes/callback.ts:52",
+   [
+    52,
+    21,
+    52,
+    100
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@192:54": [
+   "packages/auth/server/routes/email-password.ts:192",
+   [
+    192,
+    54,
+    247,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@251:71": [
+   "packages/auth/server/routes/email-password.ts:251",
+   [
+    251,
+    71,
+    309,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@313:65": [
+   "packages/auth/server/routes/email-password.ts:313",
+   [
+    313,
+    65,
+    341,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@345:78": [
+   "packages/auth/server/routes/email-password.ts:345",
+   [
+    345,
+    78,
+    371,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@375:71": [
+   "packages/auth/server/routes/email-password.ts:375",
+   [
+    375,
+    71,
+    408,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@412:69": [
+   "packages/auth/server/routes/email-password.ts:412",
+   [
+    412,
+    69,
+    473,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@477:22": [
+   "packages/auth/server/routes/email-password.ts:477",
+   [
+    477,
+    22,
+    489,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@501:4": [
+   "packages/auth/server/routes/email-password.ts:501",
+   [
+    501,
+    4,
+    534,
+    5
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@548:4": [
+   "packages/auth/server/routes/email-password.ts:548",
+   [
+    548,
+    4,
+    580,
+    5
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@593:4": [
+   "packages/auth/server/routes/email-password.ts:593",
+   [
+    593,
+    4,
+    624,
+    5
+   ]
+  ],
+  "packages/auth/server/routes/email-password.ts::function@66:57": [
+   "packages/auth/server/routes/email-password.ts:66",
+   [
+    66,
+    57,
+    188,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/embed.ts::function@107:4": [
+   "packages/auth/server/routes/embed.ts:107",
+   [
+    107,
+    4,
+    180,
+    5
+   ]
+  ],
+  "packages/auth/server/routes/embed.ts::function@187:20": [
+   "packages/auth/server/routes/embed.ts:187",
+   [
+    187,
+    20,
+    207,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/embed.ts::function@217:4": [
+   "packages/auth/server/routes/embed.ts:217",
+   [
+    217,
+    4,
+    266,
+    5
+   ]
+  ],
+  "packages/auth/server/routes/oauth.ts::function@18:72": [
+   "packages/auth/server/routes/oauth.ts:18",
+   [
+    18,
+    72,
+    26,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/oauth.ts::function@31:75": [
+   "packages/auth/server/routes/oauth.ts:31",
+   [
+    31,
+    75,
+    39,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/oauth.ts::function@44:70": [
+   "packages/auth/server/routes/oauth.ts:44",
+   [
+    44,
+    70,
+    52,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/oauth.ts::function@56:39": [
+   "packages/auth/server/routes/oauth.ts:56",
+   [
+    56,
+    39,
+    69,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/passkey.ts::function@25:67": [
+   "packages/auth/server/routes/passkey.ts:25",
+   [
+    25,
+    67,
+    145,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/session.ts::function@13:20": [
+   "packages/auth/server/routes/session.ts:13",
+   [
+    13,
+    20,
+    17,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/session.ts::function@18:24": [
+   "packages/auth/server/routes/session.ts:18",
+   [
+    18,
+    24,
+    22,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/session.ts::function@8:19": [
+   "packages/auth/server/routes/session.ts:8",
+   [
+    8,
+    19,
+    12,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/sign-out.ts::function@15:20": [
+   "packages/auth/server/routes/sign-out.ts:15",
+   [
+    15,
+    20,
+    43,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/sign-out.ts::function@44:24": [
+   "packages/auth/server/routes/sign-out.ts:44",
+   [
+    44,
+    24,
+    85,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/sign-out.ts::function@86:71": [
+   "packages/auth/server/routes/sign-out.ts:86",
+   [
+    86,
+    71,
+    118,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/two-factor.ts::function@115:94": [
+   "packages/auth/server/routes/two-factor.ts:115",
+   [
+    115,
+    94,
+    146,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/two-factor.ts::function@23:18": [
+   "packages/auth/server/routes/two-factor.ts:23",
+   [
+    23,
+    18,
+    35,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/two-factor.ts::function@40:70": [
+   "packages/auth/server/routes/two-factor.ts:40",
+   [
+    40,
+    70,
+    73,
+    3
+   ]
+  ],
+  "packages/auth/server/routes/two-factor.ts::function@78:72": [
+   "packages/auth/server/routes/two-factor.ts:78",
+   [
+    78,
+    72,
+    110,
+    3
+   ]
+  ]
+ },
+ "snapshot_seconds": 93.0
+}

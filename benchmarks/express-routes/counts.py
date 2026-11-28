@@ -52,3 +52,16 @@ def sample(compared: dict[str, dict], count: int = SAMPLE, seed: int = SEED) -> 
     return every[:count]
 
 
+def show(results: dict[str, dict], lines) -> None:
+    """Print the sample over `results` (application -> answer of `measure.run`) with the source's lines at the registration and at the
+    start of the handler, `lines(application, [[file, first, last], ...])` reading them in the container: for a person, never written."""
+    chosen = sample({name: answer["compare"] for name, answer in results.items() if "compare" in answer})
+    for item in chosen:
+        row = next(r for r in results[item["application"]]["express_rows"] if r.get("function", r.get("symbol")) == item["symbol"]
+                   and (r.get("method") or None) == item["method"] and (r.get("schema") or r["path"]) == item["path"])
+        sites = (row["registered"], row["site"])
+        wanted = [[site.rpartition(":")[0], int(site.rpartition(":")[2]) - 1, int(site.rpartition(":")[2]) + 2] for site in sites]
+        print(f"\n{item['application']} {item['method'] or 'ANY'} {row['path']} -> {item['symbol']}")
+        for site, found in zip(sites, lines(item["application"], wanted)):
+            print(f"  {site}")
+            print("\n".join(f"     {line}" for line in found))
