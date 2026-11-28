@@ -50,9 +50,9 @@ import json
 from pathlib import PurePosixPath
 import posixpath
 import re
-import shlex
+import shlex  # only to write an argv back as a line (`shlex.join`)
 
-from premap import compose, npm_tests
+from premap import compose, npm_tests, shell
 from premap.module_graph import declared_image
 
 NAME, VERSION, RANK = "renovate", "44.239.1", "reader"  # it reads declared files and runs no project code
@@ -345,7 +345,8 @@ def _composed_tests(script: str, tests: list[dict], read) -> list[tuple[dict, st
             rel, _, name = str(entry.get("declared_in") or "").partition("#scripts.")
             try:
                 text = (json.loads(read(rel) or "{}").get("scripts") or {}).get(name) if name else None
-                own = shlex.split(text) if isinstance(text, str) else []
+                said = shell.commands(text) if isinstance(text, str) else None
+                own = said[0][1] if said and len(said) == 1 else []
             except (ValueError, AttributeError):
                 own = []
             if (own and words[:len(own)] == own) or (entry.get("runner") not in (None, *PACKAGE_MANAGERS) and

@@ -5,9 +5,9 @@ entries `{root, runner, declared_in}` for `build`; the command is `<runner> run 
 declares (spec of the project's interfaces, section 5). The runner is the one of the nearest lockfile, the folder's
 or above it (`pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `bun.lockb`), else npm.
 
-Each script is read from its syntax tree (tree-sitter bash: no official tool reads an npm script, and a regular
-expression is not for a language with a grammar). `port` is a decimal literal: `--port N`, `--port=N`, `-p N` or
-`PORT=N`, never a default. `needs_build` is true for the closed table of production servers that read compiled
+Each script is read from its syntax tree (`premap/shell.py`, tree-sitter bash: no official tool reads an npm script,
+and a regular expression is not for a language with a grammar). `port` is a decimal literal: `--port N`,
+`--port=N`, `-p N` or `PORT=N`, never a default. `needs_build` is true for the closed table of production servers that read compiled
 output (`next start`, `nuxt start`, `vite preview`, `astro preview`) and for `node` run on a file the snapshot does
 not hold (built output is no part of the checkout); a build the package does not declare is a
 `build_command_missing` gap. A script that only runs a test runner or a checker, or names a CLI that wants a
@@ -23,7 +23,7 @@ import json
 import posixpath
 from pathlib import Path, PurePosixPath
 
-from languages import _treesitter
+from premap import shell
 
 NAME, VERSION, RANK = "npm-start", "daodan/premap/v1", "reader"
 MODES = ("dev", "start")
@@ -35,36 +35,19 @@ NOT_STARTS = {"jest", "vitest", "mocha", "ava", "tap", "cypress",  # test runner
 NEEDS_SUBCOMMAND = {"tauri", "wails"}
 
 
-def _commands(script: str) -> list[tuple[dict, str, list[tuple[str, str]]]] | None:
-    """The commands of a script: `(assignments, name, arguments)`, the assignments `{name: value}` and the arguments
-    `(node type, text)`, in order; None where the bash grammar is not available."""
-    loaded = _treesitter.get_parser("bash")
-    if loaded is None:
-        return None
-    source = script.encode("utf-8")
-    found = []
-    for node in _treesitter.query_captures("bash", "(command) @command", loaded[0].parse(source).root_node).get("command", []):
-        assigned = {}
-        for child in node.children:
-            if child.type == "variable_assignment":
-                value = child.child_by_field_name("value")
-                if value is not None and value.type in ("word", "number"):
-                    assigned[_treesitter.node_text(child.child_by_field_name("name"), source)] = \
-                        _treesitter.node_text(value, source)
-        name = node.child_by_field_name("name")
-        arguments = [(arg.type, _treesitter.node_text(arg, source)) for arg in node.children_by_field_name("argument")]
-        found.append((assigned, PurePosixPath(_treesitter.node_text(name, source)).name if name is not None else "",
-                      arguments))
-    return found
+def _commands(script: str) -> list[tuple[dict, str, list[str]]] | None:
+    """The commands of a script (`shell.commands`): `(assignments, name, arguments)`, the program's name without its
+    folder; None where the bash grammar is not available."""
+    found = shell.commands(script)
+    return None if found is None else [(assigned, PurePosixPath(words[0]).name, words[1:]) for assigned, words in found]
 
 
-def _subcommand(arguments: list[tuple[str, str]]) -> str | None:
-    return next((text for kind, text in arguments if kind == "word" and not text.startswith("-")), None)
+def _subcommand(arguments: list[str]) -> str | None:
+    return next((text for text in arguments if not text.startswith("-")), None)
 
 
-def _is_start(name: str, arguments: list[tuple[str, str]]) -> bool:
-    texts = [text for _, text in arguments]
-    return not (name in NOT_STARTS or _subcommand(arguments) == "test" or (name == "node" and "--test" in texts)
+def _is_start(name: str, arguments: list[str]) -> bool:
+    return not (name in NOT_STARTS or _subcommand(arguments) == "test" or (name == "node" and "--test" in arguments)
                 or (name in NEEDS_SUBCOMMAND and not arguments))
 
 
@@ -83,11 +66,11 @@ def _port(commands) -> int | None:
     for assigned, _, arguments in commands:
         if assigned.get("PORT", "").isdigit():
             return int(assigned["PORT"])
-        for index, (_, text) in enumerate(arguments):
+        for index, text in enumerate(arguments):
             if text.startswith("--port=") and text[7:].isdigit():
                 return int(text[7:])
-            if text in ("--port", "-p") and index + 1 < len(arguments) and arguments[index + 1][1].isdigit():
-                return int(arguments[index + 1][1])
+            if text in ("--port", "-p") and index + 1 < len(arguments) and arguments[index + 1].isdigit():
+                return int(arguments[index + 1])
     return None
 
 
