@@ -23,6 +23,7 @@ Load relevant references based on the code domain under review. Do NOT load all 
 | `references/security.md` | Security review -- injection, auth, crypto, secrets, CORS, SSRF, input validation |
 | `references/distributed-integration.md` | Microservices, APIs, distributed state, message queues, service mesh, migrations |
 | `references/data-design-ops.md` | Database/ORM, design patterns, build/deploy, testing, observability |
+| `references/ui-state-intent.md` | UI/frontend views, view models, status labels, tooltips, and user-facing actions/commands |
 | `references/detection-matrix.md` | Cross-cutting: detection channels per category, language-weighted focus, ROI prioritization |
 
 ### Review Frameworks (analysis methodology)
