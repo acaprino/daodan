@@ -263,6 +263,22 @@ def test_the_grammars_are_placed_once_per_process(fresh_loader):
     assert len(calls) == 1
 
 
+def test_a_test_that_clears_the_loader_leaves_the_next_one_its_grammars(request, tmp_path, monkeypatch):
+    """`cache_clear` forgets the placement: the first parse after it places again, under the shared folder and the
+    network of the test it runs in. An egress test moves the folder and cuts the network (the 28 November group 14 of
+    `--shards 32`: every test after it in the process read `download failed`); the suite places again before each
+    test (`conftest.pytest_runtest_setup`), and that test reads."""
+    import conftest
+
+    def offline(url, target, *, sha256=None):
+        raise OSError("no network in this test")
+    _treesitter.get_parser.cache_clear()  # a test that clears the loader
+    conftest.pytest_runtest_setup(request.node)  # the next test's setup
+    monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    monkeypatch.setattr(_treesitter, "_fetch", offline)
+    assert _treesitter.get_parser("go") is not None and _treesitter.load_failure("go") is None
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # The snapshot
 
