@@ -59,7 +59,8 @@ def _inside(rel: str, folder: str) -> bool:
 
 def plan(record: dict, files: list[str], read) -> dict:
     """`{runs, gaps, toolchains}` from the pre-map `record` and the snapshot's `files`: a run is `{root, runner,
-    argv}`, a module with no test file of its own a `no_tests` gap. The pre-map names the project's root `.` or
+    argv}`, the command a `tests` entry declares for the module (`dynamic.declared`, with its `declared_in`) else
+    `ARGV`; a module with no test file of its own a `no_tests` gap. The pre-map names the project's root `.` or
     the empty path: one root."""
     roots = sorted({posixpath.normpath(unit["root"] or ".") for unit in record.get("units", [])
                     if unit["kind"] in UNIT_KINDS})
@@ -71,8 +72,10 @@ def plan(record: dict, files: list[str], read) -> dict:
         nested = [other for other in roots if other != root and _inside(other, root)]
         tested = any(rel.endswith("_test.go") and _inside(rel, root) and "testdata" not in rel.split("/")
                      and not any(_inside(rel, other) for other in nested) for rel in files)
+        chosen = dynamic.declared(record, RUNNER, root)
         if tested:
-            runs.append({"root": root, "runner": RUNNER, "argv": ARGV})
+            runs.append({"root": root, "runner": RUNNER, "argv": chosen["argv"], "declared_in": chosen["declared_in"]}
+                        if chosen else {"root": root, "runner": RUNNER, "argv": ARGV})
         else:
             gaps.append({"kind": "no_tests", "path": root,
                          "detail": f"the Go module in {root} holds no _test.go file: no test runs its code"})

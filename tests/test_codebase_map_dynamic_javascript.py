@@ -222,6 +222,17 @@ def test_a_runner_the_recorder_cannot_observe_is_a_gap_with_its_cause():
     assert gap["runner"] == "bun" and "JavaScriptCore" in gap["detail"]
 
 
+def test_a_runner_a_ci_step_starts_itself_is_a_gap_and_does_not_run():
+    """`vitest run` written in a CI step (`renovate._ci_tests`) is no package script: the observer runs those."""
+    ci = {"root": "v", "runner": "vitest", "argv": ["vitest", "run"], "source": "ci",
+          "declared_in": ".github/workflows/ci.yml#jobs.t.steps.1"}
+    planned = observer.plan(record([ci, entry(".", "jest")], units=(".", "v")), [], None)
+    assert [run["root"] for run in planned["runs"]] == ["."]
+    [gap] = planned["gaps"]
+    assert (gap["kind"], gap["path"], gap["runner"]) == ("runner_not_observed", ci["declared_in"], "vitest")
+    assert "`vitest run`" in gap["detail"]
+
+
 ASPIRE_HOST = ('<Project Sdk="Aspire.AppHost.Sdk/13.6.0">\n  <PropertyGroup><OutputType>Exe</OutputType>'
                '</PropertyGroup>\n</Project>\n')
 ESHOP = {"package.json": package(None, **{"test:e2e": "playwright test"}),

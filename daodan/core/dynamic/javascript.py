@@ -186,6 +186,12 @@ def plan(record: dict, files: list[str], read) -> dict:
     gaps = [{"kind": "runner_not_observed", "path": test.get("declared_in"), "runner": test["runner"],
              "detail": f"{test.get('declared_in')} runs {test['runner']}: {NOT_OBSERVED[test['runner']]}; its "
                        "tests do not run"} for test in tests if test["runner"] in NOT_OBSERVED]
+    # a runner a CI step starts itself, not through a package's script: the scripts are what this observer runs
+    gaps += [{"kind": "runner_not_observed", "path": test["declared_in"], "runner": test["runner"],
+              "detail": f"{test['declared_in']} runs `{shlex.join(test['argv'])}` itself: Daodan runs a package's "
+                        "test scripts, not a runner a CI step starts; its tests do not run"}
+             for test in tests if test.get("argv") and test["runner"] not in NOT_OBSERVED]
+    tests = [test for test in tests if not test.get("argv")]
     served = [gap for test in tests if test["runner"] == "playwright" for gap in [web_server(test, files, read)] if gap]
     gaps += served
     hosted = {gap["path"] for gap in served if gap["kind"] == "tests_need_container_engine"}

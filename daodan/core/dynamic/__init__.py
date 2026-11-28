@@ -7,9 +7,10 @@ observed rows' resolver is `NAME@VERSION`) and `LANGUAGES`, and gives:
     observe(project, planned, out_dir, engine) -> {"state", "sites", "runs", "gaps"}   in the container
     external(callee) -> {"manager", "package", "version"}          the package of a callee outside the project
 
-`plan` takes the command that runs the tests from what the project declares (the pre-map's `tests`), never from a
-convention; with nothing to run it says why, and no container starts. `observe` runs project code, so only through
-`container.run_in_container`: the dependencies restored the project's own way in the preparation, with the
+`plan` takes the command that runs the tests from what the project declares (the pre-map's `tests`); for a folder and
+a runner, an entry with an `argv` (`declared`: the user's, the assistant's, the CI's, in `PRECEDENCE`) comes before
+the tool's convention (`go test ./...`); with nothing to run it says why, and no container starts. `observe` runs
+project code, so only through `container.run_in_container`: the dependencies restored the project's own way in the preparation, with the
 registries, the tests in the execution, with no network. `state` is `ran`, `gap` with `cause` and `remedy`
 when no container could run, or `failed` with `cause` and `remedy` when the preparation or the engine failed.
 `runs` has one entry per planned run, `{root, runner, state, ...}`: the folder from the project's root, what
@@ -105,6 +106,28 @@ def malformed(result) -> str | None:
             return f"an entry of its {key} has no {', '.join(short)}"
     states = sorted({str(test["state"]) for test in result["runs"]} - set(TESTS))
     return f"a run's state is {', '.join(states)}, none of {', '.join(TESTS)}" if states else None
+
+
+PRECEDENCE = ("user", "assistant", "ci")  # who states a command (its `by`, else its `source`), the first wins
+
+
+def declared(record: dict, runner: str, root: str) -> dict | None:
+    """The pre-map's `tests` entry that runs `runner` in `root` with its own words (`argv`), the first by
+    `PRECEDENCE`; None where there is none, and the observer's convention runs. The pre-map names the project's
+    root `.` or the empty path."""
+    root = posixpath.normpath(root or ".")
+    found = [test for test in record.get("tests") or () if test.get("runner") == runner
+             and isinstance(test.get("argv"), list) and posixpath.normpath(test.get("root") or ".") == root]
+
+    def rank(test: dict) -> int:
+        who = test.get("by") or test.get("source")
+        return PRECEDENCE.index(who) if who in PRECEDENCE else len(PRECEDENCE)
+    return min(found, key=rank, default=None)
+
+
+def arguments(argv: list[str], runner: str) -> list[str]:
+    """The words of a command after the runner it starts (`pytest -m integration`: `-m integration`)."""
+    return list(argv[len(runner.split()):])
 
 
 def observers() -> list:

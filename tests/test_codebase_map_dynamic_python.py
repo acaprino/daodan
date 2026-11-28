@@ -52,6 +52,15 @@ def test_pytest_runs_where_the_project_declares_it_in_the_environment_of_its_fol
                               "install": True}]
 
 
+def test_a_pytest_command_a_ci_step_declares_runs_with_its_own_arguments():
+    """`pytest -m integration` of a CI step: the observer runs it as `python -m pytest -m integration`."""
+    ci = {"root": ".", "runner": "pytest", "argv": ["pytest", "-m", "integration"], "source": "ci",
+          "declared_in": ".github/workflows/ci.yml#jobs.test.steps.3"}
+    found = plan([ci], ["pyproject.toml", "uv.lock", "tests/test_a.py"], texts={"pyproject.toml": PACKAGED})
+    assert [(run["declared_in"], run["argv"]) for run in found["runs"]] == [
+        (ci["declared_in"], ["-m", "pytest", "-m", "integration", observer.KEEP_GOING])]
+
+
 def test_a_test_folder_outside_every_python_project_uses_the_only_environment_the_project_restores():
     """Daodan's own shape: the tests beside the scripts, whose folder holds the requirements."""
     tests = [{"root": ".", "runner": "pytest", "declared_in": "tests/conftest.py", "args": ["tests"]}]

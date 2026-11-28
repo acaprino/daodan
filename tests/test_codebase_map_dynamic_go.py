@@ -241,6 +241,21 @@ def test_the_root_module_the_pre_map_names_by_the_empty_path_is_planned_once():
         assert planned["gaps"] == []
 
 
+def test_the_command_a_ci_step_declares_for_a_module_comes_before_the_convention():
+    """`go test -tags e2e ./...` of a CI step (`renovate._ci_tests`) runs in its module in place of `ARGV`, with
+    the step as `declared_in` (its steps before it are the module's `ci_steps`); a user's command comes first."""
+    files = ["go.mod", "a.go", "a_test.go", "tools/go.mod", "tools/t.go", "tools/t_test.go"]
+    ci = {"root": ".", "runner": "go test", "argv": ["go", "test", "-tags", "e2e", "./..."], "source": "ci",
+          "declared_in": ".github/workflows/ci.yml#jobs.test.steps.2"}
+    user = {**ci, "argv": ["go", "test", "-run", "TestOne", "./..."], "by": "user", "declared_in": None}
+    planned = observer.plan({**record(".", "tools"), "tests": [ci]}, files, None)
+    assert planned["runs"] == [
+        {"root": ".", "runner": "go test", "argv": ci["argv"], "declared_in": ci["declared_in"]},
+        {"root": "tools", "runner": "go test", "argv": observer.ARGV}]
+    assert dynamic.declared({"tests": [ci, user]}, "go test", "") is user
+    assert dynamic.declared({"tests": [ci]}, "cargo test", ".") is None
+
+
 def test_without_a_go_module_the_plan_says_so():
     planned = observer.plan({"units": [{"kind": "cargo-package", "root": "."}]}, ["main.go"], None)
     assert planned["runs"] == [] and planned["gaps"][0]["kind"] == "no_tests"
