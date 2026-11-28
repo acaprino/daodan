@@ -35,9 +35,9 @@ code{font-size:.9em;overflow-wrap:anywhere}
 
 <h2>Cancello T1 e analisi</h2>
 <ol>
-<li><b>Il metro degli ingressi del Cancello T1.</b> I 27 controlli che avviano i flussi di Bank of Anthos sono pulsanti nei template e dichiarazioni di rilascio, nessuna rotta: 0 su 27 anche con tutti i candidati statici. Oggi la soglia è 0; la non regressione la prova il prima/dopo identico di T1.C.12.<span class="r">tenere così; il metro conta quando T3 misura l'osservato.</span></li>
-<li><b>Il metodo passato per nome (T1.C.15).</b> <code>requests.request(method="POST", url=url)</code> in un wrapper è una lacuna, perché il lettore legge gli argomenti solo per posizione. Il compilatore lega già ogni parola chiave al suo parametro.<span class="r">sì, aggiungere la forma per nome: vale per ogni linguaggio con argomenti con nome.</span></li>
-<li><b>Il riferimento della pre-mappa misura con la rete aperta.</b> Il banco <code>modal_premap.py</code> ignora il «nessuna rete» dei comandi, quindi il riferimento può contare voci che il prodotto non trova.<span class="r">sì, correggere il banco: un riferimento deve girare come il prodotto.</span></li>
+<li><b>Il metro degli ingressi del Cancello T1.</b> I 27 controlli che avviano i flussi di Bank of Anthos sono pulsanti nei template e dichiarazioni di rilascio, nessuna rotta: 0 su 27 anche con tutti i candidati statici. Oggi la soglia è 0; la non regressione la prova il prima/dopo identico di T1.C.12.<span class="r">tenere così; il metro conta quando T3 misura l'osservato.</span> <b>Deciso: tenere così</b> (T1.F.1).</li>
+<li><b>Il metodo passato per nome (T1.C.15).</b> <code>requests.request(method="POST", url=url)</code> in un wrapper è una lacuna, perché il lettore legge gli argomenti solo per posizione. Il compilatore lega già ogni parola chiave al suo parametro.<span class="r">sì, aggiungere la forma per nome: vale per ogni linguaggio con argomenti con nome.</span> <b>Deciso: sì</b>, dopo una misura sul corpus (T1.F.2, T1.F.3).</li>
+<li><b>Il riferimento della pre-mappa misura con la rete aperta.</b> Il banco <code>modal_premap.py</code> ignora il «nessuna rete» dei comandi, quindi il riferimento può contare voci che il prodotto non trova.<span class="r">sì, correggere il banco: un riferimento deve girare come il prodotto.</span> <b>Deciso: sì</b> (T1.F.4).</li>
 </ol>
 
 <h2>Mappa e progetto</h2>
