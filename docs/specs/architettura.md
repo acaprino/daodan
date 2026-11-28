@@ -76,6 +76,8 @@ Un'interfaccia nasce da un ingresso, non da un manifesto. Il campo `surface` del
 
 Regole valide per tutte le superfici: nulla dell'host; download con licenza o di qualche GB solo dopo consenso esplicito (altrimenti `approval_required`, nel codice da `T0.C`: `egress.approval_gap`); solo dati e credenziali di prova già preparati dalla CI del progetto; progetti multipiattaforma eseguiti sul bersaglio `web` quando dichiarato.
 
+`[deciso dal proprietario, 28 novembre 2026]` L'analisi del grafo dell'interfaccia del progetto analizzato (GUI o UI web) è fondamentale, non un contorno: i revisori la usano per leggere, per ogni controllo, la catena produttore (lavoro e causa) → stato dell'interfaccia → ciò che mostra (etichette, badge, suggerimenti) → azioni esposte. È il metodo «Graph-First Review» di `plugins/senior-review/skills/defect-taxonomy/references/ui-state-intent.md`: senza il grafo il revisore legge le parole dell'interfaccia isolate.
+
 ### Come si sa che cosa lanciare (test, avvio, build)
 
 Un comando non si indovina mai: viene da una fonte, e porta scritto da quale. Senza fonti il passo è una lacuna.
