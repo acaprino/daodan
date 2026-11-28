@@ -22,7 +22,7 @@ from test_codebase_map_container_runner import bound, container, container_runne
 BENCHMARK = Path(__file__).resolve().parents[1] / "benchmarks/nuxt-routes/fixture"
 ANSWERS = json.loads((Path(__file__).parent / "fixtures/premap/nuxt/answers.json").read_text(encoding="utf-8"))
 SOURCE = "nuxt@daodan/premap/v3"  # v3: the route's `schema`, a page is `page`
-GAP = "no function found for the exports the framework starts {} from: default"
+GAP = "no function found for the exports the framework starts {} from: default: anonymous default export is unresolved"
 HANDLERS = (  # what the file names for the fixture: (route, method, file); None is a handler with no method in its file name
     ("/api/files/**:path", "GET", "server/api/files/[...path].get.ts"),
     ("/api/health", None, "server/api/health.ts"),

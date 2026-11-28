@@ -662,11 +662,18 @@ def test_the_premap_the_whole_pipeline_wrote_on_modal_holds_the_rows_of_the_reco
     """`results/pipeline-scan.json`: the `scan` step in Daodan's container, with the packages restored from the lockfile and the
     command run with no network, wrote the same 23 rows that the recorded answer gives here, and no gap of the source; the 19
     entries are the rows on a function, and Noir's 25 endpoints in the same files stay gaps of their own. The run was recorded
-    before the `schema`, a reading of the same answer that the recording does not hold."""
+    before the `schema` and the note on an anonymous default, readings of the same answer that the recording does not hold."""
     scan = json.loads((BENCHMARK.parent / "results/pipeline-scan.json").read_text(encoding="utf-8"))
     record, _, _ = read(tmp_path, project("framework"))
-    assert scan["framework_entries"] == [{key: value for key, value in row.items() if key not in ("sources", "schema")}
-                                         for row in record["bound"]]
+    from languages.semantic import ANONYMOUS_DEFAULT
+
+    def same(row: dict) -> dict:  # the recording predates the schema and the binder's note on an anonymous default (T1.C.6),
+        row = {key: value for key, value in row.items() if key not in ("sources", "schema")}  # which names the export it
+        if "gap" in row:  # could not read instead of every export the framework looks for
+            row["gap"] = row["gap"].partition(" from: ")[0]
+        return row
+    assert [same(row) for row in scan["framework_entries"]] == [same(row) for row in record["bound"]]
+    assert any(ANONYMOUS_DEFAULT in row.get("gap", "") for row in record["bound"])
     assert len(scan["framework_entries"]) == 23 and scan["source_gaps"] == []
     assert scan["sources"]["react-router"]["state"] == "ran" and scan["sources"]["next"]["state"] == "not_needed"
     assert scan["links"]["entries"] == {"react-router rotta": 19} and scan["links"]["routes"]["offered"] == 0
