@@ -8,11 +8,12 @@ import { groupKey, pendingGroup, repliedWords, replyBody } from './egress.ts';
 import type { Reply } from './egress.ts';
 import { endName, graphKey, openWithout, rootOf, shownOpen } from './graph.ts';
 import type { Graph } from './graph.ts';
+import { firstStep, onPath, REPOSITORY, SHOWS_PREMAP } from './path.ts';
 import { accessible, preferredBranch, repositorySlug, urlError } from './repository.ts';
 import { isAsking } from './run.ts';
 import { createServer } from './server.ts';
 import type { AppState, Checked, Cursors, Engine, EventsFrame, Host, RunEvent } from './server.ts';
-import { complete, ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
+import { ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
 import type { Asked, EngineDraft, EngineWork, PathPage, PathResult, PremapFound, Snapshot, Symbols } from './snapshot.ts';
 import { readKept, STORAGE } from './storage.ts';
 import type { Kept, Place, Stage } from './storage.ts';
@@ -80,8 +81,9 @@ export function createModel(host: Host) {
     let kept = now.kept, ready = false;
     if (now.engineDraft === null) patch.engineDraft = { ...found.engine, api_key: '' };
     if (kept.runId !== (c?.run_id ?? '')) Object.assign(patch, dropRun());
+    const first = firstStep({ server: found });  // the first step of the plan, once the state has one
     if (c && kept.runId !== c.run_id) {  // what the browser kept belongs to another run
-      kept = { ...kept, analysisStage: kept.runId && kept.analysisStage !== 'repository' ? 'premap' : kept.analysisStage,
+      kept = { ...kept, analysisStage: kept.runId && kept.analysisStage !== REPOSITORY ? first ?? REPOSITORY : kept.analysisStage,
         runId: c.run_id, treeSearch: '', treeSelected: '', treeOpen: {}, graphSearch: '', graphRoot: '', graphOpen: [] };
     }
     if (!c && kept.runId) kept = { ...kept, runId: '' };
@@ -89,7 +91,7 @@ export function createModel(host: Host) {
       patch.selecting = false;
       if (c && found.job?.state === 'ready') {
         ready = true;
-        if (now.checked) kept = { ...kept, analysisStage: 'premap' };  // not while another address is being written
+        if (now.checked && first) kept = { ...kept, analysisStage: first };  // not while another address is being written
       }
     }
     if (linked || mappingChanged || now.pathPage?.run !== c?.run_id) patch.pathPage = null;
@@ -115,20 +117,20 @@ export function createModel(host: Host) {
     settle();
   }
 
-  const drawsGraph = () => now.kept.analysisStage !== 'repository' || now.kept.screen === 'graph';
+  const drawsGraph = () => now.kept.analysisStage !== REPOSITORY || now.kept.screen === 'graph';
 
   function loadViews() {  // what the stage on screen draws, read once a run
     const c = ctx(now);
     if (c && graphRun !== graphKey(c.run_id, now.kept) && drawsGraph()) loadGraph();
     if (viewingPaths(now) && !now.pathPage) loadPathPage();
-    if (c && premapRun !== c.run_id && ['premap', 'synthesis'].includes(now.kept.analysisStage)) loadPremap();
+    if (c && premapRun !== c.run_id && SHOWS_PREMAP.includes(now.kept.analysisStage)) loadPremap();
   }
 
-  // What the analysis can show: without a context the repository alone, and the synthesis once the pipeline is over.
+  // What the analysis can show: without a context the repository alone, and a step only while the plan has it.
   function settle() {
     if (!now.server || now.kept.screen !== 'analysis') return;
     const stage = now.kept.analysisStage;
-    const shown: Stage = !ctx(now) ? 'repository' : stage === 'synthesis' && !complete(now) ? 'analysis' : stage;
+    const shown: Stage = !ctx(now) || !onPath(now, stage) ? REPOSITORY : stage;
     if (shown !== stage) keep({ analysisStage: shown });
   }
 

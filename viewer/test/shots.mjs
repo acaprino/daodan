@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { mkdir, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import { errors, graph, groups, mode, opened, quiet } from './serve.mjs';
+import { errors, graph, groups, mode, opened, plan, quiet } from './serve.mjs';
 
 const shots = new URL('./shots/', import.meta.url);
 await rm(shots, { recursive: true, force: true });
@@ -37,17 +37,15 @@ const barOf = async where => {
 const WIDTHS = [340, 390, 620, 860, 1440], SHOT = [390, 620, 1440];
 const from = { screen: 'analysis', runId: 'demo', repositoryUrl: 'https://github.com/demo/shop' };
 const none = { context: null, job: { state: 'idle' } };
-// The events of a run: some phases over, each with its time, one that failed; those of one under way began just now.
-const PHASES = ['recognize_stack', 'find_modules', 'find_entry_points', 'link_calls', 'run_and_observe', 'assemble_graph'];
-const eventsOf = how => {
+// The plan of a run as the server gives it: some steps over, each with its time; the one under way began just now, or failed.
+const planOf = how => {
   const at = second => new Date(Date.now() - 300_000 + second * 1000).toISOString();
-  const over = how === 'done' ? 6 : 3;
-  const list = PHASES.slice(0, over).flatMap((step, n) => [{ kind: 'step.started', step, message: '', at: at(n * 40) }, { kind: 'step.finished', step, message: '', at: at(n * 40 + 31 + n) }]);
-  if (how === 'done') return list;
-  list[3] = { kind: 'step.failed', step: 'find_modules', message: 'x', data: { cause: 'modules.json illeggibile' }, at: at(52) };
-  list.push({ kind: 'step.started', step: 'link_calls', message: '', at: at(170) });
-  if (how === 'failed') list.push({ kind: 'step.failed', step: 'link_calls', message: 'memoria esaurita', at: at(260) });
-  return list;
+  return { ...plan, steps: plan.steps.map((step, n) => {
+    if (n < 5 || how === 'done') return { ...step, state: 'done', started_at: at(n * 40), ended_at: at(n * 40 + 31 + n) };
+    if (n > 5) return { ...step, state: 'pending' };
+    return how === 'failed' ? { ...step, state: 'failed', cause: 'memoria esaurita', started_at: at(170), ended_at: at(260) }
+      : { ...step, state: 'running', started_at: new Date().toISOString() };
+  }) };
 };
 const SCREENS = [
   ['analisi-1-vuoto', { ...from, repositoryUrl: '' }, '1. Repository', { serve: none }],
@@ -56,12 +54,12 @@ const SCREENS = [
   ['analisi-1-preparazione', from, '1. Repository', { serve: { context: null, job: { state: 'preparing', step: 'checkout', detail: 'demo/shop, main' } } }],
   ['analisi-1-errore', from, '1. Repository', { serve: { context: null, job: { state: 'failed', step: 'checkout', detail: 'il branch main non si scarica: rete assente' } } }],
   ['analisi-1-fatto', from, '1. Repository'],
-  ['analisi-2-premappa', { ...from, analysisStage: 'premap' }, '2. Pre-mappa'],
-  ['analisi-2-errore', { ...from, analysisStage: 'premap' }, '2. Pre-mappa', { premapStatus: 500 }],
-  ['analisi-3-in-corso', { ...from, analysisStage: 'analysis' }, '3. Analisi', { serve: { run: { pass: { state: 'running' }, progress: { step: 'link_calls', analyzer: 'pyright', done: 1, total: 4 } } }, events: 'running' }],
-  ['analisi-3-fallita', { ...from, analysisStage: 'analysis' }, '3. Analisi', { serve: { run: { pass: { state: 'failed', reason: 'memoria esaurita durante Analyze' } } }, events: 'failed' }],
-  ['analisi-3-fatta', { ...from, analysisStage: 'analysis' }, '3. Analisi', { events: 'done' }],
-  ['analisi-4-sintesi', { ...from, analysisStage: 'synthesis' }, '4. Sintesi e grafo'],
+  ['analisi-5-moduli', { ...from, analysisStage: 'find_modules' }, '5. Moduli'],
+  ['analisi-5-errore', { ...from, analysisStage: 'find_modules' }, '5. Moduli', { premapStatus: 500 }],
+  ['analisi-7-in-corso', { ...from, analysisStage: 'link_calls' }, '7. Chiamate', { serve: { run: { pass: { state: 'running' }, progress: { step: 'link_calls', analyzer: 'pyright', done: 1, total: 4 }, plan: planOf('running') } } }],
+  ['analisi-7-fallita', { ...from, analysisStage: 'link_calls' }, '7. Chiamate', { serve: { run: { pass: { state: 'failed', reason: 'memoria esaurita durante link_calls' }, plan: planOf('failed') } } }],
+  ['analisi-7-fatta', { ...from, analysisStage: 'link_calls' }, '7. Chiamate', { serve: { run: { pass: { state: 'fresh' }, plan: planOf('done') } } }],
+  ['analisi-9-grafo', { ...from, analysisStage: 'assemble_graph' }, '9. Grafo finale'],
   ['grafo', { ...from, screen: 'graph' }, 'Grafo del codice'],
   ['motore', { ...from, screen: 'engine' }, 'Motore e domande'],
 ];
@@ -118,11 +116,10 @@ try {
         Object.assign(mode, { premapStatus: now.premapStatus ?? 200, checkDelay: now.delay ?? 0 });
         await look(shown, name, async () => {
           await shown.goto('http://daodan.test/favicon.svg');  // where nothing writes what is kept
-          await shown.evaluate(left => localStorage.setItem('daodan-app-v2', JSON.stringify(left)), state);
+          await shown.evaluate(left => localStorage.setItem('daodan-app-v3', JSON.stringify(left)), state);
           await shown.goto('http://daodan.test/app/?token=test');
           await shown.getByRole('region', { name: title, exact: true }).waitFor();
         }, async () => {
-          if (now.events) await shown.evaluate(list => window.sendEvents(list), eventsOf(now.events));
           if (now.serve) await shown.evaluate(patch => window.setServerState(patch), now.serve);
           if (now.press) await shown.getByRole('button', { name: now.press, exact: true }).click();
           if (now.see) await shown.getByRole('combobox', { name: now.see }).waitFor();

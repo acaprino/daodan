@@ -4,6 +4,10 @@ import { readFile } from 'node:fs/promises';
 
 const assets = new URL('../../daodan/assets/', import.meta.url);
 export const envelope = JSON.parse(await readFile(new URL('./fixture.json', import.meta.url)));
+// The plan of the run, as the server gives it (`plan.json`, under way), and the same plan once every step is done.
+export const plan = JSON.parse(await readFile(new URL('./plan.json', import.meta.url)));
+export const planDone = { ...plan, steps: plan.steps.map(step => ({ ...step, state: 'done' })),
+  actions: plan.actions.map(action => ({ ...action, state: 'done', hosts: undefined, cause: undefined, remedy: undefined })) };
 // What the fixture lacks for the details: evidence as the server writes it, and lists longer than what is in sight at first.
 const parts = Array.from({ length: 9 }, (_, n) => `web/part${n}.tsx`);
 envelope.technologies = [{ id: 'react', name: 'React', type: 'framework', category: 'framework', mark: 'react', paths: ['web/checkout.tsx', ...parts] }];
@@ -122,7 +126,8 @@ export const stream = state => {
       const send = (name, frame) => this.dispatchEvent(new MessageEvent(name, { data: JSON.stringify(frame) }));
       const publish = frame => send('app', frame);
       window.setMapState = mapped => publish({ ...state, mapped });
-      window.setServerState = patch => publish({ ...state, ...patch });
+      // A run patched keeps the plan of the state, unless it brings its own.
+      window.setServerState = patch => publish({ ...state, ...patch, ...(patch.run && { run: { plan: state.run?.plan, ...patch.run } }) });
       window.failServer = error => send('failure', { error });
       window.sendEvents = events => send('update', { run_events: { run_id: 'demo', next_cursor: 0, events: [], pipeline: { next_cursor: 0, events } }, pulse: { next_cursor: 0 } });
       setTimeout(() => publish(state), 0);
@@ -130,7 +135,7 @@ export const stream = state => {
     close() {}
   };
 };
-export const fresh = { context: run, job: { state: 'ready' }, run: { pass: { state: 'fresh' } }, engine: { engine: 'claude', engines: ['claude'] }, links: { state: 'idle' } };
+export const fresh = { context: run, job: { state: 'ready' }, run: { pass: { state: 'fresh' }, plan: planDone }, engine: { engine: 'claude', engines: ['claude'] }, links: { state: 'idle' } };
 
 // The window of Tauri as the page finds it: it answers every call, and writes it down.
 const fakeWindow = () => {

@@ -13,10 +13,9 @@ import { Paths } from './paths-section.tsx';
 import { Gaps, PROVENANCE } from './provenance.tsx';
 import { gapLines } from './run.ts';
 import type { Context } from './server.ts';
-import { ctx } from './snapshot.ts';
+import { complete, ctx } from './snapshot.ts';
 import { iconOf } from './scene.ts';
 import { GraphFailed, MapNote } from './states.tsx';
-import { Step } from './step.tsx';
 import { model, useModel } from './use-model.ts';
 
 // What the graph counts, each with what it is of.
@@ -84,9 +83,11 @@ function Result({ context }: { context: Context }) {
   </>;
 }
 
-export function SynthesisScreen() {
-  const c = ctx(useModel());
-  return <Step stage="synthesis" line="Ecco che cosa dice il grafo di questo run." end={<ExplorerLink />}>
-    {c && <><MapNote /><Result context={c} /></>}
-  </Step>;
+// What the graph of this run says: under the step that assembles it, once the pipeline is over.
+export function SynthesisResult() {
+  const s = useModel();
+  const c = ctx(s);
+  if (!c) return null;
+  if (!complete(s)) return <Text as="p" variant="muted">Il quadro del grafo è pronto da leggere quando la pipeline è conclusa.</Text>;
+  return <><Cluster><ExplorerLink /></Cluster><MapNote /><Result context={c} /></>;
 }

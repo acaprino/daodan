@@ -1,7 +1,7 @@
-// The run: how far it is, its phases as a path, what is missing and why; the graph as it takes shape and what happened are behind.
-import { useEffect, useMemo, useState } from 'react';
-import { Badge, Button, Cluster, Column, Icon, Progress, Split, Text } from '@acaprino/sigrid/primitives';
-import { Note, Steps } from '@acaprino/sigrid/components';
+// The run's links and pass, under the step of the calls; the graph as it takes shape and what happened are behind.
+import { useMemo } from 'react';
+import { Badge, Button, Cluster, Column, Icon, Text } from '@acaprino/sigrid/primitives';
+import { Note } from '@acaprino/sigrid/components';
 import type { IconName } from '@acaprino/sigrid/primitives';
 import { Fold, LongFold } from '../src/listed.tsx';
 import { MORE, plural } from '../src/words.ts';
@@ -11,32 +11,11 @@ import { buildCounts } from './graph.ts';
 import { Preview } from './preview.tsx';
 import { short } from './repository.ts';
 import { ContextFold } from './repository-screen.tsx';
-import { linksNote, logItems, passAlert, phaseItems, runBar, runCount, runHelp, runPhaseLabel, statusLabel, steps } from './run.ts';
+import { linksNote, logItems, passAlert } from './run.ts';
 import type { LogItem } from './run.ts';
-import { ctx, pass } from './snapshot.ts';
+import { ctx } from './snapshot.ts';
 import { MapNote } from './states.tsx';
-import { Step } from './step.tsx';
 import { model, useModel } from './use-model.ts';
-
-// The time, every second while a phase runs.
-function useNow(running: boolean): number {
-  const [now, setNow] = useState(Date.now);
-  useEffect(() => {
-    if (!running) return undefined;
-    setNow(Date.now());
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, [running]);
-  return now;
-}
-
-// The phases, each with its time; the one that runs is the current one, wherever it is.
-function Pipeline() {
-  const s = useModel();
-  const running = steps(s).findIndex(step => step.status === 'running');
-  const now = useNow(running >= 0);
-  return <Column data-selectable=""><Steps aria-label="Passi della pipeline" steps={phaseItems(s, now)} current={running} /></Column>;
-}
 
 // Why the links cannot be looked for now is in the note's text.
 const WHY = 'links-why';
@@ -87,33 +66,26 @@ function Activity() {
   </Fold>;
 }
 
-export function RunScreen() {
+// The links between the modules and the pass that refines the graph of the calls, under the step of the calls: why the pass did not
+// go, with «Riprova» where it failed; the graph as it takes shape and what happened are behind.
+export function PassResult() {
   const s = useModel();
   const c = ctx(s), alert = passAlert(s);
-  return <Step stage="analysis" line="La pipeline legge il codice in sei fasi."
-    end={<Badge variant="secondary" tone={pass(s).state === 'failed' ? 'danger' : undefined}>{statusLabel(s)}</Badge>}>
-    {c && <>
-      <Column>
-        <Split><Text variant="strong">{runPhaseLabel(s)}</Text><Text variant="note">{runCount(s)}</Text></Split>
-        <Progress aria-label="Passi completati della pipeline" showValue {...runBar(s)} />
-        <Text as="p" variant="note" data-selectable="">{runHelp(s)}</Text>
-      </Column>
-      {alert && <Note tone={alert.tone} title={alert.title}
-        actions={alert.retry && <Button variant="outline" onClick={() => { model.retryPass(); }}><Icon name="refresh" />Riprova</Button>}>
-        <Text pre data-selectable="">{alert.message}</Text></Note>}
-      <Pipeline />
-      <MapNote />
-      <Links />
-      <Column gap="xs">
-        <Fold label="Grafo in costruzione" summary={buildCounts(s.graph)}>
-          <Column gap="md"><Preview /><Cluster><ExplorerLink /></Cluster></Column>
-        </Fold>
-        <Activity />
-        <ContextFold />
-        <Fold label="Come leggere l’avanzamento">
-          <Text as="p" variant="soft" data-selectable="">Avanzamento ed eventi sono quelli del run {c.run_id} sul commit {short(c.commit)}, sull’intero progetto. Il grafo cresce solo quando la pipeline scrive un artefatto.</Text>
-        </Fold>
-      </Column>
-    </>}
-  </Step>;
+  return c && <>
+    {alert && <Note tone={alert.tone} title={alert.title}
+      actions={alert.retry && <Button variant="outline" onClick={() => { model.retryPass(); }}><Icon name="refresh" />Riprova</Button>}>
+      <Text pre data-selectable="">{alert.message}</Text></Note>}
+    <MapNote />
+    <Links />
+    <Column gap="xs">
+      <Fold label="Grafo in costruzione" summary={buildCounts(s.graph)}>
+        <Column gap="md"><Preview /><Cluster><ExplorerLink /></Cluster></Column>
+      </Fold>
+      <Activity />
+      <ContextFold />
+      <Fold label="Come leggere l’avanzamento">
+        <Text as="p" variant="soft" data-selectable="">Avanzamento ed eventi sono quelli del run {c.run_id} sul commit {short(c.commit)}, sull’intero progetto. Il grafo cresce solo quando la pipeline scrive un artefatto.</Text>
+      </Fold>
+    </Column>
+  </>;
 }

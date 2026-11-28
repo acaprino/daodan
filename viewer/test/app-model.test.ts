@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import type { Notify } from '@acaprino/imago';
 import { createModel } from '../app/model.ts';
 import { ORPHAN_WRITES } from '../app/snapshot.ts';
@@ -57,7 +58,10 @@ function setup(routes: Record<string, (call: Call) => unknown> = {}, kept?: unkn
 }
 
 const context = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'r1' };
-const ready = { context, job: { state: 'ready' }, run: { pass: { state: 'fresh' } }, engine: { engine: 'claude', engines: ['claude'] }, links: { state: 'idle' } };
+// The plan of a run that is over, in the server's form: its steps are the path.
+const PLAN = JSON.parse(readFileSync(new URL('./plan.json', import.meta.url), 'utf8'));
+const DONE = { ...PLAN, steps: PLAN.steps.map((step: object) => ({ ...step, state: 'done' })) };
+const ready = { context, job: { state: 'ready' }, run: { pass: { state: 'fresh' }, plan: DONE }, engine: { engine: 'claude', engines: ['claude'] }, links: { state: 'idle' } };
 const none = { context: null, job: { state: 'idle' }, engine: { engine: null, engines: ['claude'] } };
 const node = (id: string, more = {}) => ({ id, name: id, kind: 'directory', files: [`${id}/a.ts`], location: 'internal', group: null, ...more });
 const graph = (more = {}) => ({
@@ -132,7 +136,7 @@ test('a stream that ended opens again at once; one that said nothing, or a failu
 test('what was kept is read in the shape it has, and what does not fit is the default', () => {
   const read = (value: string | null) => readKept(() => ({ getItem: () => value, setItem() {} }));
   assert.deepEqual(read(null), { kept: DEFAULTS, available: true });
-  const kept = { screen: 'graph', analysisStage: 'premap', repositoryUrl: 'https://github.com/demo/shop', runId: 'r1',
+  const kept = { screen: 'graph', analysisStage: 'find_modules', repositoryUrl: 'https://github.com/demo/shop', runId: 'r1',
     treeOpen: { 'directory:src': true }, graphOpen: ['a'], graphDepth: '2' };
   assert.deepEqual(read(JSON.stringify(kept)), { kept: { ...DEFAULTS, ...kept }, available: true });
   assert.deepEqual(read(JSON.stringify({ screen: 'altro', analysisStage: 7, graphOpen: [1] })), { kept: DEFAULTS, available: true });
@@ -205,7 +209,7 @@ test('a refused answer is said and the group waits; one put aside is offered aga
 
 test('a run in view again, after none or chosen anew, is read again', async () => {
   const { model, sources, now, asked } = setup({ '/api/app/premap': () => premap, '/api/app/graph': () => graph() },
-    { ...DEFAULTS, analysisStage: 'premap', runId: 'r1' });
+    { ...DEFAULTS, analysisStage: 'find_modules', runId: 'r1' });
   const times = () => [asked('/api/app/premap').length, asked('/api/app/graph').length];
   model.start();
   sources[0].send('app', ready);
@@ -214,7 +218,7 @@ test('a run in view again, after none or chosen anew, is read again', async () =
   sources[0].send('app', none);
   assert.deepEqual([now().premap, now().graph], [null, null]);  // the count of the groups goes with its repository
   sources[0].send('app', ready);
-  model.selectStage('premap');
+  model.selectStage('find_modules');
   await turn();
   assert.deepEqual([times(), now().premap !== null, now().graph !== null], [[2, 2], true, true]);
 });
@@ -223,7 +227,7 @@ test('an answer for a run no longer in view changes nothing of the one that is',
   const graphs: ((found: unknown) => void)[] = [], premaps: ((found: unknown) => void)[] = [];
   const { model, sources, now } = setup({
     '/api/app/graph': () => new Promise(resolve => { graphs.push(resolve); }), '/api/app/premap': () => new Promise(resolve => { premaps.push(resolve); }),
-  }, { ...DEFAULTS, analysisStage: 'premap', runId: 'r1' });
+  }, { ...DEFAULTS, analysisStage: 'find_modules', runId: 'r1' });
   model.start();
   sources[0].send('app', ready);
   sources[0].send('app', { ...ready, context: { ...context, run_id: 'r2' } });
@@ -245,21 +249,24 @@ test('an answer for a run no longer in view changes nothing of the one that is',
 });
 
 test('what was kept of another run is dropped; without a context the analysis is the repository alone', () => {
-  const { model, sources, now } = setup({}, { ...DEFAULTS, analysisStage: 'synthesis', runId: 'r0', treeSearch: 'x', graphOpen: ['a'], graphRoot: 'a' });
+  const { model, sources, now } = setup({}, { ...DEFAULTS, analysisStage: 'assemble_graph', runId: 'r0', treeSearch: 'x', graphOpen: ['a'], graphRoot: 'a' });
   model.start();
   sources[0].send('app', ready);
   const { analysisStage, runId, treeSearch, graphOpen, graphRoot } = now().kept;
-  assert.deepEqual([analysisStage, runId, treeSearch, graphOpen, graphRoot], ['premap', 'r1', '', [], '']);
+  assert.deepEqual([analysisStage, runId, treeSearch, graphOpen, graphRoot], ['list_files', 'r1', '', [], '']);  // the first step of the plan
   sources[0].send('app', none);
   assert.deepEqual([now().kept.analysisStage, now().kept.runId], ['repository', '']);
 });
 
-test('the synthesis waits for the end of the pipeline', () => {
-  const { model, sources, now } = setup({}, { ...DEFAULTS, analysisStage: 'synthesis', runId: 'r1' });
+test('a step the plan does not have is no place: the analysis goes back to the repository', () => {
+  const { model, sources, now } = setup({}, { ...DEFAULTS, analysisStage: 'run_and_observe', runId: 'r1' });
   model.start();
-  assert.equal(now().kept.analysisStage, 'synthesis');  // nothing is known yet
-  sources[0].send('app', { ...ready, run: { pass: { state: 'running' } } });
-  assert.equal(now().kept.analysisStage, 'analysis');
+  assert.equal(now().kept.analysisStage, 'run_and_observe');  // nothing is known yet
+  sources[0].send('app', { ...ready, run: { pass: { state: 'running' }, plan: { ...DONE, steps: DONE.steps.slice(0, 7) } } });
+  assert.equal(now().kept.analysisStage, 'repository');
+  model.selectStage('assemble_graph');
+  sources[0].send('app', { ...ready, run: { pass: { state: 'running' }, plan: PLAN } });
+  assert.equal(now().kept.analysisStage, 'assemble_graph');  // a step not over is a place all the same
 });
 
 test('an address that is not a GitHub repository is refused in words, with no request', async () => {
@@ -335,7 +342,7 @@ test('a branch chosen is prepared, and the pre-map opens when its context is rea
   sources[0].send('app', preparing);
   assert.equal(now().kept.analysisStage, 'repository');
   sources[0].send('app', ready);
-  assert.deepEqual([now().selecting, now().kept.analysisStage], [false, 'premap']);
+  assert.deepEqual([now().selecting, now().kept.analysisStage], [false, 'list_files']);
   assert.equal(said().at(-1), 'Contesto pronto: demo/shop · main');
 });
 
@@ -356,13 +363,13 @@ test('the process goes on by itself only where nothing is being written', async 
 });
 
 test('the engine leads back to the step that asked for it, and to none from its tab', () => {
-  const { model, sources, now } = setup({}, { ...DEFAULTS, analysisStage: 'analysis', runId: 'r1' });
+  const { model, sources, now } = setup({}, { ...DEFAULTS, analysisStage: 'link_calls', runId: 'r1' });
   model.start();
   sources[0].send('app', ready);
   model.chooseEngine();
   assert.deepEqual([now().kept.screen, now().engineFromStep], ['engine', true]);
   model.navigate('analysis');
-  assert.deepEqual([now().kept.screen, now().kept.analysisStage, now().engineFromStep], ['analysis', 'analysis', false]);
+  assert.deepEqual([now().kept.screen, now().kept.analysisStage, now().engineFromStep], ['analysis', 'link_calls', false]);
   model.navigate('engine');
   assert.equal(now().engineFromStep, false);
 });
@@ -392,7 +399,7 @@ test('a choice is asked once, and a frame that comes before its answer is of wha
   assert.deepEqual([now().selecting, asked('/api/app/select').length], [true, 2]);
   sources[0].send('app', ready);  // the same run, prepared again
   await turn();
-  assert.deepEqual([now().selecting, now().kept.analysisStage, asked('/api/app/premap').length], [false, 'premap', 1]);
+  assert.deepEqual([now().selecting, now().kept.analysisStage, asked('/api/app/premap').length], [false, 'list_files', 0]);
 });
 
 test('a busy server is asked again once by each reader, and said once', async t => {
@@ -400,7 +407,7 @@ test('a busy server is asked again once by each reader, and said once', async t 
   let free = false;
   const { model, notices, sources, now, asked, said } = setup({
     '/api/app/premap': () => (free ? premap : fails(503)), '/api/app/graph': () => (free ? graph() : fails(503)),
-  }, { ...DEFAULTS, analysisStage: 'premap', runId: 'r1' });
+  }, { ...DEFAULTS, analysisStage: 'find_modules', runId: 'r1' });
   const times = () => [asked('/api/app/premap').length, asked('/api/app/graph').length];
   model.start();
   sources[0].send('app', ready);
@@ -429,7 +436,7 @@ test('the pre-map is read once a run; a busy server is asked again, and a failur
   t.mock.timers.enable({ apis: ['setTimeout'] });
   let answer: unknown = fails(503);
   const { model, sources, now, asked, said } = setup({ '/api/app/premap': () => answer, '/api/app/graph': () => graph() },
-    { ...DEFAULTS, analysisStage: 'premap', runId: 'r1' });
+    { ...DEFAULTS, analysisStage: 'find_modules', runId: 'r1' });
   model.start();
   sources[0].send('app', ready);
   await turn();
@@ -465,7 +472,7 @@ test('the graph is asked with the groups open on its own screen, and a group the
   await turn();
   assert.deepEqual(notices.at(-1), { text: 'Il gruppo «gone» non si può più aprire nel grafo di questo run.', kind: 'error' });
   assert.deepEqual([now().kept.graphOpen, openAsked()], [['a'], '["a"]']);
-  model.selectStage('analysis');  // elsewhere the first grouping alone
+  model.selectStage('link_calls');  // elsewhere the first grouping alone
   await turn();
   assert.deepEqual([openAsked(), now().graph!.open], [null, []]);
   model.navigate('graph');
@@ -527,7 +534,7 @@ test('the graph screen is to show the details of the group the person came for, 
   model.navigate('engine');  // anywhere else it is void
   assert.equal(wanted(), false);
   model.showNode('b');
-  model.selectStage('analysis');
+  model.selectStage('link_calls');
   assert.equal(wanted(), false);
   assert.equal(setup({}, { ...DEFAULTS, screen: 'graph' }).now().groupWanted, true);  // the page opens there
 });
@@ -577,7 +584,7 @@ test('the paths are read page by page, and a page left while it was read is ther
     const offset = Number(call.query.get('offset'));
     return call.query.get('id') ? { card: { card_id: 'c' }, steps: [{ n: 1 }], offset, count: 1, next_offset: null }
       : { cards: [{ card_id: 'c' }], offset, count: 2, next_offset: offset ? null : 1 };
-  } }, { ...DEFAULTS, analysisStage: 'synthesis', runId: 'r1' });
+  } }, { ...DEFAULTS, analysisStage: 'assemble_graph', runId: 'r1' });
   const page = () => now().pathPage!;
   model.start();
   sources[0].send('app', ready);

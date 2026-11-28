@@ -8,8 +8,7 @@ import { useMedia } from '@acaprino/sigrid';
 import { Button, Cell, Column, Heading, Icon, Spacer, Split, Text } from '@acaprino/sigrid/primitives';
 import { useFrame } from './frame.tsx';
 import { repositorySlug } from './repository.ts';
-import { footOf, STAGE_LABEL } from './stages.ts';
-import { STAGES } from './storage.ts';
+import { footOf, pathRows, REPOSITORY } from './path.ts';
 import type { Stage } from './storage.ts';
 import { model, useModel } from './use-model.ts';
 
@@ -32,7 +31,9 @@ export function useGoOn(): () => void {
   };
 }
 
+// Its number and title are its place on the path and its words there.
 export function Step({ stage, line, end, children }: { stage: Stage; line: ReactNode; end?: ReactNode; children: ReactNode }) {
+  const rows = pathRows(useModel()), at = rows.findIndex(row => row.id === stage);
   const goOn = useGoOn();
   const enter = (event: KeyboardEvent) => {
     if (event.key !== 'Enter' || event.repeat) return;
@@ -41,7 +42,7 @@ export function Step({ stage, line, end, children }: { stage: Stage; line: React
   };
   return <Column as="section" aria-labelledby={TITLE} pad="lg" gap="lg" width="page">
     <Column gap="xs">
-      <Split><Heading id={TITLE} tabIndex={-1} onKeyDown={enter}>{STAGES.indexOf(stage) + 1}. {STAGE_LABEL[stage]}</Heading>{end}</Split>
+      <Split><Heading id={TITLE} tabIndex={-1} onKeyDown={enter}>{at + 1}. {rows[at]?.label ?? stage}</Heading>{end}</Split>
       <Text as="p" variant="soft">{line}</Text>
     </Column>
     {children}
@@ -57,7 +58,7 @@ export function StepFoot() {
   const goOn = useGoOn();
   useFocusKept(narrow);
   const { back, label, off, busy, note } = footOf(s);
-  const asks = s.kept.analysisStage === 'repository';
+  const asks = s.kept.analysisStage === REPOSITORY;
   const said = <Text id={why} variant="note">{note}</Text>;
   const backward = <Button variant="outline" disabled={back === null} onClick={() => { if (back) model.selectStage(back); }}><Icon name="back" />Indietro</Button>;
   const forward = <Button type={asks ? 'submit' : 'button'} form={asks ? STEP_FORM : undefined} onClick={asks ? undefined : goOn}

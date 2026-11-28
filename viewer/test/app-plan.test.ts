@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { actionsOf, currentAction, duration, planCount, planGaps, planPercent, planSteps, policyFacts, statusOf, stepWords } from '../app/plan.ts';
+import { actionsOf, currentAction, duration, planCount, planGaps, planPercent, planSteps, policyFacts, statusOf, wordsOf } from '../app/plan.ts';
 import type { Plan } from '../app/server.ts';
 import type { Snapshot } from '../app/snapshot.ts';
 
@@ -26,7 +26,7 @@ test('the steps are those of the plan, in its order, with the words of the page 
   assert.deepEqual(planSteps(of(seven)).map(row => row.id), seven.steps.map(step => step.id));
   assert.equal(planCount(of(seven)), '5 di 7 passi completati');
   // A step the page has no words for is named by its id; no plan, no steps.
-  assert.deepEqual(stepWords('publish'), { title: 'publish', what: '' });
+  assert.deepEqual(wordsOf('publish'), { title: 'publish', what: '' });
   assert.deepEqual(planSteps(of(null)), []);
 });
 

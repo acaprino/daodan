@@ -15,7 +15,7 @@ const WORDS = new Map(STEPS.plan.flatMap(step => (step.id ? [[step.id, step] as 
 
 export const planOf = (s: Run): Plan | null => s.server?.run?.plan ?? null;
 // The title of a step and what it does; a step the page of the pipeline has no words for is named by its id.
-export const stepWords = (id: string) => ({ title: WORDS.get(id)?.title ?? id, what: WORDS.get(id)?.what ?? '' });
+export const wordsOf = (id: string) => ({ title: WORDS.get(id)?.title ?? id, what: WORDS.get(id)?.what ?? '' });
 
 // How `Steps` draws a step: it has no `pending` and no `failed`.
 export type PathStatus = 'done' | 'running' | 'todo' | 'skipped' | 'error';
@@ -37,7 +37,7 @@ export type StepRow = { id: string; label: string; what: string; status: PathSta
 export function planSteps(s: Run, now = Date.now()): StepRow[] {
   const progress = s.server?.run?.progress;
   return (planOf(s)?.steps ?? []).map((step): StepRow => {
-    const { title, what } = stepWords(step.id);
+    const { title, what } = wordsOf(step.id);
     const far = step.state === 'running' && progress?.step === step.id && progress.total ? ` · ${progress.done}/${progress.total}` : '';
     const why = step.state === 'failed' ? cause(step) : '';
     return { id: step.id, label: title, what, status: STATUS[step.state] ?? 'todo', note: [SAID[step.state] + far, why].filter(Boolean).join(' · '),
@@ -64,7 +64,7 @@ const ACTION_STATE: Record<PlanAction['state'], [string, BadgeTone | undefined]>
 const NETWORK: Record<string, string> = { registries: 'registri dei pacchetti' };
 
 export type ActionRow = {
-  id: string; title: string; detail: string; state: string; tone?: BadgeTone; facts: string[]; note: string; hosts: string[];
+  id: string; step: string; title: string; detail: string; state: string; tone?: BadgeTone; facts: string[]; note: string; hosts: string[];
   waiting: boolean;  // it waits for the person's answer on its hosts, in the window of the hosts
 };
 // An action in words: what it does, the tool or the adapter, its state, the three facts of where it runs, and why it cannot.
@@ -76,7 +76,7 @@ export function actionRow(action: PlanAction): ActionRow {
     : action.target.technologies !== undefined ? plural(action.target.technologies, 'tecnologia', 'tecnologie') : '';
   const waiting = action.state === 'awaiting_approval';
   return {
-    id: action.id, title: KIND[action.kind]?.(action) ?? action.id, detail: [tools && `Strumento: ${tools}`, files].filter(Boolean).join(' · '),
+    id: action.id, step: action.step, title: KIND[action.kind]?.(action) ?? action.id, detail: [tools && `Strumento: ${tools}`, files].filter(Boolean).join(' · '),
     state, tone, waiting, hosts: action.hosts ?? [],
     facts: [
       action.project_code ? 'Esegue il codice del progetto' : 'Non esegue il codice del progetto',
@@ -102,7 +102,7 @@ export function currentAction(s: Run): { action: ActionRow; done: number; total:
 export function planGaps(s: Run & Pick<Snapshot, 'graph'>): string[] {
   const plan = planOf(s), lines: string[] = [];
   for (const gap of plan?.gaps ?? []) lines.push(gap.detail);
-  for (const step of plan?.steps ?? []) if (step.state === 'failed') lines.push(`${stepWords(step.id).title}: ${cause(step) || 'non riuscita'}`);
+  for (const step of plan?.steps ?? []) if (step.state === 'failed') lines.push(`${wordsOf(step.id).title}: ${cause(step) || 'non riuscita'}`);
   for (const action of plan?.actions ?? []) {
     if (action.state === 'failed' || action.state === 'not_possible') lines.push(`${actionRow(action).title}: ${cause(action) || actionRow(action).state}`);
   }

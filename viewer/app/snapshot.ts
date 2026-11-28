@@ -1,4 +1,4 @@
-// What the page draws from: one object, a new one at each change. `repository.ts`, `stages.ts`, `run.ts` and `graph.ts` read it.
+// What the page draws from: one object, a new one at each change. `repository.ts`, `plan.ts`, `path.ts`, `run.ts` and `graph.ts` read it.
 import type { Reply } from './egress.ts';
 import type { Graph } from './graph.ts';
 import type { AppState, Checked, Context, Engine, Pass, RunEvent } from './server.ts';
@@ -70,4 +70,4 @@ export const slug = (c: Context | null) => (c ? `${c.repository.owner}/${c.repos
 export const pass = (s: Run): Pass => s.server?.run?.pass ?? {};
 export const complete = (s: Run) => ctx(s) !== null && FINAL.includes(pass(s).state);  // the pipeline is over, well or not
 export const viewingPaths = (s: Pick<Snapshot, 'kept' | 'server'>) =>
-  s.kept.screen === 'analysis' && s.kept.analysisStage === 'synthesis' && complete(s);
+  s.kept.screen === 'analysis' && s.kept.analysisStage === 'assemble_graph' && complete(s);
