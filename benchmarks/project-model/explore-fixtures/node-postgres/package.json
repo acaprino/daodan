@@ -1,0 +1,1 @@
+{"name": "shelf", "private": true, "scripts": {"start": "node server.js", "test": "node --test"}, "dependencies": {"pg": "8.13.1"}}
