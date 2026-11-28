@@ -452,6 +452,16 @@
    "by": "catalog"
   },
   {
+   "id": "avalonia",
+   "name": "Avalonia",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://avaloniaui.net",
+   "surface": "desktop",
+   "by": "catalog"
+  },
+  {
    "id": "avro",
    "site": "https://avro.apache.org/",
    "cncf": "Avro",
@@ -1331,6 +1341,7 @@
   {
    "id": "capacitorjs",
    "category": "framework",
+   "surface": "android",
    "by": "catalog"
   },
   {
@@ -1956,6 +1967,7 @@
    "category": "framework",
    "type": "dispositivo",
    "site": "https://dotnet.microsoft.com/apps/maui",
+   "surface": "android",
    "by": "catalog"
   },
   {
@@ -2038,6 +2050,7 @@
   {
    "id": "electron",
    "category": "framework",
+   "surface": "webview",
    "by": "catalog"
   },
   {
@@ -2190,6 +2203,7 @@
   {
    "id": "expojs",
    "category": "framework",
+   "surface": "android",
    "by": "catalog",
    "name": "Expo"
   },
@@ -2367,6 +2381,16 @@
    "by": "model"
   },
   {
+   "id": "flet",
+   "name": "Flet",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://flet.dev",
+   "surface": "desktop",
+   "by": "catalog"
+  },
+  {
    "id": "fluentd",
    "category": "service",
    "by": "catalog",
@@ -2389,6 +2413,7 @@
    "category": "framework",
    "type": "schermata",
    "site": "https://flutter.dev",
+   "surface": "android",
    "by": "catalog"
   },
   {
@@ -3017,6 +3042,16 @@
    "type": "gateway"
   },
   {
+   "id": "gtk",
+   "name": "GTK",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://www.gtk.org",
+   "surface": "desktop",
+   "by": "catalog"
+  },
+  {
    "id": "gunicorn",
    "category": "tool",
    "by": "catalog"
@@ -3389,6 +3424,16 @@
    "by": "catalog"
   },
   {
+   "id": "javafx",
+   "name": "JavaFX",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://openjfx.io",
+   "surface": "desktop",
+   "by": "catalog"
+  },
+  {
    "id": "jekyll",
    "category": "framework",
    "by": "catalog"
@@ -3620,6 +3665,16 @@
    "kind": "project",
    "type": "altro",
    "category": "library"
+  },
+  {
+   "id": "kivy",
+   "name": "Kivy",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://kivy.org",
+   "surface": "desktop",
+   "by": "catalog"
   },
   {
    "id": "knex",
@@ -5196,6 +5251,26 @@
    "by": "model"
   },
   {
+   "id": "pyqt",
+   "name": "PyQt",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://www.riverbankcomputing.com/software/pyqt/",
+   "surface": "desktop",
+   "by": "catalog"
+  },
+  {
+   "id": "pyside",
+   "name": "PySide",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://doc.qt.io/qtforpython-6/",
+   "surface": "desktop",
+   "by": "catalog"
+  },
+  {
    "id": "pytest",
    "category": "tool",
    "by": "catalog"
@@ -5449,6 +5524,7 @@
    "category": "framework",
    "type": "dispositivo",
    "site": "https://reactnative.dev",
+   "surface": "android",
    "by": "catalog"
   },
   {
@@ -6642,6 +6718,7 @@
   {
    "id": "tauri",
    "category": "framework",
+   "surface": "webview",
    "by": "catalog"
   },
   {
@@ -6768,6 +6845,16 @@
    "id": "tiptap",
    "by": "model",
    "type": "schermata"
+  },
+  {
+   "id": "tkinter",
+   "name": "Tkinter",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://docs.python.org/3/library/tkinter.html",
+   "surface": "desktop",
+   "by": "catalog"
   },
   {
    "id": "tmdb",
@@ -6958,6 +7045,16 @@
    "id": "umijs",
    "by": "model",
    "type": "schermata"
+  },
+  {
+   "id": "uno-platform",
+   "name": "Uno Platform",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://platform.uno",
+   "surface": "desktop",
+   "by": "catalog"
   },
   {
    "id": "unocss",
@@ -7154,6 +7251,16 @@
    "type": "servizio o API"
   },
   {
+   "id": "wails",
+   "name": "Wails",
+   "kind": "project",
+   "category": "framework",
+   "type": "dispositivo",
+   "site": "https://wails.io",
+   "surface": "webview",
+   "by": "catalog"
+  },
+  {
    "id": "wakatime",
    "name": "WakaTime",
    "kind": "service",
@@ -7255,6 +7362,21 @@
    "site": "https://crates.io/crates/windows-sys"
   },
   {
+   "id": "winforms",
+   "name": "Windows Forms",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://learn.microsoft.com/dotnet/desktop/winforms/",
+   "surface": "windows",
+   "by": "catalog"
+  },
+  {
+   "id": "winui",
+   "surface": "windows",
+   "by": "catalog"
+  },
+  {
    "id": "winui",
    "by": "model",
    "type": "schermata"
@@ -7275,6 +7397,16 @@
    "category": "library",
    "type": "altro",
    "site": "https://crates.io/crates/wiremock"
+  },
+  {
+   "id": "wpf",
+   "name": "WPF",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://learn.microsoft.com/dotnet/desktop/wpf/",
+   "surface": "windows",
+   "by": "catalog"
   },
   {
    "id": "xendit",

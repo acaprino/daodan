@@ -2594,6 +2594,20 @@
    "support": "full"
   },
   {
+   "id": "avalonia",
+   "name": "Avalonia",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://avaloniaui.net",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "desktop",
+   "support": "none"
+  },
+  {
    "id": "avap",
    "name": "AVAP",
    "kind": "project",
@@ -4936,6 +4950,7 @@
     "stack-analyser"
    ],
    "category": "framework",
+   "surface": "android",
    "support": "partial"
   },
   {
@@ -8692,6 +8707,7 @@
     "stack-analyser"
    ],
    "category": "framework",
+   "surface": "android",
    "support": "partial"
   },
   {
@@ -9201,6 +9217,7 @@
     "stack-analyser"
    ],
    "category": "framework",
+   "surface": "webview",
    "support": "partial"
   },
   {
@@ -9709,6 +9726,7 @@
     "stack-analyser"
    ],
    "category": "framework",
+   "surface": "android",
    "support": "partial"
   },
   {
@@ -10343,6 +10361,20 @@
    "support": "none"
   },
   {
+   "id": "flet",
+   "name": "Flet",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://flet.dev",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "desktop",
+   "support": "none"
+  },
+  {
    "id": "flink",
    "name": "Flink",
    "kind": "project",
@@ -10469,6 +10501,7 @@
     "stack-analyser"
    ],
    "category": "framework",
+   "surface": "android",
    "support": "partial"
   },
   {
@@ -12633,6 +12666,21 @@
    "support": "none"
   },
   {
+   "id": "gtk",
+   "name": "GTK",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://www.gtk.org",
+   "mark": "marks/gtk.svg",
+   "from": [
+    "additions",
+    "simple-icons"
+   ],
+   "category": "framework",
+   "surface": "desktop",
+   "support": "none"
+  },
+  {
    "id": "guance-cloud",
    "name": "Guance Cloud",
    "kind": "project",
@@ -14476,6 +14524,20 @@
    "support": "full"
   },
   {
+   "id": "javafx",
+   "name": "JavaFX",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://openjfx.io",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "desktop",
+   "support": "none"
+  },
+  {
    "id": "javascript",
    "name": "JavaScript",
    "kind": "project",
@@ -15520,6 +15582,20 @@
    "from": [
     "cncf-landscape"
    ],
+   "support": "none"
+  },
+  {
+   "id": "kivy",
+   "name": "Kivy",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://kivy.org",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "desktop",
    "support": "none"
   },
   {
@@ -24373,6 +24449,34 @@
    "support": "none"
   },
   {
+   "id": "pyqt",
+   "name": "PyQt",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://www.riverbankcomputing.com/software/pyqt/",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "desktop",
+   "support": "none"
+  },
+  {
+   "id": "pyside",
+   "name": "PySide",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://doc.qt.io/qtforpython-6/",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "desktop",
+   "support": "none"
+  },
+  {
    "id": "pytest",
    "name": "pytest",
    "kind": "project",
@@ -25175,6 +25279,7 @@
     "stack-analyser"
    ],
    "category": "framework",
+   "surface": "android",
    "support": "partial"
   },
   {
@@ -29820,6 +29925,7 @@
     "stack-analyser"
    ],
    "category": "framework",
+   "surface": "webview",
    "support": "partial"
   },
   {
@@ -30587,6 +30693,20 @@
    "support": "partial"
   },
   {
+   "id": "tkinter",
+   "name": "Tkinter",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://docs.python.org/3/library/tkinter.html",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "desktop",
+   "support": "none"
+  },
+  {
    "id": "tmdb",
    "name": "TMDb",
    "kind": "service",
@@ -31305,6 +31425,20 @@
    "from": [
     "cncf-landscape"
    ],
+   "support": "none"
+  },
+  {
+   "id": "uno-platform",
+   "name": "Uno Platform",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://platform.uno",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "desktop",
    "support": "none"
   },
   {
@@ -32464,6 +32598,21 @@
    "support": "none"
   },
   {
+   "id": "wails",
+   "name": "Wails",
+   "kind": "project",
+   "type": "dispositivo",
+   "site": "https://wails.io",
+   "mark": "marks/wails.svg",
+   "from": [
+    "additions",
+    "simple-icons"
+   ],
+   "category": "framework",
+   "surface": "webview",
+   "support": "none"
+  },
+  {
    "id": "wakatime",
    "name": "WakaTime",
    "kind": "service",
@@ -33057,6 +33206,20 @@
    "support": "partial"
   },
   {
+   "id": "winforms",
+   "name": "Windows Forms",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://learn.microsoft.com/dotnet/desktop/winforms/",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "windows",
+   "support": "none"
+  },
+  {
    "id": "winterjs",
    "name": "WinterJS",
    "kind": "project",
@@ -33080,6 +33243,7 @@
     "stack-analyser"
    ],
    "category": "framework",
+   "surface": "windows",
    "support": "partial"
   },
   {
@@ -33237,6 +33401,20 @@
    ],
    "category": "service",
    "support": "full"
+  },
+  {
+   "id": "wpf",
+   "name": "WPF",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://learn.microsoft.com/dotnet/desktop/wpf/",
+   "mark": null,
+   "from": [
+    "additions"
+   ],
+   "category": "framework",
+   "surface": "windows",
+   "support": "none"
   },
   {
    "id": "wso2-api-microgateway",

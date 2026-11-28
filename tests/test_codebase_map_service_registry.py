@@ -84,6 +84,18 @@ class DistributedRegistryTests(unittest.TestCase):
             for ident in idents:
                 self.assertEqual((ident, self.entries[ident].get("category")), (ident, category))
 
+    def test_a_surface_is_on_the_frameworks_that_decide_it_and_on_no_other(self):
+        """`webview`, `desktop`, `android` and `windows` on the frameworks and toolkits that decide the surface; a web
+        framework has none, its app is `web` by default."""
+        for surface, idents in (("webview", ("electron", "tauri", "wails")), ("desktop", ("pyqt", "tkinter", "gtk")),
+                                ("android", ("react-native", "expojs", "flutter", "capacitorjs", "dotnet-maui")),
+                                ("windows", ("winforms", "wpf", "winui"))):
+            for ident in idents:
+                self.assertEqual((ident, self.entries[ident].get("surface")), (ident, surface))
+        for ident in ("react", "vue", "nextjs", "django", "express", "react-native-elements"):
+            self.assertNotIn("surface", self.entries[ident], ident)
+        self.assertLessEqual({e["category"] for e in self.entries.values() if "surface" in e}, {"framework", "library"})
+
     def test_a_renamed_rule_leaves_no_entry_under_its_old_id_and_its_curated_data_moves_with_it(self):
         """The fork's renames (`react-email`, `kafka`, `vault`): the old id is no entry, the new one has what was curated."""
         self.assertEqual({"react-email", "kafka", "vault"} & self.entries.keys(), set())
@@ -146,6 +158,13 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.problems(lambda e: e[0].pop("hosts")), [])
         self.assertIn("kind", " ".join(self.problems(lambda e: e[0].update(kind="vendor"))))
 
+    def test_a_surface_is_one_of_the_surfaces(self):
+        for surface in registry_build.SURFACES:
+            self.assertEqual(self.problems(lambda e: e[0].update(surface=surface)), [])
+        for surface in ("ios", "", None):
+            self.assertEqual(self.problems(lambda e: e[0].update(surface=surface)),
+                             [f"e0: surface is one of {', '.join(registry_build.SURFACES)}"])
+
     def test_a_sign_is_refused_in_an_entry_and_in_the_additions(self):
         """The rules are the fork's: the registry names, it does not recognize."""
         self.assertIn("e0: no signs", " ".join(self.problems(lambda e: e[0].update(signs={"packages": {"npm": ["stripe"]}}))))
@@ -188,6 +207,11 @@ class BuildTests(unittest.TestCase):
     def test_the_curated_category_is_kept_and_the_table_decides_only_where_there_is_none(self):
         entries = {e["id"]: e for e in self.build([{"id": "widget", "category": "library", "by": "catalog"}])["entries"]}
         self.assertEqual((entries["widget"]["category"], entries["kernel"]["category"]), ("library", "framework"))
+
+    def test_the_curated_surface_is_kept_and_an_entry_without_one_has_none(self):
+        """No surface is derived: only a record that gives one makes it the entry's (`web` is the default of an app)."""
+        entries = {e["id"]: e for e in self.build([{"id": "kernel", "surface": "webview", "by": "catalog"}])["entries"]}
+        self.assertEqual((entries["kernel"]["surface"], "surface" in entries["widget"]), ("webview", False))
 
     def test_an_entry_the_fork_has_no_rule_for_stays_as_a_name(self):
         record = {"id": "legacy", "name": "Legacy", "kind": "project", "type": "altro", "site": "https://legacy.test",
