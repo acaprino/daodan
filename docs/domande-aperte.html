@@ -64,7 +64,7 @@ code{font-size:.9em;overflow-wrap:anywhere}
 
 <h2>Esecuzione e rete (T3.B, T0.C)</h2>
 <ol>
-<li><b>Il grado <code>sampled</code>.</b> Lo scrittore è uscito, i lettori lo leggono ancora per i dati vecchi. Toglierlo ovunque?<span class="r">sì, meno codice.</span></li>
+<li><b>Il grado <code>sampled</code>.</b> Lo scrittore è uscito, i lettori lo leggono ancora per i dati vecchi. Toglierlo ovunque?<span class="r">sì, meno codice.</span> <b>Deciso: si toglie ovunque</b> (T3.B.26).</li>
 <li><b>Precedenza dei comandi.</b> Utente, poi assistente, poi CI. Un comando proposto dall'assistente gira prima di quello della CI senza conferma?<span class="r">no: il proposto gira solo dopo «Conferma».</span></li>
 <li><b>Comandi di JVM e .NET dalla CI (T3.B.6).</b> Un passo di CI diventa un comando solo se lancia un runner che un osservatore conosce; JVM e .NET non hanno ancora un osservatore, quindi restano alla convenzione dello strumento.<span class="r">tenere così: con un osservatore JVM o .NET la stessa regola li prende, senza codice nuovo.</span></li>
 <li><b>Dove stanno i comandi.</b> Oggi in <code>commands.json</code> nella cartella condivisa: spostarli nel <code>.daodan</code>?<span class="r">sì, il progetto li porta con sé.</span></li>
