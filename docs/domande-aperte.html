@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domande aperte</title>
+<style>
+:root{--bg:#fafaf9;--fg:#1c1917;--muted:#57534e;--card:#fff;--line:#e7e5e4;--accent:#b45309;--ok:#15803d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1917;--fg:#f5f5f4;--muted:#a8a29e;--card:#292524;--line:#44403c;--accent:#f59e0b;--ok:#4ade80}}
+:root[data-theme="dark"]{--bg:#1c1917;--fg:#f5f5f4;--muted:#a8a29e;--card:#292524;--line:#44403c;--accent:#f59e0b;--ok:#4ade80}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif;padding:24px 16px}
+main{max-width:760px;margin:0 auto}
+h1{font-size:1.5rem;margin:0 0 4px}
+h2{font-size:1.05rem;margin:28px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+p.sub{color:var(--muted);margin:0 0 16px}
+ol{list-style:none;padding:0;margin:0;counter-reset:q}
+li{counter-increment:q;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 10px}
+li::before{content:counter(q);font-weight:700;color:var(--accent);margin-right:8px}
+li b{font-weight:600}
+.r{display:block;margin-top:6px;color:var(--ok)}
+.r::before{content:"Consiglio: ";font-weight:600}
+code{font-size:.9em;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<main>
+<h1>Domande aperte</h1>
+<p class="sub">28 novembre 2026. Fonte: <code>docs/plans/refactoring.md</code>, «Domande rimandate al proprietario». Nessuna blocca il lavoro: dove c'è una scelta provvisoria, è già nel codice. I consigli seguono la regola «niente overfitting».</p>
+
+<h2>Corse da approvare</h2>
+<ol>
+<li><b>Cancello T1 (T1.E.7).</b> Corsa Modal su Bank of Anthos con i container, senza LLM, più la suite. La lancio?<span class="r">sì: chiude T1.</span></li>
+<li><b>Scoperta cieca su Bank of Anthos.</b> Già approvata (circa 1,3 USD), ma si è fermata: il limite settimanale del modello degli agenti torna il 4 dicembre.<span class="r">rilanciarla il 4 dicembre.</span></li>
+</ol>
+
+<h2>Mappa e progetto</h2>
+<ol>
+<li><b>Profili (T2.C).</b> Bank of Anthos si avvia in due modi, Kubernetes o monolitico. Mostrare per ogni passo in quale modo vale chiede di leggere Kubernetes e Skaffold, che sono nel backlog.<span class="r">backlog; il Cancello T2 si misura senza.</span></li>
+<li><b>Chi tiene le modifiche a mano (T2.E.7).</b> Oggi solo il <code>.daodan</code>; i file del progetto restano ingressi, e se cambiano sotto una modifica nasce un conflitto.<span class="r">tenere così.</span></li>
+<li><b>Aprire e salvare un <code>.daodan</code> (T2.E.10).</b> Oggi si scrive il percorso in un dialogo. Chiedere a Imago una scelta del file nativa?<span class="r">sì, è generica per tutte le app.</span></li>
+<li><b>Migrazione v1 → v2 (T2.E.1, T2.E.8).</b> Resta, perché le prove di accettazione la chiedono; il vecchio ZIP va nel backlog.<span class="r">tenere così.</span></li>
+<li><b>Richieste a Sigrid (T2.D).</b> Nodi attenuati, faccia compatta del nodo, segno di ingresso e uscita sul gruppo, disposizione incrementale.<span class="r">aprire solo le prime due, che servono ai passi; le altre quando serviranno.</span></li>
+<li><b>La pagina della mappa (T2.D.6).</b> Escono le viste «Logica» e «Fisica», sostituite dal filtro per natura; «Entra» e «Su» aprono e chiudono sul posto.<span class="r">va bene.</span></li>
+<li><b>Rotte e schermate (T2.D.3).</b> Perdono il tipo e l'icona presi dai flussi: il ruolo lo dice il flusso.<span class="r">va bene.</span></li>
+</ol>
+
+<h2>Interfaccia</h2>
+<ol>
+<li><b>Quanto ha scritto ogni passo (T1.E).</b> Aggiungere alle azioni il numero di unità e righe scritte, come già fa il riconoscimento dello stack?<span class="r">sì, è un dato che c'è già.</span></li>
+<li><b>Testi del server (T1.E).</b> Cause e rimedi arrivano in inglese: mostrarli come dati, senza tradurli?<span class="r">sì.</span></li>
+<li><b>Consensi prima della scelta del progetto (T1.E).</b> La politica di rete e container si vede solo a progetto scelto; prima girano solo passi che non eseguono nulla.<span class="r">va bene così.</span></li>
+</ol>
+
+<h2>Esecuzione (T3.B)</h2>
+<ol>
+<li><b>Il grado <code>sampled</code>.</b> Lo scrittore è uscito, i lettori lo leggono ancora per i dati vecchi. Toglierlo ovunque?<span class="r">sì, meno codice.</span></li>
+<li><b>Precedenza dei comandi.</b> Utente, poi assistente, poi CI. Un comando proposto dall'assistente gira prima di quello della CI senza conferma?<span class="r">no: il proposto gira solo dopo «Conferma».</span></li>
+<li><b>Dove stanno i comandi.</b> Oggi in <code>commands.json</code> nella cartella condivisa: spostarli nel <code>.daodan</code>?<span class="r">sì, il progetto li porta con sé.</span></li>
+<li><b>Immagini Docker del progetto.</b> Daodan non costruisce l'immagine del Dockerfile o di Compose per avviare l'app.<span class="r">non costruirla: non è compito di Daodan, resta una lacuna segnalata.</span></li>
+<li><b>Peso delle webview.</b> Xvfb, WebKitGTK e la build di Tauri scaricano centinaia di MB senza chiedere. Serve un consenso?<span class="r">sì, un solo consenso per il peso, come per i download grandi.</span></li>
+</ol>
+</main>
+</body>
+</html>
