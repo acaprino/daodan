@@ -38,7 +38,9 @@ RESULTS, FIXTURE = HERE / "results", HERE / "fixtures" / CASE
 # le facce dei moduli nel punteggio di `score.score`
 MODULES = ("units", "units.depends_on", "units.source_roots", "units.config", "workspace", "workspace.members")
 # `T1.C.11` ha misurato i fatti della pipeline sui flussi persi, non `entries_vs_reference`: nessun suo numero si confronta.
-# La soglia è quella della corsa di prova, `results/pipeline/2026-11-28-t1-gate-prova.json`.
+# La soglia è quella della corsa di prova, `results/pipeline/2026-11-28-t1-gate-prova.json`: 0 dei 27 controlli citati, perché
+# stanno in template, manifesti di Kubernetes e Skaffold, CI, Terraform e Makefile, e i 44 siti delle rotte in `.py`, `.java`,
+# `pom.xml` e in un Ingress.
 STATIC = 0
 ACCEPTED: dict[tuple[str, str], str] = {}  # (faccia, voce) dei moduli persa: la causa; oggi nessuna
 ENDED = ("done", "skipped")
