@@ -160,8 +160,8 @@ class Perimeter:
     The part of one target a script may read.
 
     `walk` yields it; `covers` answers for a path found some other way, by a
-    glob or by a search tool. `dot_directories`, `links` and `git_ignored` say
-    what a walk left out, so that a run can declare it: an exclusion nobody
+    glob or by a search tool. `dot_directories`, `dependency_directories`,
+    `links` and `git_ignored` say what a walk left out, so that a run can declare it: an exclusion nobody
     reported is how a stylesheet once went missing from every inventory.
     """
 
@@ -175,6 +175,7 @@ class Perimeter:
         self._resolved_base = self.base.resolve()
         self._ignored_files, self._ignored_dirs, self.git_ignore = self._ask_git()
         self._dot: set[Path] = set()
+        self._dependency: set[Path] = set()
         self._links: set[Path] = set()
         self._ignored_seen: set[Path] = set()
 
@@ -217,6 +218,8 @@ class Perimeter:
                 self._dot.add(path)
             return True
         if name in DEPENDENCY_DIRS:
+            if record and _key(relative) not in self._ignored_dirs:
+                self._dependency.add(path)
             return True
         if _key(relative) in self._ignored_dirs:
             if record:
@@ -289,6 +292,12 @@ class Perimeter:
     def dot_directories(self) -> list[Path]:
         """The dot directories the walk pruned, outermost only, in a stable order."""
         return sorted(self._dot)
+
+    @property
+    def dependency_directories(self) -> list[Path]:
+        """The dependency and build directories the walk pruned by name and Git does not ignore, in a stable order:
+        what the project keeps of other people's code or of its builds (`vendor/`, a committed `dist/`)."""
+        return sorted(self._dependency)
 
     @property
     def links(self) -> list[Path]:

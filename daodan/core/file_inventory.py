@@ -5,9 +5,10 @@ One row per file, `{size, mtime, raw_hash, language}`, in walk order, in a SQLit
 and type, the files of the perimeter no reader reads (`unread`), from their names alone, and names the files of the
 perimeter that are not the project's own code (`excluded`, `{path, why}`): vendored or documentation by Linguist's
 expressions on the path (`vendor`, `documentation` of `linguist-catalog.json`), or as `.gitattributes` says
-(`linguist-vendored`, `linguist-generated`, `linguist-documentation`, read by `git check-attr`). A generated file is
-known only from `.gitattributes`: Linguist's `generated.rb` is code, not data. Where Git cannot read the attributes
-the project declares, `excluded_unknown` says why.
+(`linguist-vendored`, `linguist-generated`, `linguist-documentation`, read by `git check-attr`). A dependency folder
+the walk never enters (`vendor/`, `node_modules/`, a committed `dist/`) is named by the same expressions and
+attributes. A generated file is known only from `.gitattributes`: Linguist's `generated.rb` is code, not data. Where
+Git cannot read the attributes the project declares, `excluded_unknown` says why.
 """
 from __future__ import annotations
 
@@ -79,12 +80,17 @@ def grouped(reasons: dict[str, str | None]) -> list[dict]:
     return [{"path": path, "why": why} for path, why in excluded.items()]
 
 
-def excluded(root: Path, paths: list[str]) -> tuple[list[dict], str | None]:
-    """The files of `paths` (relative to `root`) that are not the project's own code, grouped by folder, and why the
-    attributes the project declares were not read, if they were not."""
-    said, unknown = git_attributes(root, paths, ATTRIBUTES.values())
-    reasons = {rel: next((why for why in WHY if _holds(why, rel, said.get(rel, {}).get(ATTRIBUTES[why]))), None)
-               for rel in paths}
+def excluded(root: Path, paths: list[str], folders: list[str] = ()) -> tuple[list[dict], str | None]:
+    """The files of `paths` and the folders of `folders` the walk did not enter (relative to `root`) that are not the
+    project's own code, grouped by folder, and why the attributes the project declares were not read, if they were
+    not."""
+    said, unknown = git_attributes(root, [*paths, *folders], ATTRIBUTES.values())
+
+    def reason(rel: str, key: str) -> str | None:
+        return next((why for why in WHY if _holds(why, key, said.get(rel, {}).get(ATTRIBUTES[why]))), None)
+
+    reasons = {rel: reason(rel, rel) for rel in paths}
+    reasons.update({f"{rel}/": reason(rel, f"{rel}/") for rel in folders})  # Linguist's expressions end a folder in `/`
     return grouped(reasons), unknown
 
 
@@ -181,7 +187,9 @@ def write(target: Path, out: Path, *, parse_results: dict | None = None, progres
                 if language is None:
                     _count(counts, path)
                 del data
-            left_out, unknown = excluded(root, walked)
+            left_out, unknown = excluded(root, walked, [relative_to_root(path, root)
+                                                        for path in perimeter.dependency_directories
+                                                        if target.is_dir()])
             header = {"schema": SCHEMA, "target": relative_to_root(target, root) or ".", "root": root.as_posix(),
                       "scope": scope_record(perimeter, root), "git": git_info(root), "metrics": metrics,
                       "unread": _unread(counts), "excluded": left_out,

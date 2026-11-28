@@ -103,8 +103,11 @@ def test_list_files_leaves_out_what_linguist_and_gitattributes_say_and_runs_noth
     mark = f"#!/bin/sh\ntouch {marks}/\"$(basename \"$0\")\"\ncat\n"
     _checkout(project, {"app.py": "x = 1\n", "README.md": "# r\n", "third_party/lib.js": "var a;\n",
                         "gen/api_pb2.py": "y = 2\n", "docs/guide.md": "kept\n", "tools/mark.sh": mark,
+                        "vendor/lib/x.js": "var x;\n", "node_modules/a/index.js": "var a;\n", "build/out.js": "o;\n",
+                        "src/node_modules/b/index.js": "var b;\n", "src/main.py": "m = 1\n", "empty.txt": "",
                         **{f"tools/hooks/{hook}": mark for hook in ("pre-commit", "post-checkout", "post-index-change",
                                                                     "reference-transaction")},
+                        ".gitignore": "node_modules/\n",
                         ".gitattributes": "* filter=evil\ngen/** linguist-generated\ndocs/** -linguist-documentation\n"})
     for script in (project / "tools").rglob("*"):
         script.chmod(0o755)
@@ -116,8 +119,9 @@ def test_list_files_leaves_out_what_linguist_and_gitattributes_say_and_runs_noth
         subprocess.run(["git", "-C", str(project), "config", key, value], check=True)
     header = file_inventory.write(project, tmp_path / "inventory.sqlite")
     assert {(entry["path"], entry["why"]) for entry in header["excluded"]} == {
-        (".gitattributes", "vendored"), ("third_party/", "vendored"), ("README.md", "documentation"),
-        ("gen/", "generated")}  # vendor/ is a dependency folder: the walk never enters it
+        (".gitattributes", "vendored"), (".gitignore", "vendored"), ("third_party/", "vendored"),
+        ("README.md", "documentation"), ("gen/", "generated"),
+        ("vendor/", "vendored")}  # node_modules/ is ignored by Git; build/ has no reason
     assert "excluded_unknown" not in header  # docs/ is unset by the attributes, gen/ set: Git answered
     assert list(marks.iterdir()) == []
 
@@ -125,11 +129,11 @@ def test_list_files_leaves_out_what_linguist_and_gitattributes_say_and_runs_noth
 def test_without_a_work_tree_the_attributes_are_not_read_and_the_header_says_so(tmp_path):
     import file_inventory
     import source_files
-    _checkout(tmp_path / "proj", {"gen/api_pb2.py": "y = 2\n", "docs/a.md": "d\n",
+    _checkout(tmp_path / "proj", {"gen/api_pb2.py": "y = 2\n", "docs/a.md": "d\n", "node_modules/a/index.js": "a\n",
                                   ".gitattributes": "gen/** linguist-generated\n"})
     header = file_inventory.write(tmp_path / "proj", tmp_path / "inventory.sqlite")
     assert {(entry["path"], entry["why"]) for entry in header["excluded"]} == {
-        (".gitattributes", "vendored"), ("docs/", "documentation")}
+        (".gitattributes", "vendored"), ("docs/", "documentation"), ("node_modules/", "vendored")}
     assert header["excluded_unknown"] == source_files.NO_ATTRIBUTES
 
 

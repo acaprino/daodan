@@ -559,14 +559,16 @@ def test_tsc_reader_gives_the_tsconfigs_in_reference_order_and_their_aliases(tmp
 
 def test_the_files_to_leave_out_come_from_list_files_with_why(tmp_path):
     """The snapshot's header leaves out what Linguist's expressions say (`file_inventory.excluded`), and the pre-map
-    holds it with no command: `vendor/` is a dependency folder the walk never enters, `gen/` is generated only where
-    `.gitattributes` says so, and a dot folder is outside the perimeter."""
+    holds it with no command: `vendor/` is a dependency folder the walk never enters, named by Linguist's expression,
+    `gen/` is generated only where `.gitattributes` says so, and a dot folder is outside the perimeter."""
     _, _, record = build(tmp_path, "enry_files")
     assert {(e["path"], e["why"]) for e in record["excluded"]} == {("docs/", "documentation"),
-                                                                   ("README.md", "documentation")}
+                                                                   ("README.md", "documentation"),
+                                                                   ("vendor/", "vendored")}
     assert all(e["sources"] == [premap.LISTED] for e in record["excluded"])
     assert record["binding"]["excluded"] == [{"path": "README.md", "why": "documentation"},
-                                             {"path": "docs/", "why": "documentation"}]
+                                             {"path": "docs/", "why": "documentation"},
+                                             {"path": "vendor/", "why": "vendored"}]
 
 
 def _stated_empty(facts) -> set:
