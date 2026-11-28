@@ -56,6 +56,9 @@
 
 ---
 
+- **Gruppi `(nome)` di SvelteKit nello schema (`T1.C.7`):** `svelte-kit sync` non scrive un manifesto con il percorso senza gruppi, quindi una rotta in un gruppo ha `schema` `None` e la riga di Noir `/cart` resta separata da `/(shop)/cart`. Pulito: il percorso dal materiale ufficiale di SvelteKit (`@sveltejs/kit`, risoluzione delle rotte), non una regola nostra.
+- **Righe senza metodo (`T1.C.7`):** React Router, SvelteKit e Nitro `default` danno la lacuna «senza metodo» nei collegamenti, come Django; per `+server` di SvelteKit i metodi vengono dalle esportazioni (`methods` in `entry-queries.json`).
+
 ## Fermo o ritirato: non si rifà
 
 | Che cosa | Perché | Dove (`614c940`) |
