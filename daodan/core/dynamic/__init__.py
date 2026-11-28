@@ -51,7 +51,8 @@ fails is a `ci_step_failed` gap, one that cannot run a `ci_step_not_run` one.
 After the observers the step starts the app the pre-map declares (`starts`) in the container and explores it in a headless
 browser (`app.explore`, plan task 11): the controls it pressed are kept in `observed-controls.json` beside the manifest, for
 the entry candidates (`observed_entries`) and the links (`flows._observed_entries`). It has its own record in `RUNS/app` and
-is reused on the same snapshot; the step's result says it as `app`: `{state, apps, kept}`. A project that declares no app,
+is reused on the same snapshot; the step's result says it as `app`: `{state, apps, kept}`. Its run asks for hosts under
+the name `APP` (`egress.asking`), as an observer's under its own. A project that declares no app,
 no container engine, an app that did not start and an exploration that failed are gaps (`no_start_command`,
 `explore_failed`, `build_failed`, `app_not_started`, ...), never silence.
 
@@ -735,11 +736,13 @@ def _app(manifest: Path, snapshot, bus, say) -> dict:
     of the exploration stops no other part of the step. `{state, apps, kept}`, with `cause` and `remedy` where it did
     not run, and `reused` where the run of the same snapshot was kept."""
     import commands
+    import egress
     import entry_points
     import premap
     from snapshot_store import logical_digest
     from . import app
-    record = commands.merged(premap.ensure(manifest), str(Path(snapshot.store["root"]).resolve()))
+    project = str(Path(snapshot.store["root"]).resolve())  # the name `egress` asks under (`egress.project_of`)
+    record = commands.merged(premap.ensure(manifest), project)
     try:  # the pages the frameworks declare, which the exploration opens too: none without the record of the entry points
         pages = entry_points.read_record(manifest).get("framework_entries", [])
     except (OSError, KeyError, TypeError, ValueError):
@@ -747,8 +750,9 @@ def _app(manifest: Path, snapshot, bus, say) -> dict:
     if record.get("starts"):
         bus.emit("analyzer.started", f"{APP}: the app started and explored", step=STEP, analyzer=APP)
     try:
-        seen = app.explore(manifest, snapshot.root, record, logical_digest(snapshot.store), manifest.parent / RUNS / APP,
-                           pages=pages)
+        with egress.asking(APP), egress.within(project):  # its hosts are asked about together, as an observer's
+            seen = app.explore(manifest, snapshot.root, record, logical_digest(snapshot.store),
+                               manifest.parent / RUNS / APP, pages=pages)
     except Exception as error:  # noqa: BLE001 - the exploration is one part of the step: the others stay
         cause = f"{type(error).__name__}: {error}"
         seen = {"state": "failed", "cause": cause, "remedy": "explore again", "apps": [], "kept": 0,

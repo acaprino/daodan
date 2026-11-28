@@ -277,9 +277,10 @@ def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked, proj
     sources that are not `not_needed` (of the pre-map, those with commands; a source with no command reads files), and the apps the pre-map declares
     (`starts`) or the user or the assistant states for the `project` (`commands`), which `run_and_observe` explores: its
     target is the root with the `argv`, `surface` and `declared_in` of the start that runs there (`_started`), and an
-    app with a stated command carries its `by` and `grade`. A folder on a surface not run yet (`dynamic.app.plan`, with
-    the modules of the stack record as last written, `technologies.recorded`) is `not_possible` with the gap
-    `ui_execution_deferred:<surface>`, also where no start is declared."""
+    app with a stated command carries its `by` and `grade`; while a host the exploration's run asked for (the tool
+    `dynamic.APP`) waits for an answer, each is `awaiting_approval` with the hosts. A folder on a surface not run yet
+    (`dynamic.app.plan`, with the modules of the stack record as last written, `technologies.recorded`) is
+    `not_possible` with the gap `ui_execution_deferred:<surface>`, also where no start is declared."""
     import json
     import commands
     import entry_points
@@ -315,7 +316,8 @@ def _found(manifest, steps: dict, begun: dict, recorded: list[dict], asked, proj
                 for gap in app.plan(record, units=technologies.recorded(manifest).get("units") or ())["gaps"]:
                     if gap["kind"].startswith(f"{app.DEFERRED}:"):
                         waiting.setdefault(gap["root"], []).append(gap)
-                state = _events(RUN_AND_OBSERVE, APP, begun, recorded)
+                # the hosts its run asked for (`dynamic._app`) first, then its events
+                state = asked({APP}) or _events(RUN_AND_OBSERVE, APP, begun, recorded)
                 found["explore"] = [_action(f"{RUN_AND_OBSERVE}:{APP}:{root}", RUN_AND_OBSERVE, "explore",
                                             {"root": root, **_started(chosen.get(root))}, True, True,
                                             {**state, **stated.get(root, {}), **_deferred(waiting.get(root))})
