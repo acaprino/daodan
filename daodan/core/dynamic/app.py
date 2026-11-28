@@ -7,6 +7,13 @@ declared one, `npm run <script>`, never changed; its environment is the containe
 declares, or its runner is not npm (pnpm, Yarn and Bun are not yet run: `start_runner_not_supported`), nothing runs
 and the gap says why.
 
+A start runs on its surface (`registry_build.SURFACES`): the one it states (a command of the user or the assistant,
+`commands`), else `web`, the address it opens. Only the `ACTIVE` ones run (spec «Superfici attive»): a start on
+another does not start, and a module whose technologies have another (the `surface` of their registry entries, read
+when the plan is made) is not explored where no start of its folder runs on an active one. Both are the gap
+`ui_execution_deferred:<surface>`, the module's with the technology and the file that declares it
+(`technology_evidence`); the modules are the physical ones of the stack record (`technologies.derive`).
+
 `observe` is one container run, as the JavaScript observer's (`dynamic/javascript.py`): the preparation with the
 registries (Daodan's Node, the project's restore), then the execution with no network: each build, then the driver
 (`app.cjs`) which starts the app in its own process group, waits for the declared port or, with none, for the local
@@ -41,13 +48,20 @@ READY = 90  # the seconds an app has to answer on its port
 BUILD = 900  # the seconds a build may take
 EXPLORE = 900  # the seconds the exploration may take, beside its own cap (`explore.cjs`)
 MEMORY = 4 * 2**30
+ACTIVE = ("web", "webview")  # the surfaces the exploration runs (spec «Superfici attive»); the others wait
+WEB = "web"  # the surface of a start that states none: the HTTP address it opens
+DEFERRED = "ui_execution_deferred"  # the gap of a surface not run yet: `<DEFERRED>:<surface>`
+REMEDY = ("where the project also starts the folder on web or webview, set that command for the folder in the app: it "
+          "runs instead")
 
 
-def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = (), pages: list[dict] = ()) -> dict:
+def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = (), pages: list[dict] = (),
+         units: list[dict] = ()) -> dict:
     """`{apps, gaps, roots, toolchains, explore, seeds}` from the pre-map `record`: see the module's docstring. An app
     is the `starts` entry chosen for a module, with its `build` entry where it needs one; `seeds` are routes (paths)
     the exploration opens besides the app's root; `pages`, the framework rows of the entry points (`entry_points`), give
-    each app the pages it opens too."""
+    each app the pages it opens too; `units`, the physical modules of the stack record (`technologies.derive`), the
+    technologies whose surface may not be run yet."""
     import premap
     from dynamic import rank  # the user's command, then the assistant's (`commands.merged`), then the project's
     builds: dict[str, dict] = {}
@@ -58,7 +72,12 @@ def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = (), pages
         chosen.setdefault(entry["root"], entry)  # start before dev
     apps, gaps = [], []
     for root, entry in sorted(chosen.items()):
-        if entry["runner"] != "npm":
+        surface = entry.get("surface") or WEB
+        if surface not in ACTIVE:
+            gaps.append({"kind": f"{DEFERRED}:{surface}", "root": root, "path": entry["declared_in"],
+                         "detail": f"{entry['declared_in']} starts {root} on the {surface} surface, which the "
+                                   "exploration does not run yet: the app is not started", "remedy": REMEDY})
+        elif entry["runner"] != "npm":
             gaps.append({"kind": "start_runner_not_supported", "path": entry["declared_in"], "runner": entry["runner"],
                          "detail": f"{entry['declared_in']} is started with {entry['runner']}, which the exploration "
                                    "does not run yet: the app is not started"})
@@ -74,10 +93,43 @@ def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = (), pages
                                                            "script that starts an app: nothing is explored"})
     gaps += [{key: value for key, value in gap.items() if key != "source"} for gap in record.get("gaps", [])
              if gap.get("kind") == "no_start_command"]
+    started = {posixpath.normpath(root or ".") for root, entry in chosen.items()
+               if (entry.get("surface") or WEB) in ACTIVE}
+    gaps += _deferred(units, started)
     return {"apps": apps, "gaps": gaps,
             "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") in ("node", "bun")],
             "explore": explore, "seeds": list(seeds)}
+
+
+def _surfaces() -> dict[str, str]:
+    """The surface of each technology whose registry entry decides one (`registry_build.SURFACES`), read from the
+    registry."""
+    import service_registry
+    return {entry["id"]: entry["surface"] for entry in service_registry.load()["entries"] if entry.get("surface")}
+
+
+def _deferred(units: list[dict], started: set[str]) -> list[dict]:
+    """The gap of each technology of a module of `units` whose surface is not `ACTIVE`, where no start of the module's
+    folder runs on an active one (`started`): with the module, the technology and the file that declares it."""
+    surfaces = _surfaces() if units else {}
+    gaps = []
+    for unit in units:
+        root = posixpath.normpath((unit.get("paths") or ["."])[0])  # a physical module is one folder (`module_derive`)
+        if root in started:
+            continue
+        for ident in unit.get("technologies") or ():
+            surface = surfaces.get(ident)
+            if surface is None or surface in ACTIVE:
+                continue
+            site = (unit.get("technology_evidence") or {}).get(ident) or {}
+            where = f"in {site['path']}" if site.get("path") else "in its files"
+            gaps.append({"kind": f"{DEFERRED}:{surface}", "root": root, "module": unit.get("id"), "technology": ident,
+                         **{key: site[key] for key in ("path", "line") if site.get(key)},
+                         "detail": f"the module {unit.get('name') or root} declares {ident} {where}, whose surface, "
+                                   f"{surface}, the exploration does not run yet, and nothing starts {root} on "
+                                   f"{' or '.join(ACTIVE)}: its interface is not explored", "remedy": REMEDY})
+    return gaps
 
 
 def _pages(rows: list[dict], root: str) -> list[str]:
@@ -299,7 +351,8 @@ def explore(manifest: Path, project: Path, record_: dict, digest: str, folder: P
     `reused` where the run of the same snapshot (`digest`, the store's), plan and driver is in `folder`: its gaps come
     back, nothing runs. Only a run that ended `ran` is kept for reuse."""
     import hashlib
-    planned = plan(record_, explore=True, pages=pages)
+    import technologies
+    planned = plan(record_, explore=True, pages=pages, units=technologies.recorded(manifest).get("units") or ())
     cache = Path(folder) / "explore.json"
     drivers = hashlib.sha256()
     for path in (Path(__file__), DRIVER, EXPLORER):

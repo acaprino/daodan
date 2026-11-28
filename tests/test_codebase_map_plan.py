@@ -508,3 +508,46 @@ def test_an_app_the_person_or_the_assistant_starts_is_an_explore_action_with_who
         ("run_and_observe:app:web", "pending", "user", "confermato")]
     alone = planning._found(tmp_path / "manifest.sqlite", {}, {}, [], lambda tools, hosts=(): None, None)
     assert [(action["target"], "by" in action) for action in alone["explore"]] == [({"root": "web"}, False)]
+
+
+def test_a_folder_on_a_surface_not_run_yet_is_an_explore_action_not_possible_with_its_gap(tmp_path, shared,
+                                                                                         monkeypatch):
+    """A module whose technology has a surface the exploration does not run yet (its registry entry's), with no start of
+    its folder, and a start the user states on such a surface: their `explore` actions are `not_possible` with
+    `ui_execution_deferred:<surface>`, whatever the app's events say; the other app keeps its state."""
+    import json
+    import commands
+    import entry_points
+    import premap
+    import service_registry
+    import stack_recognition
+    import technologies
+    from dynamic import app
+    planning = _planning()
+    ident, surface = next((entry["id"], entry["surface"]) for entry in service_registry.load()["entries"]
+                          if entry.get("surface") and entry["surface"] not in app.ACTIVE)
+    manifest = tmp_path / "manifest.sqlite"
+    record = tmp_path / "premap.json"
+    record.write_text(json.dumps({"sources": [], "starts": [
+        {"root": "web", "mode": "start", "runner": "npm", "declared_in": "web/package.json#scripts.start", "port": None,
+         "needs_build": False}]}), encoding="utf-8")
+    technologies.path(manifest).write_text(json.dumps({"schema": technologies.SCHEMA, "technologies": [], "units": [
+        {"id": "mobile", "name": "mobile", "paths": ["mobile"], "technologies": [ident],
+         "technology_evidence": {ident: {"path": "mobile/manifest.file"}}}]}), encoding="utf-8")
+    monkeypatch.setattr(premap, "state", lambda manifest: {"state": "fresh"})
+    monkeypatch.setattr(premap, "path", lambda manifest: record)
+    monkeypatch.setattr(entry_points, "state", lambda manifest: {"state": "stale"})
+    monkeypatch.setattr(stack_recognition, "state", lambda manifest: "stale")
+    project = tmp_path / "project"
+    (project / "api").mkdir(parents=True)
+    key = str(project.resolve())
+    commands.set(key, {"kind": "starts", "root": "api", "argv": ["npm", "run", "phone"], "surface": surface}, "user")
+    journal = [{"kind": "step.started", "step": "run_and_observe"},
+               {"kind": "analyzer.finished", "step": "run_and_observe", "analyzer": "app"}]
+    found = planning._found(manifest, {}, {"run_and_observe": 0}, journal, lambda tools, hosts=(): None, key)
+    actions = {action["target"]["root"]: action for action in found["explore"]}
+    assert {root: (action["state"], action.get("gap")) for root, action in actions.items()} == {
+        "api": ("not_possible", f"ui_execution_deferred:{surface}"),
+        "mobile": ("not_possible", f"ui_execution_deferred:{surface}"), "web": ("done", None)}
+    assert ident in actions["mobile"]["cause"] and "mobile/manifest.file" in actions["mobile"]["cause"]
+    assert actions["mobile"]["remedy"] and (actions["api"]["by"], actions["api"]["grade"]) == ("user", "confermato")
