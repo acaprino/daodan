@@ -406,7 +406,7 @@ Suite intera su Modal con le due correzioni (`--shards 33 -q -n 2`, `ap-iH3xVIIa
 
 Lacune che restano, non colpa della preparazione di Daodan o da decidere:
 
-- **SQLAlchemy 1.4.54 su Python 3.14 (scelta del proprietario).** L'ambiente che scip-python legge si fa sull'host solo con wheel (`--no-build`), perché costruire un sdist esegue il suo `setup.py`. Per questa versione PyPI non ha una wheel per CPython 3.14. Le strade sono due: costruire l'ambiente dell'indice nel container, oppure lasciare la lacuna. Il restore nel container del passo dinamico lo costruisce già.
+- **SQLAlchemy 1.4.54 su Python 3.14 (deciso dal proprietario il 28 novembre 2026).** Non è compito di Daodan rendere installabile una dipendenza del progetto: l'ambiente dell'indice resta solo wheel (`--no-build`, perché costruire un sdist esegue il suo `setup.py`), e il pacchetto senza wheel per la versione di Python resta una lacuna che Daodan segnala come fatto sul progetto (`indexers/python._prepared`: «a declared package it does not hold»), con pacchetto, versione e interprete.
 - **Il registratore Python su 3.14.6.** Le due corse dicono `recorder_unverified`: il registratore è verificato su CPython 3.12 e 3.13. È un limite del registratore, non della preparazione.
 - **Make.** Il `Makefile` del progetto chiede `PROJECT_ID`.
 - **Test non dichiarati.** Né JavaScript né `frontend` o `loadgenerator` dichiarano test.
