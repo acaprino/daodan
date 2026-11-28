@@ -26,7 +26,8 @@ function starts a Modal Sandbox from the same image, pinned by the same digest:
 
 A family's fixtures run in groups of `--chunk` (4), each group in a function call of its own; each real repository (its clone from the archive `modal_native.py
 prepare` keeps on the volume) has its own. Per case the result holds the pre-map's score against
-`expected.json`, each source's state, the gaps, each step's result, the dynamic step's gaps, the events by kind and the seconds.
+`expected.json`, each source's state, the gaps, each step's result, the dynamic step's gaps, the events by kind, the seconds,
+the one plan (`plan.current`) and the sites of the entry points' routes (`entry_sites`, for `entries_vs_reference.compare`).
 Beside the cases, `code` names the Daodan code the round ran (`code`): the checkout's commit, the tree of the copy
 it uploaded and the paths where the two differ.
 
@@ -590,6 +591,17 @@ def _engine():
     return container
 
 
+def entry_sites(manifest: Path) -> dict:
+    """`{entry_sites}`: the sites of the routes of the entry points' record beside `manifest` (`entry_points.rows`), each once
+    and in order; with no record to read, none and the `entry_sites_cause`, so the case keeps its plan and its score."""
+    import entry_points
+    try:
+        routes = entry_points.rows(entry_points.read_record(manifest))[0]
+    except (OSError, KeyError, TypeError, ValueError) as error:  # as `dynamic._app` reads the record
+        return {"entry_sites": [], "entry_sites_cause": f"{type(error).__name__}: {error}"}
+    return {"entry_sites": sorted({row["site"] for row in routes if row.get("site")})}
+
+
 KEPT = ("manifest.sqlite", "engine-edges.sqlite", "engine-report.json", "premap.json", "pipeline-events.jsonl",
         "modules.json", "technologies.json")
 
@@ -632,6 +644,7 @@ def run_cases(names: list) -> dict:
     import premap
     import score as scorer
     import snapshot
+    from pipeline import plan
     container = _engine()
     out = {}
     for name in names:
@@ -670,6 +683,7 @@ def run_cases(names: list) -> dict:
                                                   "premap-runs/*/results/*/stderr",
                                                   "premap-runs/*/results/0/stdout", "dynamic-runs/**/*.log")
                                   for file in sorted(manifest.parent.glob(pattern)) if file.stat().st_size},
+                         "plan": json.loads(json.dumps(plan.current(manifest), default=str)), **entry_sites(manifest),
                          "seconds": round(time.monotonic() - started, 1)}
         except Exception as error:  # noqa: BLE001 - a case's failure is its result
             import traceback
