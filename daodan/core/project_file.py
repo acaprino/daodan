@@ -26,9 +26,9 @@ from pathlib import Path
 from jsonpointer import JsonPointer, JsonPointerException, resolve_pointer, set_pointer  # RFC 6901: not in the stdlib
 from snapshot_store import _plain
 
-__all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "changes", "commit",
-           "confirm", "conflicts", "create", "edit", "head", "incoming", "migrate", "open_project", "read", "release",
-           "resolve", "state"]
+__all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "MIGRATIONS", "ProjectError", "analyse", "applied", "changes",
+           "commit", "confirm", "conflicts", "copy", "create", "edit", "find", "head", "history", "incoming", "key_of",
+           "migrate", "open_project", "read", "release", "resolve", "source_of", "state"]
 
 SCHEMA_FILE = Path(__file__).with_name("project_schema.sql")
 APPLICATION_ID = 0x44414F44  # "DAOD"
@@ -844,3 +844,90 @@ def conflicts(db: sqlite3.Connection, rev: int | None = None) -> list[dict]:
              "open": resolved is None or rev < resolved, "incoming": json.loads(incoming), "provenance": json.loads(provenance),
              "edit_id": edit, "object_id": object_id, "field_path": path, "base": json.loads(base), "value": json.loads(value)}
             for conflict, detected, resolved, incoming, provenance, edit, object_id, path, base, value in rows]
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# What the app reads and does with the file: the choices on the envelope, the history, copies
+
+
+FIELDS = {"name": "/name", "description": "/attributes/description"}  # what the app lets a person change by hand
+
+
+def key_of(row: dict) -> str | None:
+    """The identity key of a row: the envelope's `ref` of a node or a flow."""
+    return ((row["fields"].get("attributes") or {}).get("identity") or {}).get("key")
+
+
+def find(db: sqlite3.Connection, key: str) -> str:
+    """The object id of the node or flow active at the head whose identity key is `key`."""
+    found = [row["id"] for row in state(db).values() if row["kind"] in ("node", "flow") and key_of(row) == key]
+    if len(found) != 1:
+        raise ProjectError(f"nessun nodo o flusso attivo con la chiave {key}")
+    return found[0]
+
+
+def applied(envelope: dict, db: sqlite3.Connection) -> dict:
+    """A copy of `envelope` with the names and descriptions chosen by hand at the head: an entity or a flow whose
+    object holds a choice takes its name and description and says `manual`, and `conflict` too when one of its
+    choices has an open conflict. The analysis stays as it is: only what the person chose is carried."""
+    rows = state(db)
+    opened = {item["object_id"] for item in conflicts(db) if item["open"]}
+    chosen = {key_of(row): row for row in rows.values() if row["kind"] in ("node", "flow") and row["provenance"] == "manual"}
+
+    def marked(item: dict, label: str) -> dict:
+        row = chosen.get(item["ref"])
+        if row is None:
+            return item
+        description = (row["fields"].get("attributes") or {}).get("description")
+        return {**item, label: row["fields"]["name"], "manual": True,
+                **({"description": description or ""} if "description" in item or description else {}),
+                **({"conflict": True} if row["id"] in opened else {})}
+    return {**envelope, "entities": [marked(item, "name") for item in envelope["entities"]],
+            "flows": [marked(item, "label") for item in envelope["flows"]]}
+
+
+def history(db: sqlite3.Connection) -> list[dict]:
+    """The revisions in order: number, kind, author, date, summary, the versions opened and closed, and the edits
+    (`{object_id, key, field_path, action, base_rev, value}`: who changed what, from which revision)."""
+    opened = dict(db.execute("SELECT from_rev, count(*) FROM versions GROUP BY from_rev"))
+    closed = dict(db.execute("SELECT until_rev, count(*) FROM versions WHERE until_rev IS NOT NULL GROUP BY until_rev"))
+    keys = {object_id: json.loads(attributes).get("identity", {}).get("key") for object_id, attributes in db.execute(
+        "SELECT v.object_id, t.attributes_json FROM versions AS v JOIN (SELECT version_id, attributes_json FROM nodes"
+        " UNION ALL SELECT version_id, attributes_json FROM flows) AS t USING (version_id)"
+        " WHERE v.object_id IN (SELECT object_id FROM manual_edits) ORDER BY v.version_id")}
+    edits: dict[int, list] = {}
+    for rev, object_id, path, action, base_rev, value in db.execute(
+            "SELECT rev, object_id, field_path, action, base_rev, value_json FROM manual_edits ORDER BY edit_id"):
+        edits.setdefault(rev, []).append({"object_id": object_id, "key": keys.get(object_id), "field_path": path,
+                                          "action": action, "base_rev": base_rev, "value": json.loads(value)})
+    return [{"rev": rev, "kind": kind, "author": author, "created_at": created, "summary": summary,
+             "opened": opened.get(rev, 0), "closed": closed.get(rev, 0), "edits": edits.get(rev, [])}
+            for rev, kind, author, created, summary in db.execute(
+                "SELECT rev, kind, author, created_at, summary FROM revisions ORDER BY rev")]
+
+
+def source_of(db: sqlite3.Connection) -> dict:
+    """The sources of the head's analysis, with the columns of `source_snapshots`."""
+    found = db.execute(f"SELECT {', '.join('s.' + column for column in SOURCE)} FROM project AS p"
+                       " JOIN revisions AS r ON r.rev = p.head_rev JOIN analyses AS a USING (analysis_id)"
+                       " JOIN source_snapshots AS s USING (source_id)").fetchone()
+    if found is None:
+        raise ProjectError("il file non ha ancora un progetto")
+    return dict(zip(SOURCE, found))
+
+
+def copy(source: Path | str, target: Path | str) -> None:
+    """A consistent copy of the project file at `source` at `target`, which it replaces: `Connection.backup` into a
+    file beside `target`, recognised by `open_project` before it takes `target`'s place."""
+    target = Path(target)
+    _plain(target)
+    staging = target.with_name(f".{target.name}.{uuid.uuid4().hex}.new")
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with closing(open_project(source)) as db, closing(sqlite3.connect(staging)) as out:
+            db.backup(out)
+        with closing(open_project(staging)):
+            pass
+        os.replace(staging, target)
+    finally:
+        staging.unlink(missing_ok=True)

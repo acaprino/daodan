@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["mcp>=2.0.0,<3", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "keyring>=25", "PyYAML>=6", "protobuf==7.36.2", "pip-requirements-parser==32.0.1"]
+# dependencies = ["mcp>=2.0.0,<3", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "keyring>=25", "PyYAML>=6", "protobuf==7.36.2", "pip-requirements-parser==32.0.1", "jsonpointer==3.0.0"]
 # ///
 """The standalone app: one local server, from the address of a public repository to its graph.
 
@@ -25,11 +25,16 @@ project runs on this machine. The chosen engine is kept in the work folder for t
 system's deposit of secrets (`engines.kept`); the key is said `set` or `missing`, never itself.
 Finding the links between modules is a task of the engine too: it writes the project's link rules through the flows
 tool and corrects them on what stays unlinked; what they link is the service's answer, never the engine's words.
-When the selected run's pass ends fresh, the app finds the links and then maps the system by itself, once.
+When the selected run's pass ends fresh, the app finds the links and then maps the system by itself, once, and
+records the graph in the repository's project file (`project_file`, `repositories/<owner>/<name>/project.daodan`):
+a revision `analysis` each time, with the names and descriptions chosen by hand kept and shown on the graph, their
+conflicts and the history read and settled through `/api/app/project/*`. MCP reads the analysis as before.
 """
 from __future__ import annotations
 
 import argparse
+import getpass
+import importlib.metadata
 import json
 import os
 import secrets
@@ -37,7 +42,9 @@ import subprocess
 import sys
 import threading
 import time
+import tomllib
 from collections import OrderedDict
+from contextlib import closing
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -48,6 +55,8 @@ import app_view  # noqa: E402
 import confinement  # noqa: E402
 import egress  # noqa: E402
 import engines  # noqa: E402
+import project_file  # noqa: E402
+import project_rows  # noqa: E402
 import repository  # noqa: E402
 import service_registry  # noqa: E402
 import visual  # noqa: E402
@@ -79,6 +88,18 @@ WRITING = "the engine is writing the link rules or the system map: wait for it" 
 FINAL = ("fresh", "unavailable", "failed", "off")  # the pass's states that change no more by themselves
 LEVELS = 64  # answers of the graph kept for the run's data (open sets, files' symbols), least recently asked dropped first
 TURN, RECHECK = 0.5, 1.5  # seconds between two reads of the stream, and between two reads of a running pass's state
+
+
+def _version() -> str:
+    """The version of Daodan an analysis records: the installed package's, else `pyproject.toml`'s, else `unknown`."""
+    try:
+        return importlib.metadata.version("daodan")
+    except importlib.metadata.PackageNotFoundError:
+        pass
+    try:
+        return tomllib.loads((PACKAGE.parent / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+    except (OSError, KeyError, tomllib.TOMLDecodeError):
+        return "unknown"
 
 
 def _listed(query: dict, name: str, why: str) -> list | None:
@@ -139,6 +160,7 @@ class App:
         self.asked = {"state": "idle", "question": "", "text": "", "events": [], "cause": None}
         self.linked = {"state": "idle", "cause": None}  # the links between modules: see `link`
         self.mapped = {"state": "idle", "cause": None}  # the system map: see `map`
+        self.recorded = {"state": "idle", "rev": None, "cause": None}  # the project file: see `_record`
         self._following = None  # the selection whose pass's end is followed: see `_follow`
         self.marks = service_registry.Marks()  # the logos the two pages ask for
         self._lock, self._stop = threading.Lock(), threading.Event()
@@ -162,6 +184,7 @@ class App:
             self.service = self.context = None
             self.linked = {"state": "idle", "cause": None}
             self.mapped = {"state": "idle", "cause": None}
+            self.recorded = {"state": "idle", "rev": None, "cause": None}
             self.mcp_ready = "not prepared"
         threading.Thread(target=self._prepare, args=(found["url"], branch), daemon=True).start()
         return self.state({})
@@ -178,7 +201,8 @@ class App:
             else:
                 service.index(run_id)  # a run already there: a pass that failed starts again
             with self._lock:
-                self.service, self.context = service, {**checked, "run_id": run_id}
+                self.service, self.context = service, {**checked, "run_id": run_id,
+                                                       "project": str(repository.project_path(checkout))}
                 self.job = {"state": "ready", "step": None, "detail": ""}
         except Exception as error:  # noqa: BLE001 - the page reads why the preparation failed
             self.job = {"state": "failed", "step": self.job["step"], "detail": _cause(error)[:600]}
@@ -197,7 +221,8 @@ class App:
         """When the selected run's pass ends `fresh`, find the links and then map the system (`link`, `map`): once for
         a selection, however often it is followed again. A pass that ends otherwise starts nothing, and `retry` follows
         it again; another selection or the app's end stops the wait. Links that are not found leave the map not started,
-        with their cause; a failure of the chain is the map's cause."""
+        with their cause; a failure of the chain is the map's cause. At the chain's end the graph is recorded in the
+        project file (`_record`)."""
         with self._lock:
             service, context = self.service, self.context
             if context is None or self._following is context:
@@ -213,15 +238,19 @@ class App:
                 self._settled(held)  # what the person asked meanwhile ends first: what it records is not asked again
             self.link({})
             linked = self._settled("linked")
+            ended = None
             if linked["state"] == "done":
                 self.map({})
-                return
-            ended = {"state": linked["state"], "cause": f"the links are not found: {linked['cause']}"}
+                self._settled("mapped")
+            else:
+                ended = {"state": linked["state"], "cause": f"the links are not found: {linked['cause']}"}
         except Exception as error:  # noqa: BLE001 - the page reads why the chain stopped
             ended = {"state": "failed", "cause": _cause(error)}
         with self._lock:
-            if self.context is context and self.mapped["state"] != "running" and not self._stop.is_set():
+            if ended and self.context is context and self.mapped["state"] != "running" and not self._stop.is_set():
                 self.mapped = ended
+        if self.context is context and not self._stop.is_set():
+            self._record(context)  # the graph the pass left, mapped or not: the person sees and edits it
 
     def _pass_end(self, service: MapService, context: dict) -> str | None:
         """How the selected run's pass ends, read every RECHECK seconds while it runs; None when another selection or
@@ -263,7 +292,7 @@ class App:
         """The part of the state this process holds, cheap to read: the run's states are read from its store."""
         return {"job": self.job, "context": self.context, "engine": engines.described(self.engine), "mcp": self.mcp(),
                 "mcp_ready": self.mcp_ready, "asked": {key: self.asked[key] for key in ("state", "question", "cause")},
-                "links": self.linked, "mapped": self.mapped,
+                "links": self.linked, "mapped": self.mapped, "project": self.recorded,
                 "egress": egress.groups([self._project()]) if self.context is not None else []}
 
     def _project(self) -> str:
@@ -397,25 +426,40 @@ class App:
             return answers[("file", path)]
         return read
 
+    def _built(self, run_dir: Path) -> dict:
+        """The run's envelope without the files' symbols, built once per state of the data it reads
+        (`visual.inputs_stamp`); a change of that data throws away all that was kept. Asked while `_graphing` is held."""
+        import store_graph
+        stamp = (run_dir, visual.inputs_stamp(run_dir))
+        if self._levels.get("stamp") != stamp or not store_graph.sources_unchanged(self._levels["sources"]):
+            visual.settle(run_dir)  # the build writes what it derives: the stamp is of what it leaves
+            stamp = (run_dir, visual.inputs_stamp(run_dir))
+            with store_graph.capture_verified_sources() as sources:
+                envelope = visual.build_envelope(run_dir, symbols=False)
+            self._levels = {"stamp": stamp, "envelope": envelope, "sources": sources, "answers": OrderedDict()}
+        return self._levels["envelope"]
+
     def _kept(self, key: tuple, compute):
-        """What `compute(envelope, run_dir)` answers for `key`, kept: the run's envelope without the files' symbols is
-        built once per state of the data it reads (`visual.inputs_stamp`), and each answer once on it; a change of
-        that data throws all away, and at most LEVELS answers stay. One is computed at a time: who asks meanwhile
-        waits, and finds it kept."""
+        """What `compute(envelope, run_dir)` answers for `key`, kept: the envelope (`_built`) with the choices of the
+        project file's head on it (`project_file.applied`), and each answer once on it and that head; at most LEVELS
+        answers stay. One is computed at a time: who asks meanwhile waits, and finds it kept."""
         service, run = self._active()
         run_dir = service.root / "runs" / run
-        import store_graph
         with self._graphing:
-            stamp = (run_dir, visual.inputs_stamp(run_dir))
-            if self._levels.get("stamp") != stamp or not store_graph.sources_unchanged(self._levels["sources"]):
-                visual.settle(run_dir)  # the build writes what it derives: the stamp is of what it leaves
-                stamp = (run_dir, visual.inputs_stamp(run_dir))
-                with store_graph.capture_verified_sources() as sources:
-                    envelope = visual.build_envelope(run_dir, symbols=False)
-                self._levels = {"stamp": stamp, "envelope": envelope, "sources": sources, "answers": OrderedDict()}
-            answers = self._levels["answers"]
+            envelope = self._built(run_dir)
+            path = self._project_path(required=False)
+            mark = None
+            if path is not None and path.exists():
+                with closing(project_file.open_project(path)) as db:
+                    mark = (db.execute("SELECT project_uuid FROM project").fetchone(), project_file.head(db))
+                    if self._levels.get("mark") != mark:
+                        self._levels["applied"] = project_file.applied(envelope, db)
+            if mark is None:
+                self._levels["applied"] = envelope
+            self._levels["mark"] = mark
+            answers, key = self._levels["answers"], (mark, *key)  # the file's identity and head: a choice moves it
             if key not in answers:
-                answers[key] = compute(self._levels["envelope"], run_dir)
+                answers[key] = compute(self._levels["applied"], run_dir)
                 while len(answers) > LEVELS:
                     answers.popitem(last=False)
             answers.move_to_end(key)
@@ -426,6 +470,118 @@ class App:
         if query["id"] not in self.marks.entries:
             raise ValueError("the registry has no entry with this id")
         return self.marks.file(query["id"])
+
+    # -- the project file -----------------------------------------------------------------------------------------
+
+    def _project_path(self, required: bool = True) -> Path | None:
+        """The selected repository's project file (`repository.project_path`), which may not exist yet."""
+        found = (self.context or {}).get("project")
+        if found is None and required:
+            raise ValueError("no repository is selected")
+        return None if found is None else Path(found)
+
+    def _record(self, context: dict) -> None:
+        """Record the selected run's graph in the repository's project file: a revision `analysis`
+        (`project_file.analyse`: the same objects keep their ids, the choices made by hand stay, a value changed under
+        one is a conflict), or the file with its first revision. Its sources are the snapshot's inventory with the
+        checkout's commit and date (`project_rows.source`), its analysis the version of Daodan and the run with the
+        digests of the envelope's `meta`. How it went is the state's `project`."""
+        try:
+            service, run = self._active()
+            run_dir = service.root / "runs" / run
+            with self._graphing:
+                envelope = self._built(run_dir)
+            from snapshot_store import resolve_run_snapshot
+            manifest = resolve_run_snapshot(run_dir, json.loads((run_dir / "state.json").read_text(encoding="utf-8")))
+            hashes = project_rows.inventory(manifest)
+            found = context.get("repository") or {}
+            source = project_rows.source(manifest, context.get("commit"), context.get("committed_at"), found.get("url"))
+            analysis = {"daodan_version": _version(),
+                        "config": {"run_id": run, **{key: envelope["meta"].get(key)
+                                                     for key in ("snapshot_digest", "modules_digest", "cards_digest")}}}
+            rows, path = project_rows.from_envelope(envelope, hashes), Path(context["project"])
+            if path.exists():
+                with closing(project_file.open_project(path, write=True)) as db:
+                    rev = project_file.analyse(db, rows=rows, hashes=hashes, source=source, analysis=analysis,
+                                               author="daodan", summary=f"analisi di {run}")
+            else:
+                name = f"{found['owner']}/{found['name']}" if found.get("owner") else Path(context["path"]).name
+                project_file.create(path, name=name, source=source, analysis=analysis,
+                                    rows=project_rows.assign(rows, {}), author="daodan")
+                rev = 1
+            self.recorded = {"state": "done", "rev": rev, "cause": None}
+        except Exception as error:  # noqa: BLE001 - the page reads why the graph was not recorded
+            self.recorded = {"state": "failed", "rev": None, "cause": _cause(error)}
+
+    def _reading(self, write: bool = False):
+        path = self._project_path()
+        if not path.exists():
+            raise ValueError("the project has no file yet: it is written when the analysis ends")
+        return closing(project_file.open_project(path, write=write))
+
+    def project_history(self, query: dict) -> dict:
+        """The project file's revisions with author, kind, summary and the fields changed (`project_file.history`)."""
+        with self._reading() as db:
+            return {"head": project_file.head(db), "revisions": project_file.history(db)}
+
+    def project_conflicts(self, query: dict) -> dict:
+        """The conflicts of the head, open or settled, each with the key of its object (the graph's node id)."""
+        with self._reading() as db:
+            keys = {row["id"]: project_file.key_of(row) for row in project_file.state(db).values()}
+            return {"head": project_file.head(db),
+                    "conflicts": [{**item, "key": keys.get(item["object_id"])} for item in project_file.conflicts(db)]}
+
+    def project_edit(self, body: dict) -> dict:
+        """A choice made by hand: `{"ref": <node or flow id of the graph>, "field": "name" | "description", "value":
+        <text>, "base_rev": <the head it was made on, the head if left out>}`, by the person using the app."""
+        field, value = project_file.FIELDS.get(body.get("field")), body.get("value")
+        if field is None or not isinstance(value, str) or not isinstance(body.get("ref"), str):
+            raise ValueError(f"an edit is a ref, a field ({', '.join(project_file.FIELDS)}) and a text")
+        with self._reading(write=True) as db:
+            base = body.get("base_rev", project_file.head(db))
+            if type(base) is not int:
+                raise ValueError("base_rev is a revision number")
+            rev = project_file.edit(db, object_id=project_file.find(db, body["ref"]), field_path=field, value=value,
+                                    author=getpass.getuser(), base_rev=base)
+        return {"rev": rev}
+
+    def project_resolve(self, body: dict) -> dict:
+        """Settle a conflict: `{"conflict_id": <id>, "keep": "manual" | "incoming" | "analysis"}`."""
+        if type(body.get("conflict_id")) is not int or not isinstance(body.get("keep"), str):
+            raise ValueError("a resolution is a conflict id and one of " + ", ".join(project_file.KEEP))
+        with self._reading(write=True) as db:
+            return {"rev": project_file.resolve(db, body["conflict_id"], body["keep"], author=getpass.getuser())}
+
+    def project_confirm(self, body: dict) -> dict:
+        """Settle an identity proposal: `{"match": <its record's id>, "same": <a candidate's id, or null>}`."""
+        if not isinstance(body.get("match"), str) or not isinstance(body.get("same"), (str, type(None))):
+            raise ValueError("a confirmation is the proposal's id and a candidate's id or null")
+        with self._reading(write=True) as db:
+            return {"rev": project_file.confirm(db, body["match"], body.get("same"), author=getpass.getuser())}
+
+    def project_open(self, body: dict) -> dict:
+        """A project file received from someone (`{"path": ...}`): recognised, then copied with `backup` in place of
+        the file of the repository it names (its sources' address); its history stays, and what its revisions chose
+        is shown like any other choice."""
+        received = Path(body.get("path") or "")
+        with closing(project_file.open_project(received)) as db:
+            address = project_file.source_of(db)["repository_uri"]
+        if not address:
+            raise ValueError("the project file names no repository")
+        found = repository.parse(address)
+        target = self.work / "repositories" / found["owner"] / found["name"] / repository.PROJECT
+        project_file.copy(received, target)
+        return {"project": str(target), "repository": found}
+
+    def project_save(self, body: dict) -> dict:
+        """A copy of the selected repository's project file where the person chooses (`{"path": ...}`), with
+        `backup`."""
+        if not body.get("path"):
+            raise ValueError("the copy needs a path")
+        with self._reading():
+            pass  # there is a file to copy
+        project_file.copy(self._project_path(), Path(body["path"]))
+        return {"path": str(Path(body["path"]).resolve())}
 
     # -- the engine -----------------------------------------------------------------------------------------------
 
@@ -745,11 +901,14 @@ class App:
         active = Active()
         routes = {**visual.live_routes(active), "/api/app/state": self.state, "/api/app/answer": self.answer,
                   "/api/app/paths": self.paths, "/api/app/premap": self.premap, "/api/app/graph": self.graph, "/api/app/symbols": self.symbols,
-                  "/api/app/flow": self.flow}
+                  "/api/app/flow": self.flow, "/api/app/project/history": self.project_history,
+                  "/api/app/project/conflicts": self.project_conflicts}
         actions = {**visual.live_actions(active), "/api/app/check": self.check, "/api/app/select": self.select,
                    "/api/app/retry": self.retry, "/api/app/egress": self.hosts,
                    "/api/app/engine": self.configure, "/api/app/probe": self.probe, "/api/app/ask": self.ask,
-                   "/api/app/link": self.link, "/api/app/map": self.map}
+                   "/api/app/link": self.link, "/api/app/map": self.map, "/api/app/project/edit": self.project_edit,
+                   "/api/app/project/resolve": self.project_resolve, "/api/app/project/confirm": self.project_confirm,
+                   "/api/app/project/open": self.project_open, "/api/app/project/save": self.project_save}
         stream = {"/api/stream": self.stream(visual.live_stream(active)["/api/stream"])}
         return visual.make_server(None, VIEWER, port, routes=routes, actions=actions, token=token, stream=stream,
                                   mounts={"app": PAGE},

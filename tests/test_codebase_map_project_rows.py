@@ -98,7 +98,10 @@ def test_every_entity_is_a_node_of_an_admitted_species():
 
 
 def test_a_file_in_two_modules_has_one_parent_and_two_member_edges():
-    rows = project_rows.from_envelope(envelope())
+    given = envelope()
+    given["memberships"] += [{"member": "file:src/a.py", "group": "module:core", "view": "physical"},  # twice
+                             {"member": "file:src/a.py", "group": "directory:src", "view": "logical"}]  # the parent
+    rows = project_rows.from_envelope(given)
     by_key = _by_key(rows)
     assert by_key["file:src/a.py"]["fields"]["parent_id"] == "directory:src"
     members = sorted(row["fields"]["target_id"] for row in rows

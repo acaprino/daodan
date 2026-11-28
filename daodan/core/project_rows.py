@@ -56,13 +56,13 @@ def from_envelope(envelope: dict, hashes: dict[str, str] | None = None) -> list[
     # The parent is the physical membership: the folder that holds an entity, or the group «Tecnologie»; every other
     # membership (a logical module, a build unit) is a `member` edge from the member to its group.
     parents: dict[str, str] = {}
-    members = []
+    members = {}  # (member, group) once: two units with one ref, or a file a unit lists twice, are one membership
     for item in envelope["memberships"]:
         member, group = item["member"], item["group"]
         if member not in parents and (group == TECHNOLOGIES or (item["view"] == "physical" and group.startswith("directory:"))):
             parents[member] = group
-        else:
-            members.append((member, group))
+        elif parents.get(member) != group:
+            members[member, group] = None
     for ref, entity in entities.items():
         identity = _identity(ref)
         if entity["type"] == "file":

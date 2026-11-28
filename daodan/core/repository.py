@@ -9,7 +9,8 @@ the system's configuration (so no filter, credential helper or alias they define
 repository could name), with `tree_scope.GIT_OPTIONS` (no fsmonitor, no hooks), no hook template, no submodule, no
 symbolic link written, and only the transports `ALLOWED` lists. The checkout is shallow, of one branch, and lives
 under the app's work folder at `repositories/<owner>/<name>/<commit>/source`: a commit's checkout is written once and
-reused, and its folder holds the analysis beside the checkout, so that nothing Daodan writes is inside the project.
+reused, and its folder holds the analysis beside the checkout, so that nothing Daodan writes is inside the project;
+the project file (`project.daodan`) is in `repositories/<owner>/<name>`, for every commit.
 """
 from __future__ import annotations
 
@@ -29,6 +30,7 @@ STATES = ("accessible", "empty", "not_accessible", "network")
 NETWORK = ("could not resolve host", "failed to connect", "timed out", "connection reset", "ssl", "network is")
 LIST_SECONDS, CLONE_SECONDS = 30, 900
 CHECKOUT = "source"  # the checkout in its commit's folder: what is written about it goes beside it, never in it
+PROJECT = "project.daodan"  # the repository's project file, beside its commits' folders: one for all of them
 
 
 def parse(address: str) -> dict:
@@ -93,9 +95,10 @@ def branches(address: str, work: Path) -> dict:
     return {"repository": found, **_listed(found["url"], Path(work))}
 
 
-def _clone(source: str, branch: str, folder: Path, work: Path, transports=ALLOWED) -> tuple[Path, str]:
+def _clone(source: str, branch: str, folder: Path, work: Path, transports=ALLOWED) -> tuple[Path, str, str]:
     """A shallow checkout of `branch` of `source` under `folder`, in `CHECKOUT` of the folder named by its commit;
-    the checkout's folder and the commit. A commit already there is not fetched again."""
+    the checkout's folder, the commit and its date (strict ISO 8601, as Git gives it). A commit already there is not
+    fetched again."""
     if not BRANCH.fullmatch(branch) or ".." in branch:
         raise ValueError("the branch name is not one this app asks Git for")
     folder.mkdir(parents=True, exist_ok=True)
@@ -109,11 +112,14 @@ def _clone(source: str, branch: str, folder: Path, work: Path, transports=ALLOWE
         commit = named.stdout.strip()
         if named.returncode or not re.fullmatch(r"[0-9a-f]{40,64}", commit):
             raise ValueError("the checkout has no commit: " + named.stderr.strip()[-200:])
+        dated = _git(["show", "-s", "--format=%cI", "HEAD"], work, LIST_SECONDS, cwd=incoming)
+        if dated.returncode or not dated.stdout.strip():
+            raise ValueError("the checkout's commit has no date: " + dated.stderr.strip()[-200:])
         target = folder / commit / CHECKOUT
         if not target.exists():
             target.parent.mkdir(exist_ok=True)
             os.replace(incoming, target)
-        return target, commit
+        return target, commit, dated.stdout.strip()
     except subprocess.TimeoutExpired:
         raise ValueError(f"the checkout did not end in {CLONE_SECONDS} s") from None
     finally:
@@ -121,13 +127,19 @@ def _clone(source: str, branch: str, folder: Path, work: Path, transports=ALLOWE
 
 
 def checkout(address: str, branch: str, work: Path) -> dict:
-    """A checkout of `branch` of the repository at `address` under `work`: `{repository, branch, commit, path}`.
-    The branch must be one the repository lists now."""
+    """A checkout of `branch` of the repository at `address` under `work`: `{repository, branch, commit,
+    committed_at, path}`. The branch must be one the repository lists now."""
     found, work = parse(address), Path(work).resolve()
     listed = _listed(found["url"], work)
     if listed["state"] != "accessible":
         raise ValueError(f"the repository is {listed['state'].replace('_', ' ')}: {listed['detail']}")
     if branch not in [item["name"] for item in listed["branches"]]:
         raise ValueError(f"the repository has no branch {branch!r}")
-    path, commit = _clone(found["url"], branch, work / "repositories" / found["owner"] / found["name"], work)
-    return {"repository": found, "branch": branch, "commit": commit, "path": str(path)}
+    path, commit, committed_at = _clone(found["url"], branch, work / "repositories" / found["owner"] / found["name"], work)
+    return {"repository": found, "branch": branch, "commit": commit, "committed_at": committed_at, "path": str(path)}
+
+
+def project_path(checkout: Path | str) -> Path:
+    """The project file of the repository whose checkout is at `checkout`: beside the folders of its commits, so
+    that it is never read as a source and one file holds the history of every commit."""
+    return Path(checkout).parent.parent / PROJECT
