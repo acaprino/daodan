@@ -66,6 +66,8 @@
 
 - **Genere dei simboli C (`T2.B.20`):** scip-clang 0.4.1 scrive `SymbolInformation.kind` 0, quindi un tipo C è un valore dal descrittore di tipo `#` di SCIP più la lingua del file; pulito: il `kind` dell'indicizzatore quando scip-clang lo scrive. Un `typedef` C++ usato in un cast resta chiamabile.
 
+- **Gruppo 14 di `--shards 32` (28 novembre 2026):** fallisce sempre nello stesso gruppo (riscrittore dei commenti, C#, `honest_state`: «tree-sitter unavailable: download failed»), i test passano da soli e con `--shards 33`; una prova inquina le altre (grammatiche o variabili d'ambiente). Da trovare e correggere, non da aggirare.
+
 ## Fermo o ritirato: non si rifà
 
 | Che cosa | Perché | Dove (`614c940`) |
