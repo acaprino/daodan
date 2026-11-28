@@ -80,7 +80,7 @@ code{font-size:.9em;overflow-wrap:anywhere}
 <li><b>Corsa finita che ha chiesto host (T3.B.12).</b> <code>dynamic/javascript.py</code> la riusa e non dà <code>approval_required</code>; l'app sì.<span class="r">è un difetto: correggerlo con un test, nel punto comune agli osservatori e non solo in JavaScript.</span></li>
 <li><b>Pre-mappa con una richiesta in attesa (T0.C.10).</b> Oggi una richiesta senza risposta rende la pre-mappa da rifare: ogni analisi rifà Renovate o Gradle finché nessuno risponde, e con MCP e CLI sempre. In alternativa: rifarla solo quando cambia la risposta (lo stato degli host chiesti entra nell'impronta).<span class="r">l'alternativa: costa meno e vale per ogni strumento che chiede host.</span></li>
 <li><b>Immagini Docker del progetto.</b> Daodan non costruisce l'immagine del Dockerfile o di Compose per avviare l'app.<span class="r">non costruirla: non è compito di Daodan, resta una lacuna segnalata.</span></li>
-<li><b>Peso delle webview.</b> Xvfb, WebKitGTK e la build di Tauri scaricano centinaia di MB senza chiedere. Serve un consenso?<span class="r">sì, un solo consenso per il peso, come per i download grandi.</span></li>
+<li><b>Peso delle webview.</b> Xvfb, WebKitGTK e la build di Tauri scaricano centinaia di MB senza chiedere. Serve un consenso?<span class="r">sì, un solo consenso per il peso, come per i download grandi.</span> <b>Deciso: consenso</b>, la prima volta che si esplora un'app webview (passo T3.B.16).</li>
 </ol>
 </main>
 </body>
