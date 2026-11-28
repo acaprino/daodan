@@ -208,7 +208,7 @@ def test_no_observer_runs_outside_the_plan(tmp_path, dropped, seen):
             mock.patch.object(dynamic_go, "plan", side_effect=lambda *a: asked.append("go") or {"runs": [], "gaps": []}), \
             mock.patch.object(dynamic_python, "plan",
                               side_effect=lambda *a: asked.append("python") or {"runs": [], "gaps": []}):
-        dynamic.run(manifest, events.Bus())
+        dynamic.run(manifest, events.Bus(), "preselected")
     assert asked == [seen]
 
 
@@ -250,7 +250,8 @@ def _chain(tmp_path):
             mock.patch.object(dynamic_go, "plan", side_effect=lambda *a: asked.append("go") or {"runs": [], "gaps": []}), \
             mock.patch.object(dynamic_python, "plan",
                               side_effect=lambda *a: asked.append("python") or {"runs": [], "gaps": []}):
-        results = pipeline.run(manifest, listeners=[seen.append], start="link_calls", stop="run_and_observe")
+        results = pipeline.run(manifest, listeners=[seen.append], start="link_calls", stop="run_and_observe",
+                               run_commands="preselected")
     return results, launched, asked, seen
 
 
@@ -464,7 +465,7 @@ def test_a_request_of_the_exploration_waits_for_its_explore_action_alone(tmp_pat
     looked = lambda rows, *args, **kwargs: [{**row, "address": None, "network": False} for row in rows]  # noqa: E731
     with mock.patch.object(app, "observe", observe), mock.patch.object(egress, "resolve", side_effect=looked), \
             mock.patch.object(resolve_edges, "read_edge_store", return_value=([], {"languages": {}}, None)):
-        dynamic.run(manifest, events.Bus())  # no static graph: no observer runs, the app is explored
+        dynamic.run(manifest, events.Bus(), "preselected")  # no static graph: no observer runs, the app is explored
     assert [group["tool"] for group in egress.groups([project])] == [dynamic.APP]
     actions = {action["id"]: action for action in planning.current(manifest)["actions"]}
     waiting = actions[f"run_and_observe:{dynamic.APP}:."]

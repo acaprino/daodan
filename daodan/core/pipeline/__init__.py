@@ -29,7 +29,8 @@ its input; the six others are its steps (`STEPS`):
    Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
    container engine, no observer for a language or no test command the project declares, it says the gap and
    the pipeline goes on. The same step starts the app the project declares and explores it in a browser: the controls
-   it pressed are entries of the links (`dynamic/app.py`). `DAODAN_DYNAMIC=off` skips it.
+   it pressed are entries of the links (`dynamic/app.py`). It runs only what the context asks (`run_commands`,
+   `dynamic.RUN_COMMANDS`): with `none`, the default, it is `step.skipped` with its cause and the graph stays static.
 8. `assemble_graph`: the graphs of the technologies as the complete graph. Until the connection points exist, it is
    the store of each technology's graph: it says what a run observed (the sites, the holes closed) and what stayed
    unobserved (a language with no observed edge, the tests that did not run, the files no test executed, an
@@ -39,7 +40,8 @@ its input; the six others are its steps (`STEPS`):
 
 Steps 3–5 have `fresh(context)`: their `run`'s result read from their records when the records' owners say they are
 fresh (one `summary` per step, for both). `_run` asks it before `run` and, when it answers, says `step.skipped` and does
-not run the step; `link_calls` and `run_and_observe` skip per analyzer, `assemble_graph` always runs.
+not run the step; `link_calls` and `run_and_observe` skip per analyzer, `assemble_graph` always runs. A step whose result
+says `skipped` (`run_and_observe` with nothing to run) ends with `step.skipped` too, with that cause and its remedy.
 
 A journal written with the old names (`stack`, `scan`, `parse`, `analyze`, `dynamic`, `union`) reads with the ids
 (`events.LEGACY`).
@@ -66,6 +68,7 @@ class Context:
     report_path: Path | None = None  # the analysis's report, beside the snapshot by default
     fast_scan: bool = False  # reader-only scan without container commands, for interactive/hook callers
     runner: object = None  # the container runner of `find_modules` and `find_entry_points` (`_runner`), None with `fast_scan`
+    run_commands: str = "none"  # what `run_and_observe` runs (`dynamic.RUN_COMMANDS`): nothing unless asked
     results: dict = field(default_factory=dict)  # each step's result by its name, for the steps after it
 
 
@@ -255,7 +258,7 @@ class RunAndObserve:
     @staticmethod
     def run(context: Context) -> dict:
         import dynamic
-        return dynamic.run(context.manifest, context.bus)
+        return dynamic.run(context.manifest, context.bus, context.run_commands)
 
 
 class AssembleGraph:
@@ -285,9 +288,10 @@ class AssembleGraph:
 
         dynamic = context.results.get(RunAndObserve.NAME)
         outcomes = (dynamic or {}).get("languages") or {}
-        # Why no language has a reason of its own: the step that gives it did not run here, or failed.
+        # Why no language has a reason of its own: the step that gives it did not run here, failed, or ran nothing.
         absent = ("the dynamic step did not run in this analysis" if dynamic is None else
-                  f"the dynamic step failed: {dynamic['failed']}" if dynamic.get("failed") else None)
+                  f"the dynamic step failed: {dynamic['failed']}" if dynamic.get("failed") else
+                  dynamic.get("skipped"))
         for language, entry in sorted(languages.items()):
             if entry.get("state") != "fresh":
                 continue
@@ -399,7 +403,7 @@ class StepFailed(Exception):
 
 
 def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | None = None,
-        report_path: Path | None = None, fast_scan: bool = False) -> dict:
+        report_path: Path | None = None, fast_scan: bool = False, run_commands: str = "none") -> dict:
     """`_run` as one analysis: the shared Node volumes (`node_preparation.analysis`) and the hosts its steps ask for,
     from the pre-map's to the dynamic step's, under the project's name (`egress.analysis`): what the user answered
     "once" or "no" serves every step of the next analysis and ends with it."""
@@ -411,10 +415,11 @@ def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | N
     except (OSError, ValueError, KeyError):  # an unreadable store: the first step says why, with its remedy
         project = None
     with node_preparation.analysis(), egress.analysis(project) if project else contextlib.nullcontext():
-        return _run(manifest, listeners, start=start, stop=stop, report_path=report_path, fast_scan=fast_scan)
+        return _run(manifest, listeners, start=start, stop=stop, report_path=report_path, fast_scan=fast_scan,
+                    run_commands=run_commands)
 
 
-def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool) -> dict:
+def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool, run_commands: str = "none") -> dict:
     """The steps in order on the snapshot `manifest`, from `start` through `stop` (default: all), with
     `listeners` on the bus and the journal beside it; each step's result by its name. A step that fails says
     why and stops the ones after it: its result is `{"failed": cause, "remedy": ...}`. One the others can do
@@ -422,7 +427,9 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
     `step.finished` carries `failed`. An error a step the others need does not foresee is said as `step.failed`
     and reaches the caller, and so is an interruption (Ctrl-C, the interpreter's exit). A `start` or `stop` that
     names no step is refused before any event. A step whose records are fresh (`_fresh`) is not run: its
-    `step.skipped` carries its `outputs`, and its result is the one its records give."""
+    `step.skipped` carries its `outputs`, and its result is the one its records give; a step whose result says
+    `skipped` ends with `step.skipped`, with that `cause` and its `remedy`. `run_commands` is what `run_and_observe`
+    runs (`Context`)."""
     names = [step.NAME for step in STEPS]
     for asked in (start, stop):
         if asked is not None and asked not in names:
@@ -431,7 +438,8 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
     bus = events.Bus(manifest.with_name(events.JOURNAL))
     for listener in listeners:
         bus.subscribe(listener)
-    context = Context(manifest, bus, report_path, fast_scan=fast_scan, runner=None if fast_scan else _runner(manifest))
+    context = Context(manifest, bus, report_path, fast_scan=fast_scan, runner=None if fast_scan else _runner(manifest),
+                      run_commands=run_commands)
     chosen = STEPS[names.index(start) if start else 0:names.index(stop) + 1 if stop else len(STEPS)]
     results = context.results
     for step in chosen:
@@ -464,6 +472,11 @@ def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool
             bus.emit("step.failed", cause, step=step.NAME, level="error", cause=cause,
                      remedy="run the analysis again: this step did not end")
             raise
+        said = results[step.NAME]
+        if isinstance(said, dict) and said.get("skipped"):  # it ran nothing, and says why
+            bus.emit("step.skipped", f"{step.NAME}: {said['skipped']}", step=step.NAME, outputs=list(step.OUTPUTS),
+                     cause=said["skipped"], **({"remedy": said["remedy"]} if said.get("remedy") else {}))
+            continue
         bus.emit("step.finished", step.NAME, step=step.NAME, outputs=list(step.OUTPUTS),
                  **({"failed": failed} if failed else {}))
     report = results.get(LinkCalls.NAME, {})

@@ -139,9 +139,10 @@ def test_a_warning_or_an_error_carries_its_cause_and_remedy():
 
 
 def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_path):
-    """Scan, analysis, the dynamic step, then the union: each step starts and finishes, each analyzer of a
-    technology the pre-map found says it started and finished with progress, and the run ends with the complete
-    graph. No test of the fixture runs (the suites start no container): the union says its graph is static only."""
+    """Scan, analysis, the dynamic step, then the union: each step starts and finishes, the dynamic step, off by
+    default, is skipped with its cause, each analyzer of a technology the pre-map found says it started and finished
+    with progress, and the run ends with the complete graph. No test of the fixture runs: the union says its graph is
+    static only, with the dynamic step's cause."""
     import shutil
     from indexers import go
     project = tmp_path / "go"
@@ -174,7 +175,8 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
             mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30):
         result = pipeline.run(manifest, listeners=[seen.append])
     steps = [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")]
-    assert steps == [(kind, step.NAME) for step in pipeline.STEPS for kind in ("step.started", "step.finished")]
+    assert steps == [(kind, step.NAME) for step in pipeline.STEPS for kind in (
+        "step.started", "step.skipped" if step is pipeline.RunAndObserve else "step.finished")]  # off by default
     analyzers = [(e["kind"], e["analyzer"]) for e in seen if e["kind"].startswith("analyzer.")
                  and e["step"] == "link_calls"]
     assert analyzers == [("analyzer.started", "scip-go"), ("analyzer.finished", "scip-go")]
@@ -185,7 +187,7 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
     unobserved = [e["data"]["gap"] for e in seen if e["kind"] == "gap" and e["step"] == "assemble_graph"
                   and e["data"].get("language") == "go"]
     assert [gap["kind"] for gap in unobserved] == ["not-observed"]  # with the cause the dynamic step gave
-    assert unobserved[0]["detail"] != "no edge observed in a run: the dynamic step has not observed this language"
+    assert "the dynamic step is off" in unobserved[0]["detail"]
     assert result["assemble_graph"]["languages"]["go"]["state"] == "fresh"
     journal, _cursor = events.read(manifest.with_name(events.JOURNAL))
     assert [e["kind"] for e in journal] == [e["kind"] for e in seen]
@@ -260,6 +262,29 @@ def test_a_failure_of_the_dynamic_step_is_said_and_the_union_still_ends_the_run(
     [said] = [e for e in seen if e["level"] == "error"]
     assert said["step"] == "run_and_observe" and "RuntimeError" in said["data"]["cause"] and said["data"]["remedy"]
     assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "assemble_graph"}
+
+
+def test_the_dynamic_step_off_is_skipped_with_its_cause_and_remedy_and_the_plan_shows_them(tmp_path):
+    """Off by default (`run_commands="none"`), the dynamic step starts, runs nothing and ends `step.skipped` with the
+    cause and the remedy its result gives; the plan's step carries them, and began when it started."""
+    from pipeline import plan as planning
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    (tmp_path / "p").mkdir()
+    (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
+    snapshot.read_project(tmp_path / "p", manifest)
+    seen = []
+    with mock.patch("container.find_engine", side_effect=AssertionError("an engine was asked for")):
+        result = pipeline.run(manifest, listeners=[seen.append], start="run_and_observe")
+    said = result["run_and_observe"]
+    assert said["languages"] == {} and "run_commands=none" in said["skipped"] and said["remedy"]
+    started, skipped = [e for e in seen if e["step"] == "run_and_observe" and e["kind"].startswith("step.")]
+    assert (started["kind"], skipped["kind"]) == ("step.started", "step.skipped")
+    assert skipped["data"] == {"outputs": ["observed"], "cause": said["skipped"], "remedy": said["remedy"]}
+    assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "assemble_graph"}
+    steps, _begun = planning._steps({"reading": "done"}, None, events.read(manifest.with_name(events.JOURNAL))[0])
+    [entry] = [entry for entry in steps if entry["id"] == "run_and_observe"]
+    assert (entry["state"], entry["cause"], entry["remedy"]) == ("skipped", said["skipped"], said["remedy"])
+    assert (entry["started_at"], entry["ended_at"]) == (started["at"], skipped["at"])
 
 
 def test_writing_a_snapshot_runs_the_scan_through_the_pipeline_and_the_pass_runs_the_rest():

@@ -346,8 +346,10 @@ class Container:
         return {"state": "done", "exit_code": 0, "outputs": []}
 
 
-def step(manifest: Path, box=None, engine=container.Engine("fake", ("fake",))) -> tuple[dict, list[dict], mock.Mock]:
-    """The dynamic step alone, with `box` as the container (none may start without one) and `engine` found."""
+def step(manifest: Path, box=None, engine=container.Engine("fake", ("fake",)), run_commands: str = "preselected") \
+        -> tuple[dict, list[dict], mock.Mock]:
+    """The dynamic step alone, with `box` as the container (none may start without one) and `engine` found; it runs
+    each slot's preselection unless told otherwise (`run_commands`)."""
     seen: list[dict] = []
     bus = pipeline.events.Bus()
     bus.subscribe(seen.append)
@@ -355,7 +357,7 @@ def step(manifest: Path, box=None, engine=container.Engine("fake", ("fake",))) -
     found = {"side_effect": engine} if isinstance(engine, Exception) else {"return_value": engine}
     with mock.patch.object(container, "find_engine", **found) as asked, \
             mock.patch.object(container, "run_in_container", side_effect=box):
-        result = pipeline.RunAndObserve.run(pipeline.Context(manifest, bus))
+        result = pipeline.RunAndObserve.run(pipeline.Context(manifest, bus, run_commands=run_commands))
     return result, seen, asked
 
 
@@ -446,13 +448,22 @@ def test_observed_edges_need_the_static_graph_they_answer(tmp_path):
     assert result["languages"]["python"]["state"] == "no-static-graph"
 
 
-def test_the_step_is_skipped_when_it_is_switched_off(case, monkeypatch):
-    _played, manifest, _sites = case
+@pytest.mark.parametrize("run_commands, said", [("none", "run_commands=none"),
+                                                 ("chosen", "no command was chosen")])
+def test_off_or_with_nothing_chosen_the_step_runs_nothing_and_says_why(tmp_path, run_commands, said):
+    """The step is off by default: no engine is asked, no container starts, nothing is explored, and the result says
+    why and how to turn it on; `chosen` with no choice the person made is the same."""
+    from dynamic import app
+    _project, manifest = write_project(tmp_path, {**FILES, **APP_FILES})
     static_store(manifest)
-    monkeypatch.setenv("DAODAN_DYNAMIC", "off")
-    result, seen, asked = step(manifest)
-    assert asked.call_count == 0 and [event["kind"] for event in seen] == ["gap"]
-    assert "DAODAN_DYNAMIC=off" in seen[0]["message"] and result["languages"] == {}
+    with mock.patch.object(app, "explore", side_effect=AssertionError("the app was explored")), \
+            mock.patch("egress.preflight", side_effect=AssertionError("a host was asked for")):
+        result, seen, asked = step(manifest, run_commands=run_commands)
+    assert asked.call_count == 0 and seen == []
+    assert result["languages"] == {} and said in result["skipped"] and "the graph stays static" in result["skipped"]
+    assert "run_commands=preselected" in result["remedy"] and "App" in result["remedy"]
+    with pytest.raises(ValueError, match="run_commands"):
+        dynamic.run(manifest, pipeline.events.Bus(), "all")
 
 
 APP_FILES = {"package.json": '{"scripts": {"dev": "vite --port 5173"}}', "src/main.ts": "export const x = 1\n"}

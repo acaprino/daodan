@@ -382,7 +382,8 @@ def _steps(header: dict | None, unreadable: str | None, recorded: list[dict]) ->
     event decides its state; one older than the last event of a step before it belongs to an analysis before, and the
     step is `pending` in this one. A step of the pipeline carries its times from the journal: `started_at`, the `at` of
     its `step.started` or `step.skipped`, and `ended_at`, the `at` of its `step.finished`, `step.failed` or
-    `step.skipped`."""
+    `step.skipped`. A failed step carries its `cause` and `remedy`, and so does a skipped one whose `step.skipped`
+    says them (`run_and_observe` with nothing to run)."""
     import pipeline
     listed = ({"state": "failed", "cause": unreadable, "remedy": "write the snapshot again"} if unreadable else
               {"state": "pending" if header is None else "done"})
@@ -392,8 +393,11 @@ def _steps(header: dict | None, unreadable: str | None, recorded: list[dict]) ->
     last, begun = {}, {}
     for number, event in enumerate(recorded):
         if str(event.get("kind")).startswith("step."):
+            _, before = last.get(event.get("step"), (-1, None))
             last[event.get("step")] = (number, event)
-            if event["kind"] in ("step.started", "step.skipped"):
+            # a step that ran and found nothing to do began at its `step.started`
+            if event["kind"] == "step.started" or event["kind"] == "step.skipped" and (
+                    before is None or before["kind"] != "step.started"):
                 begun[event.get("step")] = number
     floor = -1
     for step in pipeline.STEPS:
@@ -406,6 +410,8 @@ def _steps(header: dict | None, unreadable: str | None, recorded: list[dict]) ->
             if entry["state"] == "failed":
                 entry.update({"cause": data.get("cause") or data.get("failed") or event.get("message"),
                               "remedy": data.get("remedy") or step.WITHOUT})
+            elif entry["state"] == "skipped" and data.get("cause"):  # one that ran nothing says why, as a failed one
+                entry.update({"cause": data["cause"], **({"remedy": data["remedy"]} if data.get("remedy") else {})})
             began = recorded[begun[step.NAME]].get("at") if step.NAME in begun else None
             ended = event.get("at") if event["kind"] != "step.started" else None
             entry.update({**({"started_at": began} if began else {}), **({"ended_at": ended} if ended else {})})

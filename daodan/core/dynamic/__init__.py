@@ -35,7 +35,8 @@ left it. A language with no observer, a project with no declared test command, a
 with no container engine are gaps, never silence; so are a result that breaks this contract (`observer-malformed`,
 `failed`), a run where no test ran (`not-run`) and one that placed no row of a language (`not-observed`).
 Completed test commands can be reused even when they placed no row. Interrupted commands are retried on the next
-analysis, together with the evidence they already produced. `DAODAN_DYNAMIC=off` skips the step.
+analysis, together with the evidence they already produced. The step is off unless asked (`RUN_COMMANDS`): with
+`none`, or `chosen` and nothing the person chose (`commands.chosen`), it runs nothing and says why (`skipped`).
 
 Every plan also gets `declared` (`preparation.declared`): the hosts the project declares for its dependencies,
 which the observer's preparation reaches beside the registries, as a CI does; a failed restore whose words name one
@@ -65,7 +66,6 @@ from __future__ import annotations
 
 import collections
 import json
-import os
 import posixpath
 import re
 import shlex
@@ -77,6 +77,7 @@ APP = "app"  # the exploration of the started app, apart from the observers: its
 RUNS = "dynamic-runs"  # beside the manifest: each observer's container record, logs and observation files
 EXAMPLES = 20
 TESTS = ("ran", "timeout", "killed", "not_started", "no_tests")  # how a run's tests ended; the first three ran
+RUN_COMMANDS = ("none", "preselected", "chosen")  # what `run` runs: nothing, each slot's preselection, the person's
 
 
 def stopped(exit_code: int | None, seconds: int | None, limit: int) -> str | None:
@@ -570,8 +571,11 @@ def _control_counts(tests: list[dict]) -> list[dict]:
             for test in tests if test.get("runner") == "playwright" and "controls" in test]
 
 
-def run(manifest: Path, bus) -> dict:
+def run(manifest: Path, bus, run_commands: str = "none") -> dict:
     """The step on the snapshot `manifest`, said on `bus` (`pipeline.events`): `{"languages": {language: outcome}}`.
+    It runs only when asked (`run_commands`, one of `RUN_COMMANDS`): with `none`, or `chosen` where the person chose
+    nothing yet, no engine is asked and no container starts, and the result is `{"languages": {}, "skipped": cause,
+    "remedy": ...}`.
 
     Each observer whose languages have a static graph in the store plans its runs from the pre-map, runs them in
     the container (the engine is asked once, when the first observer has something to run) and saves what the
@@ -599,10 +603,13 @@ def run(manifest: Path, bus) -> dict:
     def left(languages, state: str, reason: str) -> None:
         outcomes.update({language: {"state": state, "reason": reason} for language in languages})
 
-    if os.environ.get("DAODAN_DYNAMIC") == "off":
-        detail = "the dynamic step is off (DAODAN_DYNAMIC=off): no test runs, the graph stays static"
-        say(detail, {"kind": "dynamic-off", "detail": detail})
-        return {"languages": outcomes}
+    if run_commands not in RUN_COMMANDS:
+        raise ValueError(f"run_commands must be one of {', '.join(RUN_COMMANDS)}: {run_commands!r}")
+    if run_commands == "none" or (run_commands == "chosen" and commands.chosen(egress.project_of(manifest)) is None):
+        cause = ("the dynamic step is off (run_commands=none)" if run_commands == "none" else
+                 "no command was chosen to run for this project (run_commands=chosen)")
+        return {"languages": outcomes, "skipped": f"{cause}: no command of the project runs, the graph stays static",
+                "remedy": "choose the commands to run in the App, or analyze with run_commands=preselected"}
     from pipeline import plan as planning
     asked: dict = {}
     declared, paths = None, {}  # the services of the project's CI (`services`), and where each is declared
