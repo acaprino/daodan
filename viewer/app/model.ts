@@ -105,8 +105,8 @@ export function createModel(host: Host) {
     if (kept !== now.kept) patch.kept = kept;
     set(patch);
     if (ready && c) say(`Contesto pronto: ${slug(c)} · ${c.branch}`);
-    if (c && (linked || (grown && drawsGraph()))) loadGraph();
     if (recorded && c) reread();
+    else if (c && (linked || (grown && drawsGraph()))) loadGraph();
     loadViews();
     settle();
   }
@@ -213,11 +213,13 @@ export function createModel(host: Host) {
       if (wanted()) set({ project: null, projectError: causeOf(error) });
     }
   }
-  // The graph and the file read again: a choice made, a conflict settled, a file received or a new analysis.
+  // The graph and the file read again: a choice made, a conflict settled, a file received or a new analysis. The file is read with
+  // the graph (`loadGraph`), once; a graph still to come is of the file before, so it is dropped and asked again.
   function reread() {
     graphRun = '';
+    graphAsked += 1;
+    set({ graphLoading: false });
     loadGraph();
-    loadProject();
   }
   // One at a time; what came of it is said, a refusal stays until it is closed. True when the server took it.
   async function projectWork(work: string, path: string, body: unknown, done: string): Promise<boolean> {
