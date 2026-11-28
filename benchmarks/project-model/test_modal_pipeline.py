@@ -205,3 +205,9 @@ def test_the_addresses_of_an_apt_archive_are_ipv4_only_because_modals_allowlist_
 
     monkeypatch.setattr(socket, "getaddrinfo", lookup)
     assert modal_pipeline._addresses("deb.debian.org") == ["151.101.0.1/32"] and asked["family"] == socket.AF_INET
+
+
+def test_a_case_with_no_record_of_the_entry_points_keeps_no_site_and_says_why(tmp_path):
+    """A pipeline that wrote no `entry-points.json` loses the case's sites, never its plan or its score."""
+    found = modal_pipeline.entry_sites(tmp_path / "manifest.sqlite")
+    assert found["entry_sites"] == [] and found["entry_sites_cause"].startswith("FileNotFoundError")
