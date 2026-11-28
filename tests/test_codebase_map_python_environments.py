@@ -1,5 +1,5 @@
 """Which Python environment a command in a folder uses: the restore makes environments only for the root, for a folder with a
-lockfile of its own and for the folders no marked folder holds (`preparation.restores`); a folder inside another runs in the one of
+lockfile of its own, for a folder marked only by a requirements file and for the folders no marked folder holds (`preparation.restores`); a folder inside another runs in the one of
 the nearest folder above that was restored, and Poetry's lives in Poetry's own cache. One piece of code says it, for the dynamic step
 of the Python tests (`dynamic/python.py`) and for the Flask source (`premap/flask_app.py`)."""
 import sys
@@ -29,9 +29,10 @@ def test_a_uv_workspace_is_one_environment_at_its_root_and_a_member_runs_in_it()
     assert preparation.python_environment(environments, "api") == "."
 
 
-def test_a_root_pyproject_with_a_requirements_file_in_a_subfolder_has_the_root_environment_alone():
+def test_a_requirements_file_in_a_subfolder_of_a_root_pyproject_is_an_environment_of_its_own():
     environments = held(["pyproject.toml", "api/requirements.txt", "api/wsgi.py"])
-    assert environments == {".": "pip"} and preparation.python_environment(environments, "api") == "."  # `api` is inside a marked folder
+    assert environments == {".": "pip", "api": "pip"}  # a folder marked only by a requirements file is a project of its own (T1.10)
+    assert [preparation.python_environment(environments, folder) for folder in (".", "api", "api/v1")] == [".", "api", "api"]
 
 
 def test_a_poetry_project_is_an_environment_and_its_manager_says_where_the_python_is():
