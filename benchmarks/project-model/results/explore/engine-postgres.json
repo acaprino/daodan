@@ -1,0 +1,230 @@
+{
+ "fixture": "benchmarks/project-model/explore-fixtures/node-postgres",
+ "engine": "docker",
+ "plan": {
+  "apps": [
+   {
+    "root": ".",
+    "runner": "npm",
+    "argv": [
+     "npm",
+     "run",
+     "start"
+    ],
+    "surface": "web",
+    "declared_in": "package.json#scripts.start"
+   }
+  ],
+  "toolchains": [],
+  "gaps": [],
+  "beside": {
+   "services": [
+    [
+     "postgres",
+     "postgres:16-alpine"
+    ]
+   ],
+   "env": [
+    "DATABASE_URL"
+   ],
+   "steps": [
+    [
+     ".github/workflows/ci.yml#jobs.test.steps.2",
+     "npm install"
+    ],
+    [
+     ".github/workflows/ci.yml#jobs.test.steps.3",
+     "node db/seed.js"
+    ]
+   ]
+  },
+  "premap": {
+   "services": [
+    ".github/workflows/ci.yml#jobs.test.services.postgres"
+   ],
+   "tests": [
+    [
+     ".",
+     "node:test",
+     "package.json#scripts.test"
+    ]
+   ],
+   "ci_steps": [
+    [
+     ".github/workflows/ci.yml#jobs.test.steps.2",
+     "package.json#scripts.test",
+     null
+    ],
+    [
+     ".github/workflows/ci.yml#jobs.test.steps.3",
+     "package.json#scripts.test",
+     null
+    ],
+    [
+     ".github/workflows/ci.yml#jobs.test.steps.4",
+     "package.json#scripts.test",
+     null
+    ]
+   ]
+  },
+  "premap_gaps": []
+ },
+ "state": "ran",
+ "apps": [
+  {
+   "root": ".",
+   "mode": "start",
+   "declared_in": "package.json#scripts.start",
+   "state": "ready",
+   "address": "http://localhost:3000/",
+   "port": 3000,
+   "seconds": 13,
+   "stopped": "term",
+   "explored": {
+    "pages": 3,
+    "controls": 4,
+    "pressed": 4,
+    "skipped": 0,
+    "failed": 0
+   }
+  }
+ ],
+ "gaps": [],
+ "cause": null,
+ "remedy": null,
+ "said": [
+  {
+   "phase": "ci_step",
+   "name": null,
+   "image": null,
+   "declared_in": ".github/workflows/ci.yml#jobs.test.steps.2",
+   "outcome": "exited",
+   "exit_code": 0,
+   "cause": null
+  },
+  {
+   "phase": "ci_step",
+   "name": "Seed the database",
+   "image": null,
+   "declared_in": ".github/workflows/ci.yml#jobs.test.steps.3",
+   "outcome": "exited",
+   "exit_code": 0,
+   "cause": null
+  },
+  {
+   "phase": "service",
+   "name": "postgres",
+   "image": "postgres:16-alpine",
+   "declared_in": null,
+   "outcome": "ready",
+   "exit_code": null,
+   "cause": null
+  }
+ ],
+ "rounds": [
+  {
+   "asked": [
+    {
+     "address": "142.250.189.123",
+     "declared_in": [],
+     "host": "storage.googleapis.com",
+     "network": false,
+     "port": "443",
+     "tool": ""
+    }
+   ],
+   "apps": [
+    {
+     "root": ".",
+     "mode": "start",
+     "declared_in": "package.json#scripts.start",
+     "state": "ready",
+     "address": "http://localhost:3000/",
+     "port": 3000,
+     "seconds": 0,
+     "stopped": "term"
+    }
+   ],
+   "gaps": [
+    {
+     "kind": "approval_required",
+     "hosts": [
+      "storage.googleapis.com"
+     ],
+     "detail": "the step ran without hosts the user has not approved: storage.googleapis.com:443; answer in the app, then analyze again"
+    },
+    {
+     "kind": "explore_failed",
+     "path": "package.json#scripts.start",
+     "detail": "npm run start in . is up and the exploration wrote nothing: browserType.launch: Executable doesn't exist at /daodan/state/home/.cache/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551 Looks like Playwright was just installed or updated.       \u2551\n\u2551 Please run the following command to download new browsers: \u2551\n\u2551                                                            \u2551\n\u2551     npx playwright install                                 \u2551\n\u2551                                                            \u2551\n\u2551 <3 Playwright Team                                         \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n    at explore (/daodan/state/in/explore.cjs:191:34)\n    at /daodan/state/in/explore.cjs:370:51\n    at Object.run (/daodan/stat"
+    }
+   ],
+   "said": [
+    {
+     "phase": "ci_step",
+     "name": null,
+     "image": null,
+     "declared_in": ".github/workflows/ci.yml#jobs.test.steps.2",
+     "outcome": "exited",
+     "exit_code": 0,
+     "cause": null
+    },
+    {
+     "phase": "ci_step",
+     "name": "Seed the database",
+     "image": null,
+     "declared_in": ".github/workflows/ci.yml#jobs.test.steps.3",
+     "outcome": "exited",
+     "exit_code": 0,
+     "cause": null
+    },
+    {
+     "phase": "service",
+     "name": "postgres",
+     "image": "postgres:16-alpine",
+     "declared_in": null,
+     "outcome": "ready",
+     "exit_code": null,
+     "cause": null
+    }
+   ]
+  }
+ ],
+ "asked": [],
+ "totals": [
+  {
+   "pages": 3,
+   "controls": 4,
+   "pressed": 4,
+   "skipped": 0,
+   "failed": 0
+  }
+ ],
+ "controls": [
+  {
+   "name": "Dune",
+   "state": "pressed",
+   "calls": []
+  },
+  {
+   "name": "Solaris",
+   "state": "pressed",
+   "calls": []
+  },
+  {
+   "name": "Back",
+   "state": "pressed",
+   "calls": []
+  },
+  {
+   "name": "Back",
+   "state": "pressed",
+   "calls": []
+  }
+ ],
+ "logs": {
+  "prepare.log": "://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip\n|                                                                                |   0% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                                        |  10% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                                |  20% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                        |  30% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                |  40% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                        |  50% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                |  60% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                        |  70% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                |  80% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0        |  90% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0| 100% of 2.2 MiB\nFFmpeg (playwright ffmpeg v1013) downloaded to /daodan/state/home/.cache/ms-playwright/ffmpeg-1013\n@@daodan-step-b03060074118 begin 0\n\nup to date, audited 14 packages in 271ms\n\nfound 0 vulnerabilities\n@@daodan-step-b03060074118 end 0 0 1\n@@daodan-step-b03060074118 begin 1\nseeded 2 books\n@@daodan-step-b03060074118 end 1 0 0\n",
+  "execute.log": "DAODAN-APP 0 exit 0 13\n"
+ },
+ "seconds": 105.9
+}
