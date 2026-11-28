@@ -60,3 +60,36 @@ Una esecuzione per dimensione.
 - Non misurato: un run reale.
 - La [mappa del sistema](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md), una proposta, mostra nodi con nome e non simboli: un grafo avrebbe una decina di nodi. Conviene decidere su quella prima di ottimizzare questo viewer per centinaia di nodi.
 - Dal porting a Sigrid (novembre 2026) la tela disegna solo i nodi nella vista: `measure.js` legge la pagina nuova e distingue i nodi della vista (`nodes`) da quelli nel DOM (`drawn`). La misura non è ancora rifatta.
+
+## Vista dal servizio
+
+Passo `T2.C.12` di [`docs/plans/refactoring.md`](../../docs/plans/refactoring.md): quanto costa `app_view.view`, la vista che l'App chiede a `/api/app/graph`, con un archivio grande e 300 nodi nel primo grafo. Obiettivo da misurare, non promesso.
+
+### Parametri
+
+| Parametro | Valore |
+| --- | --- |
+| Involucro | `scale.envelope(334, files=73, wide=432)` (`view_scale.py`): 267 componenti con 73 file di tre simboli, il primo con 432 file (più di un blocco, `BLOCK = 300`), 33 servizi esterni, 34 store con un flusso ciascuno; 80.001 entità, 104.262 relazioni, 38,6 MB di JSON, costruito in 0,5 s |
+| Casi | primo grafo; un gruppo aperto (`component:c0001`); il gruppo largo aperto (`component:c0000`: 300 file e «altri 132»); il blocco seguente (`more:component:c0000#1`); filtro `logico` in `hide` e in `highlight` |
+| Cosa si misura | tempo di `app_view.view` sull'involucro già in memoria (mediana e massimo di 5 chiamate); peso: byte del JSON che il servizio manda (compatto, non ASCII-escaped); nodi, attenuati, archi |
+| Macchina | Modal, 2 core e 4 GB (`modal_view_scale.py`), Python 3.13 |
+| Codice | `develop` `5b8edc3` con gli script di questo passo |
+| Comando | `modal run benchmarks/codebase-explorer/modal_view_scale.py`; il test del calcolo è `tests/test_benchmark_view_scale.py` |
+
+### Risultati, 28 novembre 2026
+
+Due esecuzioni (`ap-pxLM0Tuqaupm0TPq2f0rNw`, `ap-7JQvqQwXyRFEaOOgiUskyp`); i tempi sono le mediane delle due, il massimo il peggiore.
+
+| Caso | Nodi (attenuati) | Archi | Mediana | Massimo | Peso |
+| --- | --- | --- | --- | --- | --- |
+| Primo grafo | 300 | 3.643 | 301 e 263 ms | 524 ms | 1,31 MB |
+| Gruppo aperto, 73 file | 372 | 3.718 | 304 e 261 ms | 617 ms | 1,35 MB |
+| Gruppo largo aperto: 300 file e «altri 132» | 600 | 3.997 | 298 e 256 ms | 477 ms | 1,50 MB |
+| Blocco «altri N» aperto | 731 | 4.134 | 293 e 262 ms | 496 ms | 1,57 MB |
+| Filtro `logico`, `hide` | 33 | 0 | 299 e 343 ms | 707 ms | 8,5 kB |
+| Filtro `logico`, `highlight` | 300 (267) | 3.643 | 306 e 364 ms | 482 ms | 1,32 MB |
+
+- Il tempo non dipende dalla vista: ogni caso costa circa 0,3 s, cioè una passata sulle 80.001 entità e 104.262 relazioni dell'involucro. Aprire, filtrare o chiedere un blocco non aggiunge tempo misurabile.
+- Il peso segue gli archi, non i nodi: 3.643 frecce fra 300 nodi fanno 1,3 MB, circa 360 byte per freccia; con `hide` restano 33 nodi e 8,5 kB. Non scomposto per campo (conteggi, punti citati, `relations`).
+- Il blocco fa il suo lavoro: il gruppo di 432 file si apre su 300 e «altri 132», e aprire il blocco li dà tutti, senza figli persi (il test).
+- Non misurato: il servizio HTTP (`app.App`, la sua cache delle viste), la lettura di `visual.json` dal disco e un run reale.
