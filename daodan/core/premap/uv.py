@@ -2,9 +2,12 @@
 
 `commands` describes, for Daodan's container, in each folder holding a `uv.lock` beside a `pyproject.toml`:
 `uv export --frozen --all-packages --no-hashes --format pylock.toml` (the local packages with their
-directories: units and workspace members) and `uv tree --frozen --depth 1` (each member's direct dependencies:
-those that are local packages are the edges between units). `UV_OFFLINE` and no interpreter download: uv reads
-the lock and writes nothing in the project. Registries are the origins the exported lock fetches from: each
+directories: units and workspace members) and `uv tree --frozen --depth 1 --universal` (each member's direct
+dependencies: those that are local packages are the edges between units). `UV_OFFLINE` and no interpreter: uv reads
+the lock and writes nothing in the project. `--universal` is uv's tree for every Python and platform the lock covers;
+without it uv filters the tree by an interpreter of the project's `requires-python` and, finding none, stops ("No
+interpreter found for Python >=3.14", Bank of Anthos on Modal, 28 November 2026): the command would need the
+project's Python installed only to read its lock. Registries are the origins the exported lock fetches from: each
 package's index, its files, its git source or its archive.
 """
 from __future__ import annotations
@@ -19,7 +22,7 @@ from premap.origins import origin
 NAME, VERSION, RANK = "uv", "0.11.28", "model"  # pinned by the pre-map; the container brings this release
 ENV = {"UV_OFFLINE": "1", "UV_PYTHON_DOWNLOADS": "never", "UV_NO_PROGRESS": "1"}
 EXPORT = ["uv", "export", "--frozen", "--all-packages", "--no-hashes", "--format", "pylock.toml"]
-TREE = ["uv", "tree", "--frozen", "--depth", "1"]
+TREE = ["uv", "tree", "--frozen", "--depth", "1", "--universal"]
 LINE = re.compile(r"^(?P<prefix>[\s│├└─]*)(?P<name>[A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]*\])? v(?P<version>\S+)"
                   r"(?P<rest>.*)$")
 

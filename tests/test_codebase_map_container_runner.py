@@ -455,6 +455,23 @@ def test_only_the_toolchains_a_tool_runs_on_are_installed(tmp_path, no_download)
     assert "install node@20.11.0" in tsc_setup and "go@" not in tsc_setup
 
 
+def test_uv_reads_the_lock_on_no_python_of_the_project(tmp_path, no_download, undecided):
+    """`uv export --frozen` and `uv tree --frozen --universal` need no interpreter (measured on Modal, 28 November 2026:
+    Bank of Anthos states Python 3.14, the image holds 3.12, both answer). The project's Python is not installed for
+    them, and mise's hosts on GitHub, which ask the user, do not stop the source."""
+    import premap.uv
+    _, manifest = manifest_of(tmp_path, {"pyproject.toml": "[project]\nname = 'a'\n"})
+    calls, fake = recorder()
+    commands = [{"tool": "uv", "argv": argv, "cwd": ".", "env": premap.uv.ENV, "network": "none"}
+                for argv in (premap.uv.EXPORT, premap.uv.TREE)]
+    with mock.patch.object(container, "run_commands", fake):
+        answers = container_runner.runner(manifest, toolchains=[{"tool": "python", "version": "3.14.7"}])(commands)
+    [call] = calls
+    assert "--universal" in premap.uv.TREE and len(answers) == 2
+    assert "python@" not in call["commands"][0]["argv"][-1] and call["commands"][0]["network"] == "none"
+    assert "github.com" not in call["registries"]
+
+
 def test_a_toolchain_the_preparation_could_not_install_is_a_gap_on_the_answers(tmp_path, no_download):
     _, manifest = manifest_of(tmp_path, {"go.mod": "module m\n"})
     setup = {"returncode": 0, "stdout": "", "stderr": "mise ERROR no such version\nDAODAN-MISSING go@1.99.9\n"}

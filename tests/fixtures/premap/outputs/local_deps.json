@@ -92,7 +92,8 @@
      "tree",
      "--frozen",
      "--depth",
-     "1"
+     "1",
+     "--universal"
     ],
     "cwd": "py-uv",
     "env": {
@@ -105,7 +106,7 @@
    "result": {
     "returncode": 0,
     "stdout": "py-uv v0.1.0\n├── absolute v0.1.0\n├── inside v0.1.0\n└── outside v0.1.0\n",
-    "stderr": "Using CPython 3.12.10 interpreter at: /usr/local/bin/python3\n",
+    "stderr": "",
     "root": "/work/local_deps"
    }
   },
