@@ -99,7 +99,8 @@ export function PlanStepScreen() {
   const now = currentAction(s), Result = RESULT[id];
   const missing = actionsOf(s, id).filter(action => action.note !== '' && !action.waiting);
   if (!row) return null;
-  return <Step stage={id} line={row.what} end={<Badge variant="secondary" tone={TONE[row.status]}>{row.note.split(' · ')[0]}</Badge>}>
+  // Keyed by the step: each one opens with its own rows closed, not with those of the step seen before.
+  return <Step key={id} stage={id} line={row.what} end={<Badge variant="secondary" tone={TONE[row.status]}>{row.note.split(' · ')[0]}</Badge>}>
     {row.status === 'error' && <Note tone="error" title="Il passo non è riuscito."><Text pre data-selectable="">{row.note}</Text></Note>}
     {now && now.action.step === id && <Column>
       <Text variant="strong">{now.action.title}</Text>
