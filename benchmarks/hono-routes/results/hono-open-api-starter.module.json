@@ -17,7 +17,7 @@
  "express_peak_mb": 103.8,
  "express_rows": [
   {
-   "gap": "hono route GET /reference: the handler is no function of the snapshot: a external",
+   "gap": "hono route GET /reference: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/reference",
    "reader": "hono",
@@ -38,7 +38,7 @@
    "--no-log"
   ],
   "returncode": 0,
-  "seconds": 0.6,
+  "seconds": 0.9,
   "stderr_tail": ""
  },
  "noir_outside": 1,
@@ -108,5 +108,5 @@
   "hono"
  ],
  "sites": {},
- "snapshot_seconds": 0.4
+ "snapshot_seconds": 0.7
 }

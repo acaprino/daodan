@@ -5,7 +5,9 @@ of the snapshot, and the binder's third form, the span of the handler.
 The fixtures (`tests/fixtures/entry-points/express/`): `v4`, Express 4 in CommonJS (an app and its routers in several files, `use`
 with a nested prefix, `route().get().post()`, an array of handlers, a handler imported by name, handlers written in place, a router
 passed to a function, a computed path and a computed prefix, `app.get('env')`); `v5`, Express 5 in TypeScript with ES modules (named
-`Router`, a router exported and imported, a namespace import, `all`, the path syntax of Express 5). Nothing of them runs.
+`Router`, a router exported and imported, a namespace import, `all`, the path syntax of Express 5); `handlers` (`T1.C.13`), handlers
+that are a method of an object literal or of an instance of a class, a call (`catchAsync(fn)`, a factory), and a router passed through
+two functions. Nothing of them runs.
 """
 from __future__ import annotations
 
@@ -98,6 +100,28 @@ def test_express_5_with_es_modules_a_named_router_an_exported_router_and_all(tmp
     }
     assert not _gaps(found)
     assert {row["schema"] for row in found if row["path"] == "/admin/orders/:id"} == {"/admin/orders/{}"}
+
+
+def test_a_method_of_an_object_or_an_instance_a_call_and_a_router_passed_twice_are_bound_to_the_function_they_run(tmp_path):
+    found, bound = _read(tmp_path, "handlers")
+    sites = {(row["method"], row["path"]): row["site"] for row in found if not row.get("gap")}
+    assert sites == {
+        ("GET", "/items"): "controller.js:2",  # `controller.list`: a method of the object `module.exports` is
+        ("GET", "/tasks"): "tasks.js:2",  # `new Tasks()` then `tasks.all`: a method of the class
+        ("GET", "/tasks/done"): "tasks.js:6",  # a field of the class whose value is a function
+        ("POST", "/wrapped"): "app.js:16",  # `catchAsync(fn)`: the function the call passes, not the wrapper it returns
+        ("GET", "/wrapped/items"): "controller.js:2",  # `catchAsync(controller.list)`
+        ("GET", "/basket"): "factory.js:2",  # a factory: the one function it returns
+        ("POST", "/users"): "users.js:3",  # `const create = catchAsync(fn)`, exported: the call a name is bound to
+        ("GET", "/wrapped/basket"): "factory.js:2",  # `catchAsync(basket())`: what the call it passes runs, not the wrapper
+        ("GET", "/api/admin"): "mount.js:1",  # `mountAll(app, api)` calls `admin(router)`: the router through two parameters
+    }
+    assert _gaps(found) == {("app.js:21", "express route GET /limited: the handler is no function of the snapshot: "
+                                          "a call that passes no function and returns none the reader follows"),
+                            ("app.js:26", "express route GET /wrapped/limited: the handler is no function of the snapshot: "
+                                          "a call that passes a call the reader does not follow")}
+    assert {(row["method"], row["path"]) for row in bound if not row.get("gap") and row.get("symbol")} == set(sites)
+    assert not (tmp_path / "proj/ran.txt").exists()  # read, never run (AGENTS.md)
 
 
 def test_the_binder_ties_a_span_to_the_one_function_with_it_and_says_why_it_cannot():

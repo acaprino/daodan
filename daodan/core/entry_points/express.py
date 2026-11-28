@@ -12,16 +12,19 @@ its CommonJS exports; then the values are evaluated across the files with the sn
 the snapshot's scopes bind it to (`Facts.bindings`), an import goes where the snapshot's module resolution sends it
 (`sem_modules`), an export is the snapshot's export record (`sem_exports`) or `module.exports`. A value is an app (the call of the
 package's default export), a router (the call of its `Router`), a `route(path)` of one of them, a function of the snapshot (by its
-declaration), or a parameter of a function, which is the argument of each call to that function (one hop, no chain). A `use` on an
+declaration), an object (a literal, or an instance of a class of the project: its methods and fields), or a parameter of a function,
+which is the argument of each call to that function, followed through the functions that pass it on (each function once). A `use` on an
 app or a router mounts each argument that is one, under its literal prefix, none, or an unknown one; the prefixes are composed from
 the apps no one mounts. A route is a verb of the data on an app, a router or a `route(path)`, with a handler after the path (one
-argument alone is Express's getter of a setting, `app.get('env')`); its handler is the last argument, the last of an array.
+argument alone is Express's getter of a setting, `app.get('env')`); its handler is the last argument, the last of an array, and for a
+call that is no function (`catchAsync(fn)`, a factory: `T1.C.13`) the one argument of it that is a function, else the one function the
+called function returns.
 
 A row per route: `reader` `express`, `shape` (`method` or `route`, the data's form), `kind` `rotta`, `method` (None for `all`),
 `path` with the prefixes composed, `schema` (`flows.path_schema`), and `site` and `span` of the handler's function: the binder ties it
 to the one function of the snapshot with that span (`binder.bind`); `registered` keeps where the route is registered. A path that is no literal, a handler that is no function of the
 snapshot, a router mounted under a prefix that is no literal and a router no app mounts are gaps with the cause, at the registration.
-It runs on the host with no container (spec «Strumenti nativi»), once the snapshot is read; not run by the step: `T1.C.9` measured it short of Noir.
+It runs on the host with no container (spec «Strumenti nativi»), once the snapshot is read; not run by the step: `T1.C.9` and `T1.C.13` measured it short of Noir.
 
 Hono (`T1.C.10`: `inspectRoutes` of `hono/dev` did not pass, `benchmarks/hono-routes/README.md`) is the same code on the data of its
 section (`SECTIONS`), no branch of its own: an app is `new Hono()`, `route(prefix, app)` mounts, `basePath(prefix)` gives an app whose
@@ -33,7 +36,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 NAME = "express"
-VERSION = "3"
+VERSION = "4"
 # The libraries this module reads, each a section of `entry-queries.json` with its forms: the packages, the instances they make (`call`
 # of a member, `new` of a class; `default` for the package's default export), the verb that mounts (`mount`), the one that builds a
 # `route(path)` (`chain`), the one that gives an app under a base path (`prefix`), whether a verb returns its app (`chained`), the
@@ -41,6 +44,7 @@ VERSION = "3"
 SECTIONS = ("express", "hono")
 DEPTH = 24  # how many values one evaluation may follow (names, imports, exports, calls): a cycle ends there, unknown
 PREFIXES = 64  # the prefixes one app or router may be mounted under: past them its routes are a gap
+CLASSES = ("class_declaration", "class", "abstract_class_declaration")  # the nodes a class is written in
 
 
 def _forms() -> dict:
@@ -50,6 +54,10 @@ def _forms() -> dict:
 
 def _unknown(cause: str) -> tuple:
     return ("unknown", cause)
+
+
+def _arguments(node) -> list:
+    return [item for item in node.child_by_field_name("arguments").named_children if not item.is_extra]
 
 
 class _Reader:
@@ -127,8 +135,10 @@ class _Reader:
 
     def value(self, file: str, node, depth: int = 0) -> tuple:
         """What an expression is, as a tuple: `("package", section, member)`, `("instance", kind, key, section)`, `("route", instance, path)`,
-        `("function", id)`, `("param", function id, index)`, `("module", file)`, `("object", file, node)`, `("array", values)`,
-        `("loader",)`, `("external", module)` (a value of a package outside the project), else `("unknown", cause)`."""
+        `("function", id)`, `("param", function id, index)`, `("module", file)`, `("object", file, node)` (a literal, or an instance's
+        class body), `("class", file, body)`, `("array", values)`,
+        `("loader",)`, `("external", module)` (a value of a package outside the project), `("call", file, node, callee)` (a call that
+        gives no app or router), else `("unknown", cause)`."""
         import flows
         node = flows._unwrapped(node)
         if node is None:
@@ -160,6 +170,8 @@ class _Reader:
             return self.call(file, node, depth)
         if node.type == "new_expression":
             held = self.value(file, node.child_by_field_name("constructor"), depth)
+            if held[0] == "class":  # an instance of a class of the project: its methods and fields
+                return ("object", held[1], held[2])
             made = self.made(held, "new", file, node)
             return made or (held if held[0] in ("unknown", "external") else _unknown(f"a new of a {held[0]}"))
         if node.type in entries.FUNCTIONS:
@@ -169,6 +181,8 @@ class _Reader:
             return ("array", [self.value(file, item, depth) for item in node.named_children if not item.is_extra])
         if node.type == "object":
             return ("object", file, node)
+        if node.type in CLASSES and node.child_by_field_name("body") is not None:
+            return ("class", file, node.child_by_field_name("body"))
         return _unknown(f"a {node.type}")
 
     def name(self, file: str, node, name: str, depth: int) -> tuple:
@@ -198,6 +212,9 @@ class _Reader:
             return _unknown("a declaration the snapshot does not record")
         if declaration["kind"] in ("function", "method"):
             return ("function", declaration["id"])
+        if declaration["kind"] == "class":
+            node = self.node(declaration["id"], CLASSES)
+            return self.value(declaration["file"], node, depth) if node is not None else _unknown("a class the tree does not place")
         if declaration["kind"] == "parameter":
             return self.parameter(declaration)
         if declaration["kind"] == "binding":
@@ -206,8 +223,9 @@ class _Reader:
 
     def parameter(self, declaration: dict) -> tuple:
         """A parameter of a function, by its position among the function's parameters in the tree."""
+        import entries
         function = f"{declaration['file']}::{str(declaration['scope']).removeprefix('scope-')}"
-        node = self.function(function) if function in self.facts.declarations else None
+        node = self.node(function, entries.FUNCTIONS) if function in self.facts.declarations else None
         if node is None:
             return _unknown("a parameter of no function the snapshot records")
         if node.child_by_field_name("parameter") is not None:  # `router => ...`
@@ -217,15 +235,14 @@ class _Reader:
         index = next((i for i, item in enumerate(listed) if item.start_point <= at < item.end_point), None)
         return ("param", function, index) if index is not None else _unknown("a parameter the tree does not place")
 
-    def function(self, function: str):
-        """The tree node of a function of the snapshot."""
-        import entries
-        declaration = self.facts.declarations[function]
+    def node(self, identity: str, types: tuple):
+        """The tree node of a declaration of the snapshot, the innermost of `types` (a function, a class) that holds its span."""
+        declaration = self.facts.declarations[identity]
         if self.tree(declaration["file"]) is None:
             return None
         span = declaration["span"]
         node = self.trees[declaration["file"]].root.descendant_for_point_range((span[0] - 1, span[1]), (span[2] - 1, span[3]))
-        while node is not None and node.type not in entries.FUNCTIONS:
+        while node is not None and node.type not in types:
             node = node.parent
         return node
 
@@ -255,15 +272,20 @@ class _Reader:
             return ("package", held[1], name) if held[2] is None else _unknown(f"a member of {held[2]}")
         if held[0] == "module":
             return self.export(held[1], name, depth)
-        if held[0] == "object":
+        if held[0] in ("object", "class"):
             return self.key(held[1], held[2], name, depth)
         return held if held[0] in ("unknown", "external") else _unknown(f"a member {name} of a {held[0]}")
 
     def key(self, file: str, node, name: str, depth: int) -> tuple:
-        """The value an object literal gives a key: `{name: value}` or `{name}`."""
+        """The value an object literal or a class body gives a key: `{name: value}`, `{name}`, a method `name() {}`, a field
+        `name = value`."""
         import entries
         source = self.trees[file].source
         for item in node.named_children:
+            if item.type in ("method_definition", "field_definition", "public_field_definition") \
+                    and (written := item.child_by_field_name("name") or item.child_by_field_name("property")) is not None \
+                    and written.type == "property_identifier" and entries._text(source, written) == name:
+                return self.value(file, item if item.type == "method_definition" else item.child_by_field_name("value"), depth)
             if item.type == "shorthand_property_identifier" and entries._text(source, item) == name:
                 return self.name(file, item, name, depth)
             if item.type == "pair" and (written := item.child_by_field_name("key")) is not None \
@@ -298,7 +320,7 @@ class _Reader:
     def loaded(self, file: str, node, depth: int) -> tuple:
         """What the loader gives (`require('x')`): the package, or `module.exports` of the one file the snapshot resolves the module to."""
         import entries
-        arguments = [item for item in node.child_by_field_name("arguments").named_children if not item.is_extra]
+        arguments = _arguments(node)
         module = self.facts.literal(arguments[0], self.trees[file]) if len(arguments) == 1 else None
         if module is None:
             return _unknown("the loader's module is no literal")
@@ -331,7 +353,7 @@ class _Reader:
             verb = entries._text(self.trees[file].source, callee.child_by_field_name("property"))
             receiver = self.value(file, callee.child_by_field_name("object"), depth)
             forms = self.sections[receiver[3]] if receiver[0] == "instance" else {}
-            arguments = [item for item in node.child_by_field_name("arguments").named_children if not item.is_extra]
+            arguments = _arguments(node)
             if verb == forms.get("chain") or receiver[0] == "param" and verb in {f.get("chain") for f in self.sections.values()}:
                 return ("route", receiver, self.path(file, arguments[0]) if arguments else None)
             if verb == forms.get("prefix"):  # `basePath(p)`: another app, whose routes are under the base path
@@ -344,13 +366,15 @@ class _Reader:
                 return receiver  # `route(path).get(h).post(h2)`: each verb on the same route
         if held[0] == "function":  # a function that builds an app or a router: what it returns
             returned = self.returned(held[1], depth)
-            return returned if returned[0] in ("instance", "route") else _unknown("the value a function returns")
-        return held if held[0] in ("unknown", "external") else _unknown(f"a call of a {held[0]}")
+            if returned[0] in ("instance", "route"):
+                return returned
+        # any other call: kept as written, for a handler that is one (`catchAsync(fn)`, a factory: `ran`)
+        return ("call", file, node, held) if held[0] in ("function", "unknown", "external") else _unknown(f"a call of a {held[0]}")
 
     def returned(self, function: str, depth: int) -> tuple:
         """The one value a function returns: its `return` statements, all of one value, not those of the functions inside it."""
         import entries
-        file, node = self.facts.declarations[function]["file"], self.function(function)
+        file, node = self.facts.declarations[function]["file"], self.node(function, entries.FUNCTIONS)
         body = node.child_by_field_name("body") if node is not None else None
         if body is None:
             return _unknown("a function with no body")
@@ -364,6 +388,28 @@ class _Reader:
             elif item.type not in entries.FUNCTIONS:
                 stack.extend(item.named_children)
         return found[0] if found and all(item == found[0] for item in found) else _unknown("a function with no single returned value")
+
+    def ran(self, held: tuple, depth: int = 0) -> tuple:
+        """The function a handler's value runs: itself; for a call (`catchAsync(fn)`, a factory, written in place or bound to a name),
+        the one argument of it that runs a function of the snapshot, else what the called function returns, else a gap with the cause."""
+        if held[0] != "call":
+            return held
+        _, file, node, called = held
+        if depth >= DEPTH:
+            return _unknown("the value goes round, or further than the reader follows")
+        # an argument that is itself a call is what that call runs: `asyncHandler(chat())` runs what `chat()` returns, not the wrapper
+        passed = [self.value(file, item) for item in _arguments(node)]
+        given = [found for item in passed if (found := self.ran(item, depth + 1))[0] == "function"]
+        if len(given) > 1:
+            return _unknown("a call that passes more than one function")
+        if given:
+            return given[0]
+        if any(item[0] == "call" for item in passed):  # a wrapper of a call the reader does not follow: never the wrapper itself
+            return _unknown("a call that passes a call the reader does not follow")
+        if called[0] == "function":
+            return self.ran(self.returned(called[1], 0), depth + 1)
+        return _unknown("a call that passes no function and returns none the reader follows"
+                        + (f" ({called[1]})" if called[0] == "unknown" else ""))
 
     def path(self, file: str, node) -> str | None:
         """A literal path, the text the call writes or the constant it names; None for a computed one (a template with a hole)."""
@@ -392,18 +438,18 @@ class _Reader:
                         self._sites[function].append((file, node))
         return self._sites[function]
 
-    def instances(self, value: tuple) -> list[tuple]:
-        """The apps or routers a receiver is: itself, or, for a parameter, the argument of each call to its function."""
+    def instances(self, value: tuple, seen: frozenset = frozenset()) -> list[tuple]:
+        """The apps or routers a receiver is: itself, or, for a parameter, what the argument of each call to its function is, through
+        the parameters of the functions that pass it on (`f(app, router)` that calls `g(router)`), each function once."""
         if value[0] == "instance":
             return [value]
-        if value[0] != "param":
+        if value[0] != "param" or value[1] in seen:
             return []
         found = []
         for caller, node in self.sites(value[1]):
-            arguments = [item for item in node.child_by_field_name("arguments").named_children if not item.is_extra]
+            arguments = _arguments(node)
             if value[2] < len(arguments):
-                given = self.value(caller, arguments[value[2]])
-                found += [given] if given[0] == "instance" else []
+                found += [item for item in self.instances(self.value(caller, arguments[value[2]]), seen | {value[1]}) if item not in found]
         return found
 
 
@@ -438,7 +484,7 @@ def rows(facts, sections=SECTIONS) -> list[dict]:
                 continue
             receiver = reader.value(file, callee.child_by_field_name("object"))
             site = f"{file}:{entries._at(node)[0]}"
-            arguments = [item for item in node.child_by_field_name("arguments").named_children if not item.is_extra]
+            arguments = _arguments(node)
             chained = receiver[0] == "route"
             places = reader.instances(receiver[1] if chained else receiver)
             for place in places:  # none: not an app or a router of these libraries (a map's `get`, an HTTP client's `post`)
@@ -455,7 +501,7 @@ def rows(facts, sections=SECTIONS) -> list[dict]:
                     (reader.path(file, arguments[0]) if arguments else None, arguments[1:])
                 if not handlers:  # one argument alone: Express's getter of a setting, `app.get('env')`
                     continue
-                handler = (_flat(reader.value(file, handlers[-1])) or [_unknown("an empty array")])[-1]
+                handler = reader.ran((_flat(reader.value(file, handlers[-1])) or [_unknown("an empty array")])[-1])
                 routes += [{"place": place[2], "reader": section, "method": forms["methods"][verb], "path": written,
                             "base": reader.based.get(place[2], ""), "shape": "route" if chained else "method", "site": site,
                             "handler": handler, "file": file} for place in here]

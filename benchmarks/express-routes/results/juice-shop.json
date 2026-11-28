@@ -5,17 +5,403 @@
   "repository": "juice-shop/juice-shop"
  },
  "compare": {
-  "common_routes": 5,
-  "express_bound": 5,
+  "common_routes": 81,
+  "express_bound": 90,
   "express_gaps": {
-   "the handler is no function of the snapshot": 237,
+   "the function there shares its node routes/verify.ts::captchaBypassChallenge with others": 2,
+   "the function there shares its node routes/verify.ts::emptyUserRegistration with others": 2,
+   "the function there shares its node routes/verify.ts::forgedFeedbackChallenge with others": 2,
+   "the function there shares its node routes/verify.ts::passwordRepeatChallenge with others": 2,
+   "the function there shares its node routes/verify.ts::registerAdminChallenge with others": 2,
+   "the handler is no function of the snapshot": 56,
    "the path is no literal": 2
   },
   "express_rows": 247,
   "noir_bound": 106,
   "noir_gaps": 82,
   "noir_rows": 188,
-  "only_express": [],
+  "only_express": [
+   [
+    "DELETE",
+    "/api/Addresss/{}",
+    "routes/address.ts::function@28:9"
+   ],
+   [
+    "DELETE",
+    "/api/Cards/{}",
+    "routes/payment.ts::function@69:9"
+   ],
+   [
+    "GET",
+    "/api/Addresss",
+    "routes/address.ts::function@10:9"
+   ],
+   [
+    "GET",
+    "/api/Addresss/{}",
+    "routes/address.ts::function@17:9"
+   ],
+   [
+    "GET",
+    "/api/Cards",
+    "routes/payment.ts::function@19:9"
+   ],
+   [
+    "GET",
+    "/api/Cards/{}",
+    "routes/payment.ts::function@40:9"
+   ],
+   [
+    "GET",
+    "/api/Deliverys",
+    "routes/delivery.ts::function@12:9"
+   ],
+   [
+    "GET",
+    "/api/Deliverys/{}",
+    "routes/delivery.ts::function@33:9"
+   ],
+   [
+    "GET",
+    "/api/Recycles",
+    "routes/recycles.ts::function@23:39"
+   ],
+   [
+    "GET",
+    "/api/Recycles/{}",
+    "routes/recycles.ts::function@11:36"
+   ],
+   [
+    "GET",
+    "/metrics",
+    "routes/metrics.ts::function@85:9"
+   ],
+   [
+    "GET",
+    "/promotion",
+    "routes/videoHandler.ts::function@51:9"
+   ],
+   [
+    "GET",
+    "/redirect",
+    "routes/redirect.ts::function@13:9"
+   ],
+   [
+    "GET",
+    "/rest/admin/application-configuration",
+    "routes/appConfiguration.ts::function@10:9"
+   ],
+   [
+    "GET",
+    "/rest/admin/application-version",
+    "routes/appVersion.ts::function@12:9"
+   ],
+   [
+    "GET",
+    "/rest/basket/{}",
+    "routes/basket.ts::function@16:9"
+   ],
+   [
+    "GET",
+    "/rest/continue-code",
+    "routes/continueCode.ts::function@14:9"
+   ],
+   [
+    "GET",
+    "/rest/continue-code-findIt",
+    "routes/continueCode.ts::function@26:9"
+   ],
+   [
+    "GET",
+    "/rest/continue-code-fixIt",
+    "routes/continueCode.ts::function@39:9"
+   ],
+   [
+    "GET",
+    "/rest/country-mapping",
+    "routes/countryMapping.ts::function@11:9"
+   ],
+   [
+    "GET",
+    "/rest/deluxe-membership",
+    "routes/deluxe.ts::function@61:9"
+   ],
+   [
+    "GET",
+    "/rest/image-captcha",
+    "routes/imageCaptcha.ts::function@13:9"
+   ],
+   [
+    "GET",
+    "/rest/languages",
+    "routes/languages.ts::function@13:9"
+   ],
+   [
+    "GET",
+    "/rest/memories",
+    "routes/memory.ts::function@23:9"
+   ],
+   [
+    "GET",
+    "/rest/order-history",
+    "routes/orderHistory.ts::function@12:9"
+   ],
+   [
+    "GET",
+    "/rest/order-history/orders",
+    "routes/orderHistory.ts::function@26:9"
+   ],
+   [
+    "GET",
+    "/rest/products/search",
+    "routes/search.ts::function@20:9"
+   ],
+   [
+    "GET",
+    "/rest/products/{}/reviews",
+    "routes/showProductReviews.ts::function@29:9"
+   ],
+   [
+    "GET",
+    "/rest/repeat-notification",
+    "routes/repeatNotification.ts::function@10:9"
+   ],
+   [
+    "GET",
+    "/rest/saveLoginIp",
+    "routes/saveLoginIp.ts::function@15:9"
+   ],
+   [
+    "GET",
+    "/rest/tags",
+    "routes/tags.ts::function@11:9"
+   ],
+   [
+    "GET",
+    "/rest/track-order/{}",
+    "routes/trackOrder.ts::function@13:9"
+   ],
+   [
+    "GET",
+    "/rest/user/change-password",
+    "routes/changePassword.ts::function@13:9"
+   ],
+   [
+    "GET",
+    "/rest/user/security-question",
+    "routes/securityQuestion.ts::function@12:9"
+   ],
+   [
+    "GET",
+    "/rest/user/whoami",
+    "routes/currentUser.ts::function@12:9"
+   ],
+   [
+    "GET",
+    "/rest/wallet/balance",
+    "routes/wallet.ts::function@11:9"
+   ],
+   [
+    "GET",
+    "/rest/web3/nftMintListen",
+    "routes/nftMint.ts::function@14:9"
+   ],
+   [
+    "GET",
+    "/rest/web3/nftUnlocked",
+    "routes/checkKeys.ts::function@35:9"
+   ],
+   [
+    "GET",
+    "/snippets/fixes/{}",
+    "routes/vulnCodeFixes.ts::function@58:36"
+   ],
+   [
+    "GET",
+    "/snippets/{}",
+    "routes/vulnCodeSnippet.ts::function@42:38"
+   ],
+   [
+    "GET",
+    "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+    "routes/easterEgg.ts::function@12:9"
+   ],
+   [
+    "GET",
+    "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+    "routes/premiumReward.ts::function@12:9"
+   ],
+   [
+    "GET",
+    "/video",
+    "routes/videoHandler.ts::function@19:9"
+   ],
+   [
+    "GET",
+    "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+    "routes/privacyPolicyProof.ts::function@12:9"
+   ],
+   [
+    "PATCH",
+    "/rest/products/reviews",
+    "routes/updateProductReviews.ts::function@15:9"
+   ],
+   [
+    "POST",
+    "/api/Addresss",
+    "lib/insecurity.ts::function@176:9"
+   ],
+   [
+    "POST",
+    "/api/BasketItems",
+    "routes/basketItems.ts::function@20:9"
+   ],
+   [
+    "POST",
+    "/api/Cards",
+    "lib/insecurity.ts::function@176:9"
+   ],
+   [
+    "POST",
+    "/b2b/v2/orders",
+    "routes/b2bOrder.ts::function@17:9"
+   ],
+   [
+    "POST",
+    "/profile",
+    "routes/updateUserProfile.ts::function@16:9"
+   ],
+   [
+    "POST",
+    "/profile/image/file",
+    "routes/profileImageFileUpload.ts::function@15:9"
+   ],
+   [
+    "POST",
+    "/profile/image/url",
+    "routes/profileImageUrlUpload.ts::function@17:9"
+   ],
+   [
+    "POST",
+    "/rest/basket/{}/checkout",
+    "routes/order.ts::function@33:9"
+   ],
+   [
+    "POST",
+    "/rest/chat",
+    "routes/chat.ts::function@116:9"
+   ],
+   [
+    "POST",
+    "/rest/deluxe-membership",
+    "routes/deluxe.ts::function@17:9"
+   ],
+   [
+    "POST",
+    "/rest/memories",
+    "routes/memory.ts::function@11:9"
+   ],
+   [
+    "POST",
+    "/rest/passkey/login-verify",
+    "routes/passkey.ts::function@180:7"
+   ],
+   [
+    "POST",
+    "/rest/products/reviews",
+    "routes/likeProductReviews.ts::function@17:9"
+   ],
+   [
+    "POST",
+    "/rest/user/data-export",
+    "routes/dataExport.ts::function@16:9"
+   ],
+   [
+    "POST",
+    "/rest/user/data-export",
+    "routes/imageCaptcha.ts::function@38:40"
+   ],
+   [
+    "POST",
+    "/rest/user/login",
+    "routes/login.ts::function@32:9"
+   ],
+   [
+    "POST",
+    "/rest/user/reset-password",
+    "routes/resetPassword.ts::function@17:9"
+   ],
+   [
+    "POST",
+    "/rest/web3/submitKey",
+    "routes/checkKeys.ts::function@7:9"
+   ],
+   [
+    "POST",
+    "/rest/web3/walletExploitAddress",
+    "routes/web3Wallet.ts::function@14:9"
+   ],
+   [
+    "POST",
+    "/rest/web3/walletNFTVerify",
+    "routes/nftMint.ts::function@39:9"
+   ],
+   [
+    "POST",
+    "/snippets/fixes",
+    "routes/vulnCodeFixes.ts::function@72:37"
+   ],
+   [
+    "POST",
+    "/snippets/verdict",
+    "routes/vulnCodeSnippet.ts::function@70:36"
+   ],
+   [
+    "PUT",
+    "/api/Addresss/{}",
+    "lib/insecurity.ts::function@176:9"
+   ],
+   [
+    "PUT",
+    "/api/BasketItems/{}",
+    "routes/basketItems.ts::function@66:9"
+   ],
+   [
+    "PUT",
+    "/rest/basket/{}/coupon/{}",
+    "routes/coupon.ts::function@11:9"
+   ],
+   [
+    "PUT",
+    "/rest/continue-code-findIt/apply/{}",
+    "routes/restoreProgress.ts::function@41:9"
+   ],
+   [
+    "PUT",
+    "/rest/continue-code-fixIt/apply/{}",
+    "routes/restoreProgress.ts::function@63:9"
+   ],
+   [
+    "PUT",
+    "/rest/continue-code/apply/{}",
+    "routes/restoreProgress.ts::function@17:9"
+   ],
+   [
+    "PUT",
+    "/rest/order-history/{}/delivery-status",
+    "routes/orderHistory.ts::function@33:9"
+   ],
+   [
+    "PUT",
+    "/rest/products/{}/reviews",
+    "routes/createProductReviews.ts::function@15:9"
+   ],
+   [
+    "PUT",
+    "/rest/wallet/balance",
+    "routes/wallet.ts::function@22:9"
+   ]
+  ],
   "only_noir": [
    [
     "DELETE",
@@ -36,11 +422,6 @@
     "DELETE",
     "/ftp/quarantine/{}",
     "routes/quarantineServer.ts::function@9:7"
-   ],
-   [
-    "DELETE",
-    "/rest/passkey/credentials/{}",
-    "routes/passkey.ts::function@262:7"
    ],
    [
     "DELETE",
@@ -114,11 +495,6 @@
    ],
    [
     "GET",
-    "/rest/2fa/status",
-    "routes/2fa.ts::function@58:7"
-   ],
-   [
-    "GET",
     "/rest/admin/application-configuration",
     "routes/appConfiguration.ts::function@9:7"
    ],
@@ -181,16 +557,6 @@
     "GET",
     "/rest/order-history/orders",
     "routes/orderHistory.ts::function@25:7"
-   ],
-   [
-    "GET",
-    "/rest/passkey/credentials",
-    "routes/passkey.ts::function@241:7"
-   ],
-   [
-    "GET",
-    "/rest/passkey/register-options",
-    "routes/passkey.ts::function@74:7"
    ],
    [
     "GET",
@@ -379,21 +745,6 @@
    ],
    [
     "POST",
-    "/rest/2fa/disable",
-    "routes/2fa.ts::function@142:7"
-   ],
-   [
-    "POST",
-    "/rest/2fa/setup",
-    "routes/2fa.ts::function@97:7"
-   ],
-   [
-    "POST",
-    "/rest/2fa/verify",
-    "routes/2fa.ts::function@16:7"
-   ],
-   [
-    "POST",
     "/rest/basket/{}/checkout",
     "routes/order.ts::function@32:7"
    ],
@@ -411,16 +762,6 @@
     "POST",
     "/rest/memories",
     "routes/memory.ts::function@10:7"
-   ],
-   [
-    "POST",
-    "/rest/passkey/login-options",
-    "routes/passkey.ts::function@158:7"
-   ],
-   [
-    "POST",
-    "/rest/passkey/register-verify",
-    "routes/passkey.ts::function@106:7"
    ],
    [
     "POST",
@@ -524,10 +865,928 @@
    ]
   ],
   "same_function_other_path": 0,
-  "same_route_and_function": 5
+  "same_route_and_function": 14
  },
  "express_peak_mb": 655.9,
  "express_rows": [
+  {
+   "function": "lib/insecurity.ts::function@176:9",
+   "method": "POST",
+   "path": "/api/Addresss",
+   "reader": "express",
+   "registered": "server.ts:480",
+   "schema": "/api/Addresss",
+   "shape": "method",
+   "site": "lib/insecurity.ts:176",
+   "span": [
+    176,
+    9,
+    183,
+    3
+   ],
+   "symbol": "lib/insecurity.ts::POST /api/Addresss"
+  },
+  {
+   "function": "lib/insecurity.ts::function@176:9",
+   "method": "POST",
+   "path": "/api/Addresss",
+   "reader": "express",
+   "registered": "server.ts:480",
+   "schema": "/api/Addresss",
+   "shape": "method",
+   "site": "lib/insecurity.ts:176",
+   "span": [
+    176,
+    9,
+    183,
+    3
+   ],
+   "symbol": "lib/insecurity.ts::POST /api/Addresss"
+  },
+  {
+   "function": "lib/insecurity.ts::function@176:9",
+   "method": "PUT",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "registered": "server.ts:482",
+   "schema": "/api/Addresss/{}",
+   "shape": "method",
+   "site": "lib/insecurity.ts:176",
+   "span": [
+    176,
+    9,
+    183,
+    3
+   ],
+   "symbol": "lib/insecurity.ts::POST /api/Addresss"
+  },
+  {
+   "function": "lib/insecurity.ts::function@176:9",
+   "method": "PUT",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "registered": "server.ts:482",
+   "schema": "/api/Addresss/{}",
+   "shape": "method",
+   "site": "lib/insecurity.ts:176",
+   "span": [
+    176,
+    9,
+    183,
+    3
+   ],
+   "symbol": "lib/insecurity.ts::POST /api/Addresss"
+  },
+  {
+   "function": "lib/insecurity.ts::function@176:9",
+   "method": "POST",
+   "path": "/api/Cards",
+   "reader": "express",
+   "registered": "server.ts:470",
+   "schema": "/api/Cards",
+   "shape": "method",
+   "site": "lib/insecurity.ts:176",
+   "span": [
+    176,
+    9,
+    183,
+    3
+   ],
+   "symbol": "lib/insecurity.ts::POST /api/Addresss"
+  },
+  {
+   "function": "lib/insecurity.ts::function@176:9",
+   "method": "POST",
+   "path": "/api/Cards",
+   "reader": "express",
+   "registered": "server.ts:470",
+   "schema": "/api/Cards",
+   "shape": "method",
+   "site": "lib/insecurity.ts:176",
+   "span": [
+    176,
+    9,
+    183,
+    3
+   ],
+   "symbol": "lib/insecurity.ts::POST /api/Addresss"
+  },
+  {
+   "function": "routes/2fa.ts::function@142:7",
+   "method": "POST",
+   "path": "/rest/2fa/disable",
+   "reader": "express",
+   "registered": "server.ts:503",
+   "schema": "/rest/2fa/disable",
+   "shape": "method",
+   "site": "routes/2fa.ts:142",
+   "span": [
+    142,
+    7,
+    170,
+    1
+   ],
+   "symbol": "routes/2fa.ts::disable"
+  },
+  {
+   "function": "routes/2fa.ts::function@142:7",
+   "method": "POST",
+   "path": "/rest/2fa/disable",
+   "reader": "express",
+   "registered": "server.ts:503",
+   "schema": "/rest/2fa/disable",
+   "shape": "method",
+   "site": "routes/2fa.ts:142",
+   "span": [
+    142,
+    7,
+    170,
+    1
+   ],
+   "symbol": "routes/2fa.ts::disable"
+  },
+  {
+   "function": "routes/2fa.ts::function@16:7",
+   "method": "POST",
+   "path": "/rest/2fa/verify",
+   "reader": "express",
+   "registered": "server.ts:490",
+   "schema": "/rest/2fa/verify",
+   "shape": "method",
+   "site": "routes/2fa.ts:16",
+   "span": [
+    16,
+    7,
+    51,
+    1
+   ],
+   "symbol": "routes/2fa.ts::verify"
+  },
+  {
+   "function": "routes/2fa.ts::function@16:7",
+   "method": "POST",
+   "path": "/rest/2fa/verify",
+   "reader": "express",
+   "registered": "server.ts:490",
+   "schema": "/rest/2fa/verify",
+   "shape": "method",
+   "site": "routes/2fa.ts:16",
+   "span": [
+    16,
+    7,
+    51,
+    1
+   ],
+   "symbol": "routes/2fa.ts::verify"
+  },
+  {
+   "function": "routes/2fa.ts::function@58:7",
+   "method": "GET",
+   "path": "/rest/2fa/status",
+   "reader": "express",
+   "registered": "server.ts:495",
+   "schema": "/rest/2fa/status",
+   "shape": "method",
+   "site": "routes/2fa.ts:58",
+   "span": [
+    58,
+    7,
+    86,
+    1
+   ],
+   "symbol": "routes/2fa.ts::status"
+  },
+  {
+   "function": "routes/2fa.ts::function@58:7",
+   "method": "GET",
+   "path": "/rest/2fa/status",
+   "reader": "express",
+   "registered": "server.ts:495",
+   "schema": "/rest/2fa/status",
+   "shape": "method",
+   "site": "routes/2fa.ts:58",
+   "span": [
+    58,
+    7,
+    86,
+    1
+   ],
+   "symbol": "routes/2fa.ts::status"
+  },
+  {
+   "function": "routes/2fa.ts::function@97:7",
+   "method": "POST",
+   "path": "/rest/2fa/setup",
+   "reader": "express",
+   "registered": "server.ts:497",
+   "schema": "/rest/2fa/setup",
+   "shape": "method",
+   "site": "routes/2fa.ts:97",
+   "span": [
+    97,
+    7,
+    137,
+    1
+   ],
+   "symbol": "routes/2fa.ts::setup"
+  },
+  {
+   "function": "routes/2fa.ts::function@97:7",
+   "method": "POST",
+   "path": "/rest/2fa/setup",
+   "reader": "express",
+   "registered": "server.ts:497",
+   "schema": "/rest/2fa/setup",
+   "shape": "method",
+   "site": "routes/2fa.ts:97",
+   "span": [
+    97,
+    7,
+    137,
+    1
+   ],
+   "symbol": "routes/2fa.ts::setup"
+  },
+  {
+   "function": "routes/address.ts::function@10:9",
+   "method": "GET",
+   "path": "/api/Addresss",
+   "reader": "express",
+   "registered": "server.ts:481",
+   "schema": "/api/Addresss",
+   "shape": "method",
+   "site": "routes/address.ts:10",
+   "span": [
+    10,
+    9,
+    13,
+    3
+   ],
+   "symbol": "routes/address.ts::GET /api/Addresss"
+  },
+  {
+   "function": "routes/address.ts::function@10:9",
+   "method": "GET",
+   "path": "/api/Addresss",
+   "reader": "express",
+   "registered": "server.ts:481",
+   "schema": "/api/Addresss",
+   "shape": "method",
+   "site": "routes/address.ts:10",
+   "span": [
+    10,
+    9,
+    13,
+    3
+   ],
+   "symbol": "routes/address.ts::GET /api/Addresss"
+  },
+  {
+   "function": "routes/address.ts::function@17:9",
+   "method": "GET",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "registered": "server.ts:484",
+   "schema": "/api/Addresss/{}",
+   "shape": "method",
+   "site": "routes/address.ts:17",
+   "span": [
+    17,
+    9,
+    24,
+    3
+   ],
+   "symbol": "routes/address.ts::GET /api/Addresss/:id"
+  },
+  {
+   "function": "routes/address.ts::function@17:9",
+   "method": "GET",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "registered": "server.ts:484",
+   "schema": "/api/Addresss/{}",
+   "shape": "method",
+   "site": "routes/address.ts:17",
+   "span": [
+    17,
+    9,
+    24,
+    3
+   ],
+   "symbol": "routes/address.ts::GET /api/Addresss/:id"
+  },
+  {
+   "function": "routes/address.ts::function@28:9",
+   "method": "DELETE",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "registered": "server.ts:483",
+   "schema": "/api/Addresss/{}",
+   "shape": "method",
+   "site": "routes/address.ts:28",
+   "span": [
+    28,
+    9,
+    35,
+    3
+   ],
+   "symbol": "routes/address.ts::DELETE /api/Addresss/:id"
+  },
+  {
+   "function": "routes/address.ts::function@28:9",
+   "method": "DELETE",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "registered": "server.ts:483",
+   "schema": "/api/Addresss/{}",
+   "shape": "method",
+   "site": "routes/address.ts:28",
+   "span": [
+    28,
+    9,
+    35,
+    3
+   ],
+   "symbol": "routes/address.ts::DELETE /api/Addresss/:id"
+  },
+  {
+   "function": "routes/appConfiguration.ts::function@10:9",
+   "method": "GET",
+   "path": "/rest/admin/application-configuration",
+   "reader": "express",
+   "registered": "server.ts:646",
+   "schema": "/rest/admin/application-configuration",
+   "shape": "method",
+   "site": "routes/appConfiguration.ts:10",
+   "span": [
+    10,
+    9,
+    16,
+    3
+   ],
+   "symbol": "routes/appConfiguration.ts::GET /rest/admin/application-configuration"
+  },
+  {
+   "function": "routes/appConfiguration.ts::function@10:9",
+   "method": "GET",
+   "path": "/rest/admin/application-configuration",
+   "reader": "express",
+   "registered": "server.ts:646",
+   "schema": "/rest/admin/application-configuration",
+   "shape": "method",
+   "site": "routes/appConfiguration.ts:10",
+   "span": [
+    10,
+    9,
+    16,
+    3
+   ],
+   "symbol": "routes/appConfiguration.ts::GET /rest/admin/application-configuration"
+  },
+  {
+   "function": "routes/appVersion.ts::function@12:9",
+   "method": "GET",
+   "path": "/rest/admin/application-version",
+   "reader": "express",
+   "registered": "server.ts:645",
+   "schema": "/rest/admin/application-version",
+   "shape": "method",
+   "site": "routes/appVersion.ts:12",
+   "span": [
+    12,
+    9,
+    16,
+    3
+   ],
+   "symbol": "routes/appVersion.ts::GET /rest/admin/application-version"
+  },
+  {
+   "function": "routes/appVersion.ts::function@12:9",
+   "method": "GET",
+   "path": "/rest/admin/application-version",
+   "reader": "express",
+   "registered": "server.ts:645",
+   "schema": "/rest/admin/application-version",
+   "shape": "method",
+   "site": "routes/appVersion.ts:12",
+   "span": [
+    12,
+    9,
+    16,
+    3
+   ],
+   "symbol": "routes/appVersion.ts::GET /rest/admin/application-version"
+  },
+  {
+   "function": "routes/b2bOrder.ts::function@17:9",
+   "method": "POST",
+   "path": "/b2b/v2/orders",
+   "reader": "express",
+   "registered": "server.ts:688",
+   "schema": "/b2b/v2/orders",
+   "shape": "method",
+   "site": "routes/b2bOrder.ts:17",
+   "span": [
+    17,
+    9,
+    38,
+    3
+   ],
+   "symbol": "routes/b2bOrder.ts::POST /b2b/v2/orders"
+  },
+  {
+   "function": "routes/b2bOrder.ts::function@17:9",
+   "method": "POST",
+   "path": "/b2b/v2/orders",
+   "reader": "express",
+   "registered": "server.ts:688",
+   "schema": "/b2b/v2/orders",
+   "shape": "method",
+   "site": "routes/b2bOrder.ts:17",
+   "span": [
+    17,
+    9,
+    38,
+    3
+   ],
+   "symbol": "routes/b2bOrder.ts::POST /b2b/v2/orders"
+  },
+  {
+   "function": "routes/basket.ts::function@16:9",
+   "method": "GET",
+   "path": "/rest/basket/:id",
+   "reader": "express",
+   "registered": "server.ts:642",
+   "schema": "/rest/basket/{}",
+   "shape": "method",
+   "site": "routes/basket.ts:16",
+   "span": [
+    16,
+    9,
+    36,
+    3
+   ],
+   "symbol": "routes/basket.ts::GET /rest/basket/:id"
+  },
+  {
+   "function": "routes/basket.ts::function@16:9",
+   "method": "GET",
+   "path": "/rest/basket/:id",
+   "reader": "express",
+   "registered": "server.ts:642",
+   "schema": "/rest/basket/{}",
+   "shape": "method",
+   "site": "routes/basket.ts:16",
+   "span": [
+    16,
+    9,
+    36,
+    3
+   ],
+   "symbol": "routes/basket.ts::GET /rest/basket/:id"
+  },
+  {
+   "function": "routes/basketItems.ts::function@20:9",
+   "method": "POST",
+   "path": "/api/BasketItems",
+   "reader": "express",
+   "registered": "server.ts:459",
+   "schema": "/api/BasketItems",
+   "shape": "method",
+   "site": "routes/basketItems.ts:20",
+   "span": [
+    20,
+    9,
+    55,
+    3
+   ],
+   "symbol": "routes/basketItems.ts::POST /api/BasketItems"
+  },
+  {
+   "function": "routes/basketItems.ts::function@20:9",
+   "method": "POST",
+   "path": "/api/BasketItems",
+   "reader": "express",
+   "registered": "server.ts:459",
+   "schema": "/api/BasketItems",
+   "shape": "method",
+   "site": "routes/basketItems.ts:20",
+   "span": [
+    20,
+    9,
+    55,
+    3
+   ],
+   "symbol": "routes/basketItems.ts::POST /api/BasketItems"
+  },
+  {
+   "function": "routes/basketItems.ts::function@66:9",
+   "method": "PUT",
+   "path": "/api/BasketItems/:id",
+   "reader": "express",
+   "registered": "server.ts:458",
+   "schema": "/api/BasketItems/{}",
+   "shape": "method",
+   "site": "routes/basketItems.ts:66",
+   "span": [
+    66,
+    9,
+    84,
+    3
+   ],
+   "symbol": "routes/basketItems.ts::PUT /api/BasketItems/:id"
+  },
+  {
+   "function": "routes/basketItems.ts::function@66:9",
+   "method": "PUT",
+   "path": "/api/BasketItems/:id",
+   "reader": "express",
+   "registered": "server.ts:458",
+   "schema": "/api/BasketItems/{}",
+   "shape": "method",
+   "site": "routes/basketItems.ts:66",
+   "span": [
+    66,
+    9,
+    84,
+    3
+   ],
+   "symbol": "routes/basketItems.ts::PUT /api/BasketItems/:id"
+  },
+  {
+   "function": "routes/changePassword.ts::function@13:9",
+   "method": "GET",
+   "path": "/rest/user/change-password",
+   "reader": "express",
+   "registered": "server.ts:636",
+   "schema": "/rest/user/change-password",
+   "shape": "method",
+   "site": "routes/changePassword.ts:13",
+   "span": [
+    13,
+    9,
+    60,
+    3
+   ],
+   "symbol": "routes/changePassword.ts::GET /rest/user/change-password"
+  },
+  {
+   "function": "routes/changePassword.ts::function@13:9",
+   "method": "GET",
+   "path": "/rest/user/change-password",
+   "reader": "express",
+   "registered": "server.ts:636",
+   "schema": "/rest/user/change-password",
+   "shape": "method",
+   "site": "routes/changePassword.ts:13",
+   "span": [
+    13,
+    9,
+    60,
+    3
+   ],
+   "symbol": "routes/changePassword.ts::GET /rest/user/change-password"
+  },
+  {
+   "function": "routes/chat.ts::function@116:9",
+   "method": "POST",
+   "path": "/rest/chat",
+   "reader": "express",
+   "registered": "server.ts:678",
+   "schema": "/rest/chat",
+   "shape": "method",
+   "site": "routes/chat.ts:116",
+   "span": [
+    116,
+    9,
+    273,
+    3
+   ],
+   "symbol": "routes/chat.ts::POST /rest/chat"
+  },
+  {
+   "function": "routes/chat.ts::function@116:9",
+   "method": "POST",
+   "path": "/rest/chat",
+   "reader": "express",
+   "registered": "server.ts:678",
+   "schema": "/rest/chat",
+   "shape": "method",
+   "site": "routes/chat.ts:116",
+   "span": [
+    116,
+    9,
+    273,
+    3
+   ],
+   "symbol": "routes/chat.ts::POST /rest/chat"
+  },
+  {
+   "function": "routes/checkKeys.ts::function@35:9",
+   "method": "GET",
+   "path": "/rest/web3/nftUnlocked",
+   "reader": "express",
+   "registered": "server.ts:682",
+   "schema": "/rest/web3/nftUnlocked",
+   "shape": "method",
+   "site": "routes/checkKeys.ts:35",
+   "span": [
+    35,
+    9,
+    41,
+    3
+   ],
+   "symbol": "routes/checkKeys.ts::GET /rest/web3/nftUnlocked"
+  },
+  {
+   "function": "routes/checkKeys.ts::function@35:9",
+   "method": "GET",
+   "path": "/rest/web3/nftUnlocked",
+   "reader": "express",
+   "registered": "server.ts:682",
+   "schema": "/rest/web3/nftUnlocked",
+   "shape": "method",
+   "site": "routes/checkKeys.ts:35",
+   "span": [
+    35,
+    9,
+    41,
+    3
+   ],
+   "symbol": "routes/checkKeys.ts::GET /rest/web3/nftUnlocked"
+  },
+  {
+   "function": "routes/checkKeys.ts::function@7:9",
+   "method": "POST",
+   "path": "/rest/web3/submitKey",
+   "reader": "express",
+   "registered": "server.ts:681",
+   "schema": "/rest/web3/submitKey",
+   "shape": "method",
+   "site": "routes/checkKeys.ts:7",
+   "span": [
+    7,
+    9,
+    32,
+    3
+   ],
+   "symbol": "routes/checkKeys.ts::POST /rest/web3/submitKey"
+  },
+  {
+   "function": "routes/checkKeys.ts::function@7:9",
+   "method": "POST",
+   "path": "/rest/web3/submitKey",
+   "reader": "express",
+   "registered": "server.ts:681",
+   "schema": "/rest/web3/submitKey",
+   "shape": "method",
+   "site": "routes/checkKeys.ts:7",
+   "span": [
+    7,
+    9,
+    32,
+    3
+   ],
+   "symbol": "routes/checkKeys.ts::POST /rest/web3/submitKey"
+  },
+  {
+   "function": "routes/continueCode.ts::function@14:9",
+   "method": "GET",
+   "path": "/rest/continue-code",
+   "reader": "express",
+   "registered": "server.ts:648",
+   "schema": "/rest/continue-code",
+   "shape": "method",
+   "site": "routes/continueCode.ts:14",
+   "span": [
+    14,
+    9,
+    21,
+    3
+   ],
+   "symbol": "routes/continueCode.ts::GET /rest/continue-code"
+  },
+  {
+   "function": "routes/continueCode.ts::function@14:9",
+   "method": "GET",
+   "path": "/rest/continue-code",
+   "reader": "express",
+   "registered": "server.ts:648",
+   "schema": "/rest/continue-code",
+   "shape": "method",
+   "site": "routes/continueCode.ts:14",
+   "span": [
+    14,
+    9,
+    21,
+    3
+   ],
+   "symbol": "routes/continueCode.ts::GET /rest/continue-code"
+  },
+  {
+   "function": "routes/continueCode.ts::function@26:9",
+   "method": "GET",
+   "path": "/rest/continue-code-findIt",
+   "reader": "express",
+   "registered": "server.ts:649",
+   "schema": "/rest/continue-code-findIt",
+   "shape": "method",
+   "site": "routes/continueCode.ts:26",
+   "span": [
+    26,
+    9,
+    34,
+    3
+   ],
+   "symbol": "routes/continueCode.ts::GET /rest/continue-code-findIt"
+  },
+  {
+   "function": "routes/continueCode.ts::function@26:9",
+   "method": "GET",
+   "path": "/rest/continue-code-findIt",
+   "reader": "express",
+   "registered": "server.ts:649",
+   "schema": "/rest/continue-code-findIt",
+   "shape": "method",
+   "site": "routes/continueCode.ts:26",
+   "span": [
+    26,
+    9,
+    34,
+    3
+   ],
+   "symbol": "routes/continueCode.ts::GET /rest/continue-code-findIt"
+  },
+  {
+   "function": "routes/continueCode.ts::function@39:9",
+   "method": "GET",
+   "path": "/rest/continue-code-fixIt",
+   "reader": "express",
+   "registered": "server.ts:650",
+   "schema": "/rest/continue-code-fixIt",
+   "shape": "method",
+   "site": "routes/continueCode.ts:39",
+   "span": [
+    39,
+    9,
+    47,
+    3
+   ],
+   "symbol": "routes/continueCode.ts::GET /rest/continue-code-fixIt"
+  },
+  {
+   "function": "routes/continueCode.ts::function@39:9",
+   "method": "GET",
+   "path": "/rest/continue-code-fixIt",
+   "reader": "express",
+   "registered": "server.ts:650",
+   "schema": "/rest/continue-code-fixIt",
+   "shape": "method",
+   "site": "routes/continueCode.ts:39",
+   "span": [
+    39,
+    9,
+    47,
+    3
+   ],
+   "symbol": "routes/continueCode.ts::GET /rest/continue-code-fixIt"
+  },
+  {
+   "function": "routes/countryMapping.ts::function@11:9",
+   "method": "GET",
+   "path": "/rest/country-mapping",
+   "reader": "express",
+   "registered": "server.ts:657",
+   "schema": "/rest/country-mapping",
+   "shape": "method",
+   "site": "routes/countryMapping.ts:11",
+   "span": [
+    11,
+    9,
+    23,
+    3
+   ],
+   "symbol": "routes/countryMapping.ts::GET /rest/country-mapping"
+  },
+  {
+   "function": "routes/countryMapping.ts::function@11:9",
+   "method": "GET",
+   "path": "/rest/country-mapping",
+   "reader": "express",
+   "registered": "server.ts:657",
+   "schema": "/rest/country-mapping",
+   "shape": "method",
+   "site": "routes/countryMapping.ts:11",
+   "span": [
+    11,
+    9,
+    23,
+    3
+   ],
+   "symbol": "routes/countryMapping.ts::GET /rest/country-mapping"
+  },
+  {
+   "function": "routes/coupon.ts::function@11:9",
+   "method": "PUT",
+   "path": "/rest/basket/:id/coupon/:coupon",
+   "reader": "express",
+   "registered": "server.ts:644",
+   "schema": "/rest/basket/{}/coupon/{}",
+   "shape": "method",
+   "site": "routes/coupon.ts:11",
+   "span": [
+    11,
+    9,
+    33,
+    3
+   ],
+   "symbol": "routes/coupon.ts::PUT /rest/basket/:id/coupon/:coupon"
+  },
+  {
+   "function": "routes/coupon.ts::function@11:9",
+   "method": "PUT",
+   "path": "/rest/basket/:id/coupon/:coupon",
+   "reader": "express",
+   "registered": "server.ts:644",
+   "schema": "/rest/basket/{}/coupon/{}",
+   "shape": "method",
+   "site": "routes/coupon.ts:11",
+   "span": [
+    11,
+    9,
+    33,
+    3
+   ],
+   "symbol": "routes/coupon.ts::PUT /rest/basket/:id/coupon/:coupon"
+  },
+  {
+   "function": "routes/createProductReviews.ts::function@15:9",
+   "method": "PUT",
+   "path": "/rest/products/:id/reviews",
+   "reader": "express",
+   "registered": "server.ts:673",
+   "schema": "/rest/products/{}/reviews",
+   "shape": "method",
+   "site": "routes/createProductReviews.ts:15",
+   "span": [
+    15,
+    9,
+    34,
+    3
+   ],
+   "symbol": "routes/createProductReviews.ts::PUT /rest/products/:id/reviews"
+  },
+  {
+   "function": "routes/createProductReviews.ts::function@15:9",
+   "method": "PUT",
+   "path": "/rest/products/:id/reviews",
+   "reader": "express",
+   "registered": "server.ts:673",
+   "schema": "/rest/products/{}/reviews",
+   "shape": "method",
+   "site": "routes/createProductReviews.ts:15",
+   "span": [
+    15,
+    9,
+    34,
+    3
+   ],
+   "symbol": "routes/createProductReviews.ts::PUT /rest/products/:id/reviews"
+  },
+  {
+   "function": "routes/currentUser.ts::function@12:9",
+   "method": "GET",
+   "path": "/rest/user/whoami",
+   "reader": "express",
+   "registered": "server.ts:639",
+   "schema": "/rest/user/whoami",
+   "shape": "method",
+   "site": "routes/currentUser.ts:12",
+   "span": [
+    12,
+    9,
+    60,
+    3
+   ],
+   "symbol": "routes/currentUser.ts::GET /rest/user/whoami"
+  },
+  {
+   "function": "routes/currentUser.ts::function@12:9",
+   "method": "GET",
+   "path": "/rest/user/whoami",
+   "reader": "express",
+   "registered": "server.ts:639",
+   "schema": "/rest/user/whoami",
+   "shape": "method",
+   "site": "routes/currentUser.ts:12",
+   "span": [
+    12,
+    9,
+    60,
+    3
+   ],
+   "symbol": "routes/currentUser.ts::GET /rest/user/whoami"
+  },
   {
    "function": "routes/dataErasure.ts::function@24:16",
    "method": "GET",
@@ -563,6 +1822,210 @@
    "symbol": "routes/dataErasure.ts::POST /dataerasure"
   },
   {
+   "function": "routes/dataExport.ts::function@16:9",
+   "method": "POST",
+   "path": "/rest/user/data-export",
+   "reader": "express",
+   "registered": "server.ts:660",
+   "schema": "/rest/user/data-export",
+   "shape": "method",
+   "site": "routes/dataExport.ts:16",
+   "span": [
+    16,
+    9,
+    115,
+    3
+   ],
+   "symbol": "routes/dataExport.ts::POST /rest/user/data-export"
+  },
+  {
+   "function": "routes/dataExport.ts::function@16:9",
+   "method": "POST",
+   "path": "/rest/user/data-export",
+   "reader": "express",
+   "registered": "server.ts:660",
+   "schema": "/rest/user/data-export",
+   "shape": "method",
+   "site": "routes/dataExport.ts:16",
+   "span": [
+    16,
+    9,
+    115,
+    3
+   ],
+   "symbol": "routes/dataExport.ts::POST /rest/user/data-export"
+  },
+  {
+   "function": "routes/delivery.ts::function@12:9",
+   "method": "GET",
+   "path": "/api/Deliverys",
+   "reader": "express",
+   "registered": "server.ts:485",
+   "schema": "/api/Deliverys",
+   "shape": "method",
+   "site": "routes/delivery.ts:12",
+   "span": [
+    12,
+    9,
+    29,
+    3
+   ],
+   "symbol": "routes/delivery.ts::GET /api/Deliverys"
+  },
+  {
+   "function": "routes/delivery.ts::function@12:9",
+   "method": "GET",
+   "path": "/api/Deliverys",
+   "reader": "express",
+   "registered": "server.ts:485",
+   "schema": "/api/Deliverys",
+   "shape": "method",
+   "site": "routes/delivery.ts:12",
+   "span": [
+    12,
+    9,
+    29,
+    3
+   ],
+   "symbol": "routes/delivery.ts::GET /api/Deliverys"
+  },
+  {
+   "function": "routes/delivery.ts::function@33:9",
+   "method": "GET",
+   "path": "/api/Deliverys/:id",
+   "reader": "express",
+   "registered": "server.ts:486",
+   "schema": "/api/Deliverys/{}",
+   "shape": "method",
+   "site": "routes/delivery.ts:33",
+   "span": [
+    33,
+    9,
+    47,
+    3
+   ],
+   "symbol": "routes/delivery.ts::GET /api/Deliverys/:id"
+  },
+  {
+   "function": "routes/delivery.ts::function@33:9",
+   "method": "GET",
+   "path": "/api/Deliverys/:id",
+   "reader": "express",
+   "registered": "server.ts:486",
+   "schema": "/api/Deliverys/{}",
+   "shape": "method",
+   "site": "routes/delivery.ts:33",
+   "span": [
+    33,
+    9,
+    47,
+    3
+   ],
+   "symbol": "routes/delivery.ts::GET /api/Deliverys/:id"
+  },
+  {
+   "function": "routes/deluxe.ts::function@17:9",
+   "method": "POST",
+   "path": "/rest/deluxe-membership",
+   "reader": "express",
+   "registered": "server.ts:669",
+   "schema": "/rest/deluxe-membership",
+   "shape": "method",
+   "site": "routes/deluxe.ts:17",
+   "span": [
+    17,
+    9,
+    57,
+    3
+   ],
+   "symbol": "routes/deluxe.ts::POST /rest/deluxe-membership"
+  },
+  {
+   "function": "routes/deluxe.ts::function@17:9",
+   "method": "POST",
+   "path": "/rest/deluxe-membership",
+   "reader": "express",
+   "registered": "server.ts:669",
+   "schema": "/rest/deluxe-membership",
+   "shape": "method",
+   "site": "routes/deluxe.ts:17",
+   "span": [
+    17,
+    9,
+    57,
+    3
+   ],
+   "symbol": "routes/deluxe.ts::POST /rest/deluxe-membership"
+  },
+  {
+   "function": "routes/deluxe.ts::function@61:9",
+   "method": "GET",
+   "path": "/rest/deluxe-membership",
+   "reader": "express",
+   "registered": "server.ts:668",
+   "schema": "/rest/deluxe-membership",
+   "shape": "method",
+   "site": "routes/deluxe.ts:61",
+   "span": [
+    61,
+    9,
+    69,
+    3
+   ],
+   "symbol": "routes/deluxe.ts::GET /rest/deluxe-membership"
+  },
+  {
+   "function": "routes/deluxe.ts::function@61:9",
+   "method": "GET",
+   "path": "/rest/deluxe-membership",
+   "reader": "express",
+   "registered": "server.ts:668",
+   "schema": "/rest/deluxe-membership",
+   "shape": "method",
+   "site": "routes/deluxe.ts:61",
+   "span": [
+    61,
+    9,
+    69,
+    3
+   ],
+   "symbol": "routes/deluxe.ts::GET /rest/deluxe-membership"
+  },
+  {
+   "function": "routes/easterEgg.ts::function@12:9",
+   "method": "GET",
+   "path": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+   "reader": "express",
+   "registered": "server.ts:691",
+   "schema": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+   "shape": "method",
+   "site": "routes/easterEgg.ts:12",
+   "span": [
+    12,
+    9,
+    15,
+    3
+   ],
+   "symbol": "routes/easterEgg.ts::GET /the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg"
+  },
+  {
+   "function": "routes/easterEgg.ts::function@12:9",
+   "method": "GET",
+   "path": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+   "reader": "express",
+   "registered": "server.ts:691",
+   "schema": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+   "shape": "method",
+   "site": "routes/easterEgg.ts:12",
+   "span": [
+    12,
+    9,
+    15,
+    3
+   ],
+   "symbol": "routes/easterEgg.ts::GET /the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg"
+  },
+  {
    "function": "routes/fileUpload.ts::function@103:0",
    "method": "POST",
    "path": "/file-upload",
@@ -595,6 +2058,669 @@
     1
    ],
    "symbol": "routes/fileUpload.ts::handleYamlUpload"
+  },
+  {
+   "function": "routes/imageCaptcha.ts::function@13:9",
+   "method": "GET",
+   "path": "/rest/image-captcha",
+   "reader": "express",
+   "registered": "server.ts:655",
+   "schema": "/rest/image-captcha",
+   "shape": "method",
+   "site": "routes/imageCaptcha.ts:13",
+   "span": [
+    13,
+    9,
+    35,
+    3
+   ],
+   "symbol": "routes/imageCaptcha.ts::GET /rest/image-captcha"
+  },
+  {
+   "function": "routes/imageCaptcha.ts::function@13:9",
+   "method": "GET",
+   "path": "/rest/image-captcha",
+   "reader": "express",
+   "registered": "server.ts:655",
+   "schema": "/rest/image-captcha",
+   "shape": "method",
+   "site": "routes/imageCaptcha.ts:13",
+   "span": [
+    13,
+    9,
+    35,
+    3
+   ],
+   "symbol": "routes/imageCaptcha.ts::GET /rest/image-captcha"
+  },
+  {
+   "function": "routes/imageCaptcha.ts::function@38:40",
+   "method": "POST",
+   "path": "/rest/user/data-export",
+   "reader": "express",
+   "registered": "server.ts:659",
+   "schema": "/rest/user/data-export",
+   "shape": "method",
+   "site": "routes/imageCaptcha.ts:38",
+   "span": [
+    38,
+    40,
+    60,
+    1
+   ],
+   "symbol": "routes/imageCaptcha.ts::POST /rest/user/data-export"
+  },
+  {
+   "function": "routes/imageCaptcha.ts::function@38:40",
+   "method": "POST",
+   "path": "/rest/user/data-export",
+   "reader": "express",
+   "registered": "server.ts:659",
+   "schema": "/rest/user/data-export",
+   "shape": "method",
+   "site": "routes/imageCaptcha.ts:38",
+   "span": [
+    38,
+    40,
+    60,
+    1
+   ],
+   "symbol": "routes/imageCaptcha.ts::POST /rest/user/data-export"
+  },
+  {
+   "function": "routes/languages.ts::function@13:9",
+   "method": "GET",
+   "path": "/rest/languages",
+   "reader": "express",
+   "registered": "server.ts:661",
+   "schema": "/rest/languages",
+   "shape": "method",
+   "site": "routes/languages.ts:13",
+   "span": [
+    13,
+    9,
+    78,
+    3
+   ],
+   "symbol": "routes/languages.ts::GET /rest/languages"
+  },
+  {
+   "function": "routes/languages.ts::function@13:9",
+   "method": "GET",
+   "path": "/rest/languages",
+   "reader": "express",
+   "registered": "server.ts:661",
+   "schema": "/rest/languages",
+   "shape": "method",
+   "site": "routes/languages.ts:13",
+   "span": [
+    13,
+    9,
+    78,
+    3
+   ],
+   "symbol": "routes/languages.ts::GET /rest/languages"
+  },
+  {
+   "function": "routes/likeProductReviews.ts::function@17:9",
+   "method": "POST",
+   "path": "/rest/products/reviews",
+   "reader": "express",
+   "registered": "server.ts:675",
+   "schema": "/rest/products/reviews",
+   "shape": "method",
+   "site": "routes/likeProductReviews.ts:17",
+   "span": [
+    17,
+    9,
+    61,
+    3
+   ],
+   "symbol": "routes/likeProductReviews.ts::POST /rest/products/reviews"
+  },
+  {
+   "function": "routes/likeProductReviews.ts::function@17:9",
+   "method": "POST",
+   "path": "/rest/products/reviews",
+   "reader": "express",
+   "registered": "server.ts:675",
+   "schema": "/rest/products/reviews",
+   "shape": "method",
+   "site": "routes/likeProductReviews.ts:17",
+   "span": [
+    17,
+    9,
+    61,
+    3
+   ],
+   "symbol": "routes/likeProductReviews.ts::POST /rest/products/reviews"
+  },
+  {
+   "function": "routes/login.ts::function@32:9",
+   "method": "POST",
+   "path": "/rest/user/login",
+   "reader": "express",
+   "registered": "server.ts:635",
+   "schema": "/rest/user/login",
+   "shape": "method",
+   "site": "routes/login.ts:32",
+   "span": [
+    32,
+    9,
+    55,
+    3
+   ],
+   "symbol": "routes/login.ts::POST /rest/user/login"
+  },
+  {
+   "function": "routes/login.ts::function@32:9",
+   "method": "POST",
+   "path": "/rest/user/login",
+   "reader": "express",
+   "registered": "server.ts:635",
+   "schema": "/rest/user/login",
+   "shape": "method",
+   "site": "routes/login.ts:32",
+   "span": [
+    32,
+    9,
+    55,
+    3
+   ],
+   "symbol": "routes/login.ts::POST /rest/user/login"
+  },
+  {
+   "function": "routes/memory.ts::function@11:9",
+   "method": "POST",
+   "path": "/rest/memories",
+   "reader": "express",
+   "registered": "server.ts:344",
+   "schema": "/rest/memories",
+   "shape": "method",
+   "site": "routes/memory.ts:11",
+   "span": [
+    11,
+    9,
+    19,
+    3
+   ],
+   "symbol": "routes/memory.ts::POST /rest/memories"
+  },
+  {
+   "function": "routes/memory.ts::function@11:9",
+   "method": "POST",
+   "path": "/rest/memories",
+   "reader": "express",
+   "registered": "server.ts:344",
+   "schema": "/rest/memories",
+   "shape": "method",
+   "site": "routes/memory.ts:11",
+   "span": [
+    11,
+    9,
+    19,
+    3
+   ],
+   "symbol": "routes/memory.ts::POST /rest/memories"
+  },
+  {
+   "function": "routes/memory.ts::function@23:9",
+   "method": "GET",
+   "path": "/rest/memories",
+   "reader": "express",
+   "registered": "server.ts:670",
+   "schema": "/rest/memories",
+   "shape": "method",
+   "site": "routes/memory.ts:23",
+   "span": [
+    23,
+    9,
+    26,
+    3
+   ],
+   "symbol": "routes/memory.ts::GET /rest/memories"
+  },
+  {
+   "function": "routes/memory.ts::function@23:9",
+   "method": "GET",
+   "path": "/rest/memories",
+   "reader": "express",
+   "registered": "server.ts:670",
+   "schema": "/rest/memories",
+   "shape": "method",
+   "site": "routes/memory.ts:23",
+   "span": [
+    23,
+    9,
+    26,
+    3
+   ],
+   "symbol": "routes/memory.ts::GET /rest/memories"
+  },
+  {
+   "function": "routes/metrics.ts::function@85:9",
+   "method": "GET",
+   "path": "/metrics",
+   "reader": "express",
+   "registered": "server.ts:716",
+   "schema": "/metrics",
+   "shape": "method",
+   "site": "routes/metrics.ts:85",
+   "span": [
+    85,
+    9,
+    93,
+    3
+   ],
+   "symbol": "routes/metrics.ts::GET /metrics"
+  },
+  {
+   "function": "routes/metrics.ts::function@85:9",
+   "method": "GET",
+   "path": "/metrics",
+   "reader": "express",
+   "registered": "server.ts:716",
+   "schema": "/metrics",
+   "shape": "method",
+   "site": "routes/metrics.ts:85",
+   "span": [
+    85,
+    9,
+    93,
+    3
+   ],
+   "symbol": "routes/metrics.ts::GET /metrics"
+  },
+  {
+   "function": "routes/metrics.ts::function@85:9",
+   "method": "GET",
+   "path": "/metrics",
+   "reader": "express",
+   "registered": "server.ts:771",
+   "schema": "/metrics",
+   "shape": "method",
+   "site": "routes/metrics.ts:85",
+   "span": [
+    85,
+    9,
+    93,
+    3
+   ],
+   "symbol": "routes/metrics.ts::GET /metrics"
+  },
+  {
+   "function": "routes/nftMint.ts::function@14:9",
+   "method": "GET",
+   "path": "/rest/web3/nftMintListen",
+   "reader": "express",
+   "registered": "server.ts:683",
+   "schema": "/rest/web3/nftMintListen",
+   "shape": "method",
+   "site": "routes/nftMint.ts:14",
+   "span": [
+    14,
+    9,
+    35,
+    3
+   ],
+   "symbol": "routes/nftMint.ts::GET /rest/web3/nftMintListen"
+  },
+  {
+   "function": "routes/nftMint.ts::function@14:9",
+   "method": "GET",
+   "path": "/rest/web3/nftMintListen",
+   "reader": "express",
+   "registered": "server.ts:683",
+   "schema": "/rest/web3/nftMintListen",
+   "shape": "method",
+   "site": "routes/nftMint.ts:14",
+   "span": [
+    14,
+    9,
+    35,
+    3
+   ],
+   "symbol": "routes/nftMint.ts::GET /rest/web3/nftMintListen"
+  },
+  {
+   "function": "routes/nftMint.ts::function@39:9",
+   "method": "POST",
+   "path": "/rest/web3/walletNFTVerify",
+   "reader": "express",
+   "registered": "server.ts:684",
+   "schema": "/rest/web3/walletNFTVerify",
+   "shape": "method",
+   "site": "routes/nftMint.ts:39",
+   "span": [
+    39,
+    9,
+    52,
+    3
+   ],
+   "symbol": "routes/nftMint.ts::POST /rest/web3/walletNFTVerify"
+  },
+  {
+   "function": "routes/nftMint.ts::function@39:9",
+   "method": "POST",
+   "path": "/rest/web3/walletNFTVerify",
+   "reader": "express",
+   "registered": "server.ts:684",
+   "schema": "/rest/web3/walletNFTVerify",
+   "shape": "method",
+   "site": "routes/nftMint.ts:39",
+   "span": [
+    39,
+    9,
+    52,
+    3
+   ],
+   "symbol": "routes/nftMint.ts::POST /rest/web3/walletNFTVerify"
+  },
+  {
+   "function": "routes/order.ts::function@33:9",
+   "method": "POST",
+   "path": "/rest/basket/:id/checkout",
+   "reader": "express",
+   "registered": "server.ts:643",
+   "schema": "/rest/basket/{}/checkout",
+   "shape": "method",
+   "site": "routes/order.ts:33",
+   "span": [
+    33,
+    9,
+    187,
+    3
+   ],
+   "symbol": "routes/order.ts::POST /rest/basket/:id/checkout"
+  },
+  {
+   "function": "routes/order.ts::function@33:9",
+   "method": "POST",
+   "path": "/rest/basket/:id/checkout",
+   "reader": "express",
+   "registered": "server.ts:643",
+   "schema": "/rest/basket/{}/checkout",
+   "shape": "method",
+   "site": "routes/order.ts:33",
+   "span": [
+    33,
+    9,
+    187,
+    3
+   ],
+   "symbol": "routes/order.ts::POST /rest/basket/:id/checkout"
+  },
+  {
+   "function": "routes/orderHistory.ts::function@12:9",
+   "method": "GET",
+   "path": "/rest/order-history",
+   "reader": "express",
+   "registered": "server.ts:663",
+   "schema": "/rest/order-history",
+   "shape": "method",
+   "site": "routes/orderHistory.ts:12",
+   "span": [
+    12,
+    9,
+    22,
+    3
+   ],
+   "symbol": "routes/orderHistory.ts::GET /rest/order-history"
+  },
+  {
+   "function": "routes/orderHistory.ts::function@12:9",
+   "method": "GET",
+   "path": "/rest/order-history",
+   "reader": "express",
+   "registered": "server.ts:663",
+   "schema": "/rest/order-history",
+   "shape": "method",
+   "site": "routes/orderHistory.ts:12",
+   "span": [
+    12,
+    9,
+    22,
+    3
+   ],
+   "symbol": "routes/orderHistory.ts::GET /rest/order-history"
+  },
+  {
+   "function": "routes/orderHistory.ts::function@26:9",
+   "method": "GET",
+   "path": "/rest/order-history/orders",
+   "reader": "express",
+   "registered": "server.ts:664",
+   "schema": "/rest/order-history/orders",
+   "shape": "method",
+   "site": "routes/orderHistory.ts:26",
+   "span": [
+    26,
+    9,
+    29,
+    3
+   ],
+   "symbol": "routes/orderHistory.ts::GET /rest/order-history/orders"
+  },
+  {
+   "function": "routes/orderHistory.ts::function@26:9",
+   "method": "GET",
+   "path": "/rest/order-history/orders",
+   "reader": "express",
+   "registered": "server.ts:664",
+   "schema": "/rest/order-history/orders",
+   "shape": "method",
+   "site": "routes/orderHistory.ts:26",
+   "span": [
+    26,
+    9,
+    29,
+    3
+   ],
+   "symbol": "routes/orderHistory.ts::GET /rest/order-history/orders"
+  },
+  {
+   "function": "routes/orderHistory.ts::function@33:9",
+   "method": "PUT",
+   "path": "/rest/order-history/:id/delivery-status",
+   "reader": "express",
+   "registered": "server.ts:665",
+   "schema": "/rest/order-history/{}/delivery-status",
+   "shape": "method",
+   "site": "routes/orderHistory.ts:33",
+   "span": [
+    33,
+    9,
+    38,
+    3
+   ],
+   "symbol": "routes/orderHistory.ts::PUT /rest/order-history/:id/delivery-status"
+  },
+  {
+   "function": "routes/orderHistory.ts::function@33:9",
+   "method": "PUT",
+   "path": "/rest/order-history/:id/delivery-status",
+   "reader": "express",
+   "registered": "server.ts:665",
+   "schema": "/rest/order-history/{}/delivery-status",
+   "shape": "method",
+   "site": "routes/orderHistory.ts:33",
+   "span": [
+    33,
+    9,
+    38,
+    3
+   ],
+   "symbol": "routes/orderHistory.ts::PUT /rest/order-history/:id/delivery-status"
+  },
+  {
+   "function": "routes/passkey.ts::function@106:7",
+   "method": "POST",
+   "path": "/rest/passkey/register-verify",
+   "reader": "express",
+   "registered": "server.ts:510",
+   "schema": "/rest/passkey/register-verify",
+   "shape": "method",
+   "site": "routes/passkey.ts:106",
+   "span": [
+    106,
+    7,
+    152,
+    1
+   ],
+   "symbol": "routes/passkey.ts::registerVerify"
+  },
+  {
+   "function": "routes/passkey.ts::function@106:7",
+   "method": "POST",
+   "path": "/rest/passkey/register-verify",
+   "reader": "express",
+   "registered": "server.ts:510",
+   "schema": "/rest/passkey/register-verify",
+   "shape": "method",
+   "site": "routes/passkey.ts:106",
+   "span": [
+    106,
+    7,
+    152,
+    1
+   ],
+   "symbol": "routes/passkey.ts::registerVerify"
+  },
+  {
+   "function": "routes/passkey.ts::function@158:7",
+   "method": "POST",
+   "path": "/rest/passkey/login-options",
+   "reader": "express",
+   "registered": "server.ts:511",
+   "schema": "/rest/passkey/login-options",
+   "shape": "method",
+   "site": "routes/passkey.ts:158",
+   "span": [
+    158,
+    7,
+    174,
+    1
+   ],
+   "symbol": "routes/passkey.ts::loginOptions"
+  },
+  {
+   "function": "routes/passkey.ts::function@158:7",
+   "method": "POST",
+   "path": "/rest/passkey/login-options",
+   "reader": "express",
+   "registered": "server.ts:511",
+   "schema": "/rest/passkey/login-options",
+   "shape": "method",
+   "site": "routes/passkey.ts:158",
+   "span": [
+    158,
+    7,
+    174,
+    1
+   ],
+   "symbol": "routes/passkey.ts::loginOptions"
+  },
+  {
+   "function": "routes/passkey.ts::function@180:7",
+   "method": "POST",
+   "path": "/rest/passkey/login-verify",
+   "reader": "express",
+   "registered": "server.ts:512",
+   "schema": "/rest/passkey/login-verify",
+   "shape": "method",
+   "site": "routes/passkey.ts:180",
+   "span": [
+    180,
+    7,
+    223,
+    1
+   ],
+   "symbol": "routes/passkey.ts::loginVerify"
+  },
+  {
+   "function": "routes/passkey.ts::function@180:7",
+   "method": "POST",
+   "path": "/rest/passkey/login-verify",
+   "reader": "express",
+   "registered": "server.ts:512",
+   "schema": "/rest/passkey/login-verify",
+   "shape": "method",
+   "site": "routes/passkey.ts:180",
+   "span": [
+    180,
+    7,
+    223,
+    1
+   ],
+   "symbol": "routes/passkey.ts::loginVerify"
+  },
+  {
+   "function": "routes/passkey.ts::function@241:7",
+   "method": "GET",
+   "path": "/rest/passkey/credentials",
+   "reader": "express",
+   "registered": "server.ts:513",
+   "schema": "/rest/passkey/credentials",
+   "shape": "method",
+   "site": "routes/passkey.ts:241",
+   "span": [
+    241,
+    7,
+    257,
+    1
+   ],
+   "symbol": "routes/passkey.ts::listCredentials"
+  },
+  {
+   "function": "routes/passkey.ts::function@241:7",
+   "method": "GET",
+   "path": "/rest/passkey/credentials",
+   "reader": "express",
+   "registered": "server.ts:513",
+   "schema": "/rest/passkey/credentials",
+   "shape": "method",
+   "site": "routes/passkey.ts:241",
+   "span": [
+    241,
+    7,
+    257,
+    1
+   ],
+   "symbol": "routes/passkey.ts::listCredentials"
+  },
+  {
+   "function": "routes/passkey.ts::function@262:7",
+   "method": "DELETE",
+   "path": "/rest/passkey/credentials/:id",
+   "reader": "express",
+   "registered": "server.ts:514",
+   "schema": "/rest/passkey/credentials/{}",
+   "shape": "method",
+   "site": "routes/passkey.ts:262",
+   "span": [
+    262,
+    7,
+    270,
+    1
+   ],
+   "symbol": "routes/passkey.ts::deleteCredential"
+  },
+  {
+   "function": "routes/passkey.ts::function@262:7",
+   "method": "DELETE",
+   "path": "/rest/passkey/credentials/:id",
+   "reader": "express",
+   "registered": "server.ts:514",
+   "schema": "/rest/passkey/credentials/{}",
+   "shape": "method",
+   "site": "routes/passkey.ts:262",
+   "span": [
+    262,
+    7,
+    270,
+    1
+   ],
+   "symbol": "routes/passkey.ts::deleteCredential"
   },
   {
    "function": "routes/passkey.ts::function@276:7",
@@ -631,7 +2757,1299 @@
    "symbol": "routes/passkey.ts::passkeyEndpoints"
   },
   {
-   "gap": "express route OPTIONS *: the handler is no function of the snapshot: a external",
+   "function": "routes/passkey.ts::function@74:7",
+   "method": "GET",
+   "path": "/rest/passkey/register-options",
+   "reader": "express",
+   "registered": "server.ts:509",
+   "schema": "/rest/passkey/register-options",
+   "shape": "method",
+   "site": "routes/passkey.ts:74",
+   "span": [
+    74,
+    7,
+    100,
+    1
+   ],
+   "symbol": "routes/passkey.ts::registerOptions"
+  },
+  {
+   "function": "routes/passkey.ts::function@74:7",
+   "method": "GET",
+   "path": "/rest/passkey/register-options",
+   "reader": "express",
+   "registered": "server.ts:509",
+   "schema": "/rest/passkey/register-options",
+   "shape": "method",
+   "site": "routes/passkey.ts:74",
+   "span": [
+    74,
+    7,
+    100,
+    1
+   ],
+   "symbol": "routes/passkey.ts::registerOptions"
+  },
+  {
+   "function": "routes/payment.ts::function@19:9",
+   "method": "GET",
+   "path": "/api/Cards",
+   "reader": "express",
+   "registered": "server.ts:471",
+   "schema": "/api/Cards",
+   "shape": "method",
+   "site": "routes/payment.ts:19",
+   "span": [
+    19,
+    9,
+    36,
+    3
+   ],
+   "symbol": "routes/payment.ts::GET /api/Cards"
+  },
+  {
+   "function": "routes/payment.ts::function@19:9",
+   "method": "GET",
+   "path": "/api/Cards",
+   "reader": "express",
+   "registered": "server.ts:471",
+   "schema": "/api/Cards",
+   "shape": "method",
+   "site": "routes/payment.ts:19",
+   "span": [
+    19,
+    9,
+    36,
+    3
+   ],
+   "symbol": "routes/payment.ts::GET /api/Cards"
+  },
+  {
+   "function": "routes/payment.ts::function@40:9",
+   "method": "GET",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "registered": "server.ts:474",
+   "schema": "/api/Cards/{}",
+   "shape": "method",
+   "site": "routes/payment.ts:40",
+   "span": [
+    40,
+    9,
+    65,
+    3
+   ],
+   "symbol": "routes/payment.ts::GET /api/Cards/:id"
+  },
+  {
+   "function": "routes/payment.ts::function@40:9",
+   "method": "GET",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "registered": "server.ts:474",
+   "schema": "/api/Cards/{}",
+   "shape": "method",
+   "site": "routes/payment.ts:40",
+   "span": [
+    40,
+    9,
+    65,
+    3
+   ],
+   "symbol": "routes/payment.ts::GET /api/Cards/:id"
+  },
+  {
+   "function": "routes/payment.ts::function@69:9",
+   "method": "DELETE",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "registered": "server.ts:473",
+   "schema": "/api/Cards/{}",
+   "shape": "method",
+   "site": "routes/payment.ts:69",
+   "span": [
+    69,
+    9,
+    76,
+    3
+   ],
+   "symbol": "routes/payment.ts::DELETE /api/Cards/:id"
+  },
+  {
+   "function": "routes/payment.ts::function@69:9",
+   "method": "DELETE",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "registered": "server.ts:473",
+   "schema": "/api/Cards/{}",
+   "shape": "method",
+   "site": "routes/payment.ts:69",
+   "span": [
+    69,
+    9,
+    76,
+    3
+   ],
+   "symbol": "routes/payment.ts::DELETE /api/Cards/:id"
+  },
+  {
+   "function": "routes/premiumReward.ts::function@12:9",
+   "method": "GET",
+   "path": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+   "reader": "express",
+   "registered": "server.ts:692",
+   "schema": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+   "shape": "method",
+   "site": "routes/premiumReward.ts:12",
+   "span": [
+    12,
+    9,
+    15,
+    3
+   ],
+   "symbol": "routes/premiumReward.ts::GET /this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us"
+  },
+  {
+   "function": "routes/premiumReward.ts::function@12:9",
+   "method": "GET",
+   "path": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+   "reader": "express",
+   "registered": "server.ts:692",
+   "schema": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+   "shape": "method",
+   "site": "routes/premiumReward.ts:12",
+   "span": [
+    12,
+    9,
+    15,
+    3
+   ],
+   "symbol": "routes/premiumReward.ts::GET /this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us"
+  },
+  {
+   "function": "routes/privacyPolicyProof.ts::function@12:9",
+   "method": "GET",
+   "path": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+   "reader": "express",
+   "registered": "server.ts:693",
+   "schema": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+   "shape": "method",
+   "site": "routes/privacyPolicyProof.ts:12",
+   "span": [
+    12,
+    9,
+    15,
+    3
+   ],
+   "symbol": "routes/privacyPolicyProof.ts::GET /we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility"
+  },
+  {
+   "function": "routes/privacyPolicyProof.ts::function@12:9",
+   "method": "GET",
+   "path": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+   "reader": "express",
+   "registered": "server.ts:693",
+   "schema": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+   "shape": "method",
+   "site": "routes/privacyPolicyProof.ts:12",
+   "span": [
+    12,
+    9,
+    15,
+    3
+   ],
+   "symbol": "routes/privacyPolicyProof.ts::GET /we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility"
+  },
+  {
+   "function": "routes/profileImageFileUpload.ts::function@15:9",
+   "method": "POST",
+   "path": "/profile/image/file",
+   "reader": "express",
+   "registered": "server.ts:342",
+   "schema": "/profile/image/file",
+   "shape": "method",
+   "site": "routes/profileImageFileUpload.ts:15",
+   "span": [
+    15,
+    9,
+    57,
+    3
+   ],
+   "symbol": "routes/profileImageFileUpload.ts::POST /profile/image/file"
+  },
+  {
+   "function": "routes/profileImageFileUpload.ts::function@15:9",
+   "method": "POST",
+   "path": "/profile/image/file",
+   "reader": "express",
+   "registered": "server.ts:342",
+   "schema": "/profile/image/file",
+   "shape": "method",
+   "site": "routes/profileImageFileUpload.ts:15",
+   "span": [
+    15,
+    9,
+    57,
+    3
+   ],
+   "symbol": "routes/profileImageFileUpload.ts::POST /profile/image/file"
+  },
+  {
+   "function": "routes/profileImageUrlUpload.ts::function@17:9",
+   "method": "POST",
+   "path": "/profile/image/url",
+   "reader": "express",
+   "registered": "server.ts:343",
+   "schema": "/profile/image/url",
+   "shape": "method",
+   "site": "routes/profileImageUrlUpload.ts:17",
+   "span": [
+    17,
+    9,
+    50,
+    3
+   ],
+   "symbol": "routes/profileImageUrlUpload.ts::POST /profile/image/url"
+  },
+  {
+   "function": "routes/profileImageUrlUpload.ts::function@17:9",
+   "method": "POST",
+   "path": "/profile/image/url",
+   "reader": "express",
+   "registered": "server.ts:343",
+   "schema": "/profile/image/url",
+   "shape": "method",
+   "site": "routes/profileImageUrlUpload.ts:17",
+   "span": [
+    17,
+    9,
+    50,
+    3
+   ],
+   "symbol": "routes/profileImageUrlUpload.ts::POST /profile/image/url"
+  },
+  {
+   "function": "routes/recycles.ts::function@11:36",
+   "method": "GET",
+   "path": "/api/Recycles/:id",
+   "reader": "express",
+   "registered": "server.ts:420",
+   "schema": "/api/Recycles/{}",
+   "shape": "method",
+   "site": "routes/recycles.ts:11",
+   "span": [
+    11,
+    36,
+    21,
+    1
+   ],
+   "symbol": "routes/recycles.ts::GET /api/Recycles/:id"
+  },
+  {
+   "function": "routes/recycles.ts::function@11:36",
+   "method": "GET",
+   "path": "/api/Recycles/:id",
+   "reader": "express",
+   "registered": "server.ts:420",
+   "schema": "/api/Recycles/{}",
+   "shape": "method",
+   "site": "routes/recycles.ts:11",
+   "span": [
+    11,
+    36,
+    21,
+    1
+   ],
+   "symbol": "routes/recycles.ts::GET /api/Recycles/:id"
+  },
+  {
+   "function": "routes/recycles.ts::function@23:39",
+   "method": "GET",
+   "path": "/api/Recycles",
+   "reader": "express",
+   "registered": "server.ts:417",
+   "schema": "/api/Recycles",
+   "shape": "method",
+   "site": "routes/recycles.ts:23",
+   "span": [
+    23,
+    39,
+    26,
+    1
+   ],
+   "symbol": "routes/recycles.ts::GET /api/Recycles"
+  },
+  {
+   "function": "routes/recycles.ts::function@23:39",
+   "method": "GET",
+   "path": "/api/Recycles",
+   "reader": "express",
+   "registered": "server.ts:417",
+   "schema": "/api/Recycles",
+   "shape": "method",
+   "site": "routes/recycles.ts:23",
+   "span": [
+    23,
+    39,
+    26,
+    1
+   ],
+   "symbol": "routes/recycles.ts::GET /api/Recycles"
+  },
+  {
+   "function": "routes/redirect.ts::function@13:9",
+   "method": "GET",
+   "path": "/redirect",
+   "reader": "express",
+   "registered": "server.ts:699",
+   "schema": "/redirect",
+   "shape": "method",
+   "site": "routes/redirect.ts:13",
+   "span": [
+    13,
+    9,
+    23,
+    3
+   ],
+   "symbol": "routes/redirect.ts::GET /redirect"
+  },
+  {
+   "function": "routes/redirect.ts::function@13:9",
+   "method": "GET",
+   "path": "/redirect",
+   "reader": "express",
+   "registered": "server.ts:699",
+   "schema": "/redirect",
+   "shape": "method",
+   "site": "routes/redirect.ts:13",
+   "span": [
+    13,
+    9,
+    23,
+    3
+   ],
+   "symbol": "routes/redirect.ts::GET /redirect"
+  },
+  {
+   "function": "routes/repeatNotification.ts::function@10:9",
+   "method": "GET",
+   "path": "/rest/repeat-notification",
+   "reader": "express",
+   "registered": "server.ts:647",
+   "schema": "/rest/repeat-notification",
+   "shape": "method",
+   "site": "routes/repeatNotification.ts:10",
+   "span": [
+    10,
+    9,
+    19,
+    3
+   ],
+   "symbol": "routes/repeatNotification.ts::GET /rest/repeat-notification"
+  },
+  {
+   "function": "routes/repeatNotification.ts::function@10:9",
+   "method": "GET",
+   "path": "/rest/repeat-notification",
+   "reader": "express",
+   "registered": "server.ts:647",
+   "schema": "/rest/repeat-notification",
+   "shape": "method",
+   "site": "routes/repeatNotification.ts:10",
+   "span": [
+    10,
+    9,
+    19,
+    3
+   ],
+   "symbol": "routes/repeatNotification.ts::GET /rest/repeat-notification"
+  },
+  {
+   "function": "routes/resetPassword.ts::function@17:9",
+   "method": "POST",
+   "path": "/rest/user/reset-password",
+   "reader": "express",
+   "registered": "server.ts:637",
+   "schema": "/rest/user/reset-password",
+   "shape": "method",
+   "site": "routes/resetPassword.ts:17",
+   "span": [
+    17,
+    9,
+    54,
+    3
+   ],
+   "symbol": "routes/resetPassword.ts::POST /rest/user/reset-password"
+  },
+  {
+   "function": "routes/resetPassword.ts::function@17:9",
+   "method": "POST",
+   "path": "/rest/user/reset-password",
+   "reader": "express",
+   "registered": "server.ts:637",
+   "schema": "/rest/user/reset-password",
+   "shape": "method",
+   "site": "routes/resetPassword.ts:17",
+   "span": [
+    17,
+    9,
+    54,
+    3
+   ],
+   "symbol": "routes/resetPassword.ts::POST /rest/user/reset-password"
+  },
+  {
+   "function": "routes/restoreProgress.ts::function@17:9",
+   "method": "PUT",
+   "path": "/rest/continue-code/apply/:continueCode",
+   "reader": "express",
+   "registered": "server.ts:653",
+   "schema": "/rest/continue-code/apply/{}",
+   "shape": "method",
+   "site": "routes/restoreProgress.ts:17",
+   "span": [
+    17,
+    9,
+    37,
+    3
+   ],
+   "symbol": "routes/restoreProgress.ts::PUT /rest/continue-code/apply/:continueCode"
+  },
+  {
+   "function": "routes/restoreProgress.ts::function@17:9",
+   "method": "PUT",
+   "path": "/rest/continue-code/apply/:continueCode",
+   "reader": "express",
+   "registered": "server.ts:653",
+   "schema": "/rest/continue-code/apply/{}",
+   "shape": "method",
+   "site": "routes/restoreProgress.ts:17",
+   "span": [
+    17,
+    9,
+    37,
+    3
+   ],
+   "symbol": "routes/restoreProgress.ts::PUT /rest/continue-code/apply/:continueCode"
+  },
+  {
+   "function": "routes/restoreProgress.ts::function@41:9",
+   "method": "PUT",
+   "path": "/rest/continue-code-findIt/apply/:continueCode",
+   "reader": "express",
+   "registered": "server.ts:651",
+   "schema": "/rest/continue-code-findIt/apply/{}",
+   "shape": "method",
+   "site": "routes/restoreProgress.ts:41",
+   "span": [
+    41,
+    9,
+    58,
+    3
+   ],
+   "symbol": "routes/restoreProgress.ts::PUT /rest/continue-code-findIt/apply/:continueCode"
+  },
+  {
+   "function": "routes/restoreProgress.ts::function@41:9",
+   "method": "PUT",
+   "path": "/rest/continue-code-findIt/apply/:continueCode",
+   "reader": "express",
+   "registered": "server.ts:651",
+   "schema": "/rest/continue-code-findIt/apply/{}",
+   "shape": "method",
+   "site": "routes/restoreProgress.ts:41",
+   "span": [
+    41,
+    9,
+    58,
+    3
+   ],
+   "symbol": "routes/restoreProgress.ts::PUT /rest/continue-code-findIt/apply/:continueCode"
+  },
+  {
+   "function": "routes/restoreProgress.ts::function@63:9",
+   "method": "PUT",
+   "path": "/rest/continue-code-fixIt/apply/:continueCode",
+   "reader": "express",
+   "registered": "server.ts:652",
+   "schema": "/rest/continue-code-fixIt/apply/{}",
+   "shape": "method",
+   "site": "routes/restoreProgress.ts:63",
+   "span": [
+    63,
+    9,
+    79,
+    3
+   ],
+   "symbol": "routes/restoreProgress.ts::PUT /rest/continue-code-fixIt/apply/:continueCode"
+  },
+  {
+   "function": "routes/restoreProgress.ts::function@63:9",
+   "method": "PUT",
+   "path": "/rest/continue-code-fixIt/apply/:continueCode",
+   "reader": "express",
+   "registered": "server.ts:652",
+   "schema": "/rest/continue-code-fixIt/apply/{}",
+   "shape": "method",
+   "site": "routes/restoreProgress.ts:63",
+   "span": [
+    63,
+    9,
+    79,
+    3
+   ],
+   "symbol": "routes/restoreProgress.ts::PUT /rest/continue-code-fixIt/apply/:continueCode"
+  },
+  {
+   "function": "routes/saveLoginIp.ts::function@15:9",
+   "method": "GET",
+   "path": "/rest/saveLoginIp",
+   "reader": "express",
+   "registered": "server.ts:658",
+   "schema": "/rest/saveLoginIp",
+   "shape": "method",
+   "site": "routes/saveLoginIp.ts:15",
+   "span": [
+    15,
+    9,
+    40,
+    3
+   ],
+   "symbol": "routes/saveLoginIp.ts::GET /rest/saveLoginIp"
+  },
+  {
+   "function": "routes/saveLoginIp.ts::function@15:9",
+   "method": "GET",
+   "path": "/rest/saveLoginIp",
+   "reader": "express",
+   "registered": "server.ts:658",
+   "schema": "/rest/saveLoginIp",
+   "shape": "method",
+   "site": "routes/saveLoginIp.ts:15",
+   "span": [
+    15,
+    9,
+    40,
+    3
+   ],
+   "symbol": "routes/saveLoginIp.ts::GET /rest/saveLoginIp"
+  },
+  {
+   "function": "routes/search.ts::function@20:9",
+   "method": "GET",
+   "path": "/rest/products/search",
+   "reader": "express",
+   "registered": "server.ts:641",
+   "schema": "/rest/products/search",
+   "shape": "method",
+   "site": "routes/search.ts:20",
+   "span": [
+    20,
+    9,
+    75,
+    3
+   ],
+   "symbol": "routes/search.ts::GET /rest/products/search"
+  },
+  {
+   "function": "routes/search.ts::function@20:9",
+   "method": "GET",
+   "path": "/rest/products/search",
+   "reader": "express",
+   "registered": "server.ts:641",
+   "schema": "/rest/products/search",
+   "shape": "method",
+   "site": "routes/search.ts:20",
+   "span": [
+    20,
+    9,
+    75,
+    3
+   ],
+   "symbol": "routes/search.ts::GET /rest/products/search"
+  },
+  {
+   "function": "routes/securityQuestion.ts::function@12:9",
+   "method": "GET",
+   "path": "/rest/user/security-question",
+   "reader": "express",
+   "registered": "server.ts:638",
+   "schema": "/rest/user/security-question",
+   "shape": "method",
+   "site": "routes/securityQuestion.ts:12",
+   "span": [
+    12,
+    9,
+    30,
+    3
+   ],
+   "symbol": "routes/securityQuestion.ts::GET /rest/user/security-question"
+  },
+  {
+   "function": "routes/securityQuestion.ts::function@12:9",
+   "method": "GET",
+   "path": "/rest/user/security-question",
+   "reader": "express",
+   "registered": "server.ts:638",
+   "schema": "/rest/user/security-question",
+   "shape": "method",
+   "site": "routes/securityQuestion.ts:12",
+   "span": [
+    12,
+    9,
+    30,
+    3
+   ],
+   "symbol": "routes/securityQuestion.ts::GET /rest/user/security-question"
+  },
+  {
+   "function": "routes/showProductReviews.ts::function@29:9",
+   "method": "GET",
+   "path": "/rest/products/:id/reviews",
+   "reader": "express",
+   "registered": "server.ts:672",
+   "schema": "/rest/products/{}/reviews",
+   "shape": "method",
+   "site": "routes/showProductReviews.ts:29",
+   "span": [
+    29,
+    9,
+    49,
+    3
+   ],
+   "symbol": "routes/showProductReviews.ts::GET /rest/products/:id/reviews"
+  },
+  {
+   "function": "routes/showProductReviews.ts::function@29:9",
+   "method": "GET",
+   "path": "/rest/products/:id/reviews",
+   "reader": "express",
+   "registered": "server.ts:672",
+   "schema": "/rest/products/{}/reviews",
+   "shape": "method",
+   "site": "routes/showProductReviews.ts:29",
+   "span": [
+    29,
+    9,
+    49,
+    3
+   ],
+   "symbol": "routes/showProductReviews.ts::GET /rest/products/:id/reviews"
+  },
+  {
+   "function": "routes/tags.ts::function@11:9",
+   "method": "GET",
+   "path": "/rest/tags",
+   "reader": "express",
+   "registered": "server.ts:662",
+   "schema": "/rest/tags",
+   "shape": "method",
+   "site": "routes/tags.ts:11",
+   "span": [
+    11,
+    9,
+    18,
+    3
+   ],
+   "symbol": "routes/tags.ts::GET /rest/tags"
+  },
+  {
+   "function": "routes/tags.ts::function@11:9",
+   "method": "GET",
+   "path": "/rest/tags",
+   "reader": "express",
+   "registered": "server.ts:662",
+   "schema": "/rest/tags",
+   "shape": "method",
+   "site": "routes/tags.ts:11",
+   "span": [
+    11,
+    9,
+    18,
+    3
+   ],
+   "symbol": "routes/tags.ts::GET /rest/tags"
+  },
+  {
+   "function": "routes/trackOrder.ts::function@13:9",
+   "method": "GET",
+   "path": "/rest/track-order/:id",
+   "reader": "express",
+   "registered": "server.ts:656",
+   "schema": "/rest/track-order/{}",
+   "shape": "method",
+   "site": "routes/trackOrder.ts:13",
+   "span": [
+    13,
+    9,
+    28,
+    3
+   ],
+   "symbol": "routes/trackOrder.ts::GET /rest/track-order/:id"
+  },
+  {
+   "function": "routes/trackOrder.ts::function@13:9",
+   "method": "GET",
+   "path": "/rest/track-order/:id",
+   "reader": "express",
+   "registered": "server.ts:656",
+   "schema": "/rest/track-order/{}",
+   "shape": "method",
+   "site": "routes/trackOrder.ts:13",
+   "span": [
+    13,
+    9,
+    28,
+    3
+   ],
+   "symbol": "routes/trackOrder.ts::GET /rest/track-order/:id"
+  },
+  {
+   "function": "routes/updateProductReviews.ts::function@15:9",
+   "method": "PATCH",
+   "path": "/rest/products/reviews",
+   "reader": "express",
+   "registered": "server.ts:674",
+   "schema": "/rest/products/reviews",
+   "shape": "method",
+   "site": "routes/updateProductReviews.ts:15",
+   "span": [
+    15,
+    9,
+    29,
+    3
+   ],
+   "symbol": "routes/updateProductReviews.ts::PATCH /rest/products/reviews"
+  },
+  {
+   "function": "routes/updateProductReviews.ts::function@15:9",
+   "method": "PATCH",
+   "path": "/rest/products/reviews",
+   "reader": "express",
+   "registered": "server.ts:674",
+   "schema": "/rest/products/reviews",
+   "shape": "method",
+   "site": "routes/updateProductReviews.ts:15",
+   "span": [
+    15,
+    9,
+    29,
+    3
+   ],
+   "symbol": "routes/updateProductReviews.ts::PATCH /rest/products/reviews"
+  },
+  {
+   "function": "routes/updateUserProfile.ts::function@16:9",
+   "method": "POST",
+   "path": "/profile",
+   "reader": "express",
+   "registered": "server.ts:707",
+   "schema": "/profile",
+   "shape": "method",
+   "site": "routes/updateUserProfile.ts:16",
+   "span": [
+    16,
+    9,
+    48,
+    3
+   ],
+   "symbol": "routes/updateUserProfile.ts::POST /profile"
+  },
+  {
+   "function": "routes/updateUserProfile.ts::function@16:9",
+   "method": "POST",
+   "path": "/profile",
+   "reader": "express",
+   "registered": "server.ts:707",
+   "schema": "/profile",
+   "shape": "method",
+   "site": "routes/updateUserProfile.ts:16",
+   "span": [
+    16,
+    9,
+    48,
+    3
+   ],
+   "symbol": "routes/updateUserProfile.ts::POST /profile"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::emptyUserRegistration with others",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "registered": "server.ts:454",
+   "schema": "/api/Users",
+   "shape": "method",
+   "site": "routes/verify.ts:23",
+   "span": [
+    23,
+    43,
+    28,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::emptyUserRegistration with others",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "registered": "server.ts:454",
+   "schema": "/api/Users",
+   "shape": "method",
+   "site": "routes/verify.ts:23",
+   "span": [
+    23,
+    43,
+    28,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::forgedFeedbackChallenge with others",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "registered": "server.ts:434",
+   "schema": "/api/Feedbacks",
+   "shape": "method",
+   "site": "routes/verify.ts:30",
+   "span": [
+    30,
+    45,
+    37,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::forgedFeedbackChallenge with others",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "registered": "server.ts:434",
+   "schema": "/api/Feedbacks",
+   "shape": "method",
+   "site": "routes/verify.ts:30",
+   "span": [
+    30,
+    45,
+    37,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::captchaBypassChallenge with others",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "registered": "server.ts:438",
+   "schema": "/api/Feedbacks",
+   "shape": "method",
+   "site": "routes/verify.ts:39",
+   "span": [
+    39,
+    44,
+    50,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::captchaBypassChallenge with others",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "registered": "server.ts:438",
+   "schema": "/api/Feedbacks",
+   "shape": "method",
+   "site": "routes/verify.ts:39",
+   "span": [
+    39,
+    44,
+    50,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::registerAdminChallenge with others",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "registered": "server.ts:452",
+   "schema": "/api/Users",
+   "shape": "method",
+   "site": "routes/verify.ts:52",
+   "span": [
+    52,
+    44,
+    57,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::registerAdminChallenge with others",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "registered": "server.ts:452",
+   "schema": "/api/Users",
+   "shape": "method",
+   "site": "routes/verify.ts:52",
+   "span": [
+    52,
+    44,
+    57,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::passwordRepeatChallenge with others",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "registered": "server.ts:453",
+   "schema": "/api/Users",
+   "shape": "method",
+   "site": "routes/verify.ts:59",
+   "span": [
+    59,
+    45,
+    62,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express reports this entry without a unique snapshot handler at its site: the function there shares its node routes/verify.ts::passwordRepeatChallenge with others",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "registered": "server.ts:453",
+   "schema": "/api/Users",
+   "shape": "method",
+   "site": "routes/verify.ts:59",
+   "span": [
+    59,
+    45,
+    62,
+    1
+   ],
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "function": "routes/videoHandler.ts::function@19:9",
+   "method": "GET",
+   "path": "/video",
+   "reader": "express",
+   "registered": "server.ts:703",
+   "schema": "/video",
+   "shape": "method",
+   "site": "routes/videoHandler.ts:19",
+   "span": [
+    19,
+    9,
+    47,
+    3
+   ],
+   "symbol": "routes/videoHandler.ts::GET /video"
+  },
+  {
+   "function": "routes/videoHandler.ts::function@19:9",
+   "method": "GET",
+   "path": "/video",
+   "reader": "express",
+   "registered": "server.ts:703",
+   "schema": "/video",
+   "shape": "method",
+   "site": "routes/videoHandler.ts:19",
+   "span": [
+    19,
+    9,
+    47,
+    3
+   ],
+   "symbol": "routes/videoHandler.ts::GET /video"
+  },
+  {
+   "function": "routes/videoHandler.ts::function@51:9",
+   "method": "GET",
+   "path": "/promotion",
+   "reader": "express",
+   "registered": "server.ts:702",
+   "schema": "/promotion",
+   "shape": "method",
+   "site": "routes/videoHandler.ts:51",
+   "span": [
+    51,
+    9,
+    74,
+    3
+   ],
+   "symbol": "routes/videoHandler.ts::GET /promotion"
+  },
+  {
+   "function": "routes/videoHandler.ts::function@51:9",
+   "method": "GET",
+   "path": "/promotion",
+   "reader": "express",
+   "registered": "server.ts:702",
+   "schema": "/promotion",
+   "shape": "method",
+   "site": "routes/videoHandler.ts:51",
+   "span": [
+    51,
+    9,
+    74,
+    3
+   ],
+   "symbol": "routes/videoHandler.ts::GET /promotion"
+  },
+  {
+   "function": "routes/vulnCodeFixes.ts::function@58:36",
+   "method": "GET",
+   "path": "/snippets/fixes/:key",
+   "reader": "express",
+   "registered": "server.ts:712",
+   "schema": "/snippets/fixes/{}",
+   "shape": "method",
+   "site": "routes/vulnCodeFixes.ts:58",
+   "span": [
+    58,
+    36,
+    70,
+    1
+   ],
+   "symbol": "routes/vulnCodeFixes.ts::GET /snippets/fixes/:key"
+  },
+  {
+   "function": "routes/vulnCodeFixes.ts::function@58:36",
+   "method": "GET",
+   "path": "/snippets/fixes/:key",
+   "reader": "express",
+   "registered": "server.ts:712",
+   "schema": "/snippets/fixes/{}",
+   "shape": "method",
+   "site": "routes/vulnCodeFixes.ts:58",
+   "span": [
+    58,
+    36,
+    70,
+    1
+   ],
+   "symbol": "routes/vulnCodeFixes.ts::GET /snippets/fixes/:key"
+  },
+  {
+   "function": "routes/vulnCodeFixes.ts::function@72:37",
+   "method": "POST",
+   "path": "/snippets/fixes",
+   "reader": "express",
+   "registered": "server.ts:713",
+   "schema": "/snippets/fixes",
+   "shape": "method",
+   "site": "routes/vulnCodeFixes.ts:72",
+   "span": [
+    72,
+    37,
+    101,
+    1
+   ],
+   "symbol": "routes/vulnCodeFixes.ts::POST /snippets/fixes"
+  },
+  {
+   "function": "routes/vulnCodeFixes.ts::function@72:37",
+   "method": "POST",
+   "path": "/snippets/fixes",
+   "reader": "express",
+   "registered": "server.ts:713",
+   "schema": "/snippets/fixes",
+   "shape": "method",
+   "site": "routes/vulnCodeFixes.ts:72",
+   "span": [
+    72,
+    37,
+    101,
+    1
+   ],
+   "symbol": "routes/vulnCodeFixes.ts::POST /snippets/fixes"
+  },
+  {
+   "function": "routes/vulnCodeSnippet.ts::function@42:38",
+   "method": "GET",
+   "path": "/snippets/:challenge",
+   "reader": "express",
+   "registered": "server.ts:710",
+   "schema": "/snippets/{}",
+   "shape": "method",
+   "site": "routes/vulnCodeSnippet.ts:42",
+   "span": [
+    42,
+    38,
+    54,
+    1
+   ],
+   "symbol": "routes/vulnCodeSnippet.ts::GET /snippets/:challenge"
+  },
+  {
+   "function": "routes/vulnCodeSnippet.ts::function@42:38",
+   "method": "GET",
+   "path": "/snippets/:challenge",
+   "reader": "express",
+   "registered": "server.ts:710",
+   "schema": "/snippets/{}",
+   "shape": "method",
+   "site": "routes/vulnCodeSnippet.ts:42",
+   "span": [
+    42,
+    38,
+    54,
+    1
+   ],
+   "symbol": "routes/vulnCodeSnippet.ts::GET /snippets/:challenge"
+  },
+  {
+   "function": "routes/vulnCodeSnippet.ts::function@70:36",
+   "method": "POST",
+   "path": "/snippets/verdict",
+   "reader": "express",
+   "registered": "server.ts:711",
+   "schema": "/snippets/verdict",
+   "shape": "method",
+   "site": "routes/vulnCodeSnippet.ts:70",
+   "span": [
+    70,
+    36,
+    116,
+    1
+   ],
+   "symbol": "routes/vulnCodeSnippet.ts::POST /snippets/verdict"
+  },
+  {
+   "function": "routes/vulnCodeSnippet.ts::function@70:36",
+   "method": "POST",
+   "path": "/snippets/verdict",
+   "reader": "express",
+   "registered": "server.ts:711",
+   "schema": "/snippets/verdict",
+   "shape": "method",
+   "site": "routes/vulnCodeSnippet.ts:70",
+   "span": [
+    70,
+    36,
+    116,
+    1
+   ],
+   "symbol": "routes/vulnCodeSnippet.ts::POST /snippets/verdict"
+  },
+  {
+   "function": "routes/wallet.ts::function@11:9",
+   "method": "GET",
+   "path": "/rest/wallet/balance",
+   "reader": "express",
+   "registered": "server.ts:666",
+   "schema": "/rest/wallet/balance",
+   "shape": "method",
+   "site": "routes/wallet.ts:11",
+   "span": [
+    11,
+    9,
+    18,
+    3
+   ],
+   "symbol": "routes/wallet.ts::GET /rest/wallet/balance"
+  },
+  {
+   "function": "routes/wallet.ts::function@11:9",
+   "method": "GET",
+   "path": "/rest/wallet/balance",
+   "reader": "express",
+   "registered": "server.ts:666",
+   "schema": "/rest/wallet/balance",
+   "shape": "method",
+   "site": "routes/wallet.ts:11",
+   "span": [
+    11,
+    9,
+    18,
+    3
+   ],
+   "symbol": "routes/wallet.ts::GET /rest/wallet/balance"
+  },
+  {
+   "function": "routes/wallet.ts::function@22:9",
+   "method": "PUT",
+   "path": "/rest/wallet/balance",
+   "reader": "express",
+   "registered": "server.ts:667",
+   "schema": "/rest/wallet/balance",
+   "shape": "method",
+   "site": "routes/wallet.ts:22",
+   "span": [
+    22,
+    9,
+    35,
+    3
+   ],
+   "symbol": "routes/wallet.ts::PUT /rest/wallet/balance"
+  },
+  {
+   "function": "routes/wallet.ts::function@22:9",
+   "method": "PUT",
+   "path": "/rest/wallet/balance",
+   "reader": "express",
+   "registered": "server.ts:667",
+   "schema": "/rest/wallet/balance",
+   "shape": "method",
+   "site": "routes/wallet.ts:22",
+   "span": [
+    22,
+    9,
+    35,
+    3
+   ],
+   "symbol": "routes/wallet.ts::PUT /rest/wallet/balance"
+  },
+  {
+   "function": "routes/web3Wallet.ts::function@14:9",
+   "method": "POST",
+   "path": "/rest/web3/walletExploitAddress",
+   "reader": "express",
+   "registered": "server.ts:685",
+   "schema": "/rest/web3/walletExploitAddress",
+   "shape": "method",
+   "site": "routes/web3Wallet.ts:14",
+   "span": [
+    14,
+    9,
+    38,
+    3
+   ],
+   "symbol": "routes/web3Wallet.ts::POST /rest/web3/walletExploitAddress"
+  },
+  {
+   "function": "routes/web3Wallet.ts::function@14:9",
+   "method": "POST",
+   "path": "/rest/web3/walletExploitAddress",
+   "reader": "express",
+   "registered": "server.ts:685",
+   "schema": "/rest/web3/walletExploitAddress",
+   "shape": "method",
+   "site": "routes/web3Wallet.ts:14",
+   "span": [
+    14,
+    9,
+    38,
+    3
+   ],
+   "symbol": "routes/web3Wallet.ts::POST /rest/web3/walletExploitAddress"
+  },
+  {
+   "gap": "express route OPTIONS *: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "OPTIONS",
    "path": "*",
    "reader": "express",
@@ -640,7 +4058,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route OPTIONS *: the handler is no function of the snapshot: a external",
+   "gap": "express route OPTIONS *: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "OPTIONS",
    "path": "*",
    "reader": "express",
@@ -665,61 +4083,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /profile/image/file: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/profile/image/file",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:342",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /profile/image/file: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/profile/image/file",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:342",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /profile/image/url: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/profile/image/url",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:343",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /profile/image/url: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/profile/image/url",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:343",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/memories: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/memories",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:344",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/memories: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/memories",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:344",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/Users: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/Users",
    "reader": "express",
@@ -728,7 +4092,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/Users: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/Users",
    "reader": "express",
@@ -737,7 +4101,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Users/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Users/:id",
    "reader": "express",
@@ -746,7 +4110,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Users/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Users/:id",
    "reader": "express",
@@ -755,7 +4119,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/Users/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/Users/:id",
    "reader": "express",
@@ -764,7 +4128,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/Users/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/Users/:id",
    "reader": "express",
@@ -773,7 +4137,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route PUT /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route PUT /api/Users/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "PUT",
    "path": "/api/Users/:id",
    "reader": "express",
@@ -782,7 +4146,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route PUT /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route PUT /api/Users/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "PUT",
    "path": "/api/Users/:id",
    "reader": "express",
@@ -791,7 +4155,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Products: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Products: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Products",
    "reader": "express",
@@ -800,7 +4164,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Products: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Products: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Products",
    "reader": "express",
@@ -809,7 +4173,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Products/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Products/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Products/:id",
    "reader": "express",
@@ -818,7 +4182,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Products/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Products/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Products/:id",
    "reader": "express",
@@ -827,7 +4191,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Challenges: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Challenges: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Challenges",
    "reader": "express",
@@ -836,7 +4200,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Challenges: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Challenges: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Challenges",
    "reader": "express",
@@ -845,7 +4209,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Hints: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Hints: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Hints",
    "reader": "express",
@@ -854,7 +4218,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Hints: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Hints: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Hints",
    "reader": "express",
@@ -863,7 +4227,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Hints/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Hints/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Hints/:id",
    "reader": "express",
@@ -872,7 +4236,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Hints/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Hints/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Hints/:id",
    "reader": "express",
@@ -881,7 +4245,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/Hints/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/Hints/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/Hints/:id",
    "reader": "express",
@@ -890,7 +4254,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/Hints/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/Hints/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/Hints/:id",
    "reader": "express",
@@ -899,7 +4263,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/Complaints: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/Complaints: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/Complaints",
    "reader": "express",
@@ -908,7 +4272,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/Complaints: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/Complaints: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/Complaints",
    "reader": "express",
@@ -917,7 +4281,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Complaints: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Complaints: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Complaints",
    "reader": "express",
@@ -926,7 +4290,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Complaints: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Complaints: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Complaints",
    "reader": "express",
@@ -935,25 +4299,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/Recycles: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Recycles",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:417",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Recycles: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Recycles",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:417",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Recycles: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Recycles: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Recycles",
    "reader": "express",
@@ -962,7 +4308,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Recycles: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Recycles: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Recycles",
    "reader": "express",
@@ -971,25 +4317,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Recycles/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:420",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Recycles/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:420",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route PUT /api/Recycles/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "PUT",
    "path": "/api/Recycles/:id",
    "reader": "express",
@@ -998,7 +4326,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route PUT /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route PUT /api/Recycles/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "PUT",
    "path": "/api/Recycles/:id",
    "reader": "express",
@@ -1007,7 +4335,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Recycles/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Recycles/:id",
    "reader": "express",
@@ -1016,7 +4344,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Recycles/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Recycles/:id",
    "reader": "express",
@@ -1025,7 +4353,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/SecurityQuestions: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/SecurityQuestions: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/SecurityQuestions",
    "reader": "express",
@@ -1034,7 +4362,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/SecurityQuestions: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/SecurityQuestions: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/SecurityQuestions",
    "reader": "express",
@@ -1043,7 +4371,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/SecurityAnswers: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/SecurityAnswers: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/SecurityAnswers",
    "reader": "express",
@@ -1052,7 +4380,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/SecurityAnswers: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/SecurityAnswers: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/SecurityAnswers",
    "reader": "express",
@@ -1061,25 +4389,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Feedbacks",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:434",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Feedbacks",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:434",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: a call that passes a call the reader does not follow",
    "method": "POST",
    "path": "/api/Feedbacks",
    "reader": "express",
@@ -1088,30 +4398,12 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: a call that passes a call the reader does not follow",
    "method": "POST",
    "path": "/api/Feedbacks",
    "reader": "express",
    "shape": "method",
    "site": "server.ts:436",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Feedbacks",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:438",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Feedbacks",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:438",
    "symbol": "server.ts::<module>"
   },
   {
@@ -1149,97 +4441,7 @@
    "symbol": "server.ts::POST /api/Users"
   },
   {
-   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Users",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:452",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Users",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:452",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Users",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:453",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Users",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:453",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Users",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:454",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Users",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:454",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /api/BasketItems/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/api/BasketItems/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:458",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /api/BasketItems/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/api/BasketItems/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:458",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/BasketItems: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/BasketItems",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:459",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/BasketItems: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/BasketItems",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:459",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route DELETE /api/Quantitys/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Quantitys/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Quantitys/:id",
    "reader": "express",
@@ -1248,7 +4450,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Quantitys/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /api/Quantitys/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "DELETE",
    "path": "/api/Quantitys/:id",
    "reader": "express",
@@ -1257,7 +4459,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Quantitys: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Quantitys: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Quantitys",
    "reader": "express",
@@ -1266,7 +4468,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Quantitys: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/Quantitys: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/Quantitys",
    "reader": "express",
@@ -1275,7 +4477,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route PUT /api/Feedbacks/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route PUT /api/Feedbacks/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "PUT",
    "path": "/api/Feedbacks/:id",
    "reader": "express",
@@ -1284,7 +4486,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route PUT /api/Feedbacks/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route PUT /api/Feedbacks/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "PUT",
    "path": "/api/Feedbacks/:id",
    "reader": "express",
@@ -1293,43 +4495,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Cards: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Cards",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:470",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Cards: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Cards",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:470",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Cards: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Cards",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:471",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Cards: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Cards",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:471",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route PUT /api/Cards/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "PUT",
    "path": "/api/Cards/:id",
    "reader": "express",
@@ -1338,7 +4504,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route PUT /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route PUT /api/Cards/:id: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "PUT",
    "path": "/api/Cards/:id",
    "reader": "express",
@@ -1347,43 +4513,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route DELETE /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "DELETE",
-   "path": "/api/Cards/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:473",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route DELETE /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "DELETE",
-   "path": "/api/Cards/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:473",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Cards/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:474",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Cards/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:474",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/PrivacyRequests: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/PrivacyRequests: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/PrivacyRequests",
    "reader": "express",
@@ -1392,7 +4522,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/PrivacyRequests: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /api/PrivacyRequests: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "POST",
    "path": "/api/PrivacyRequests",
    "reader": "express",
@@ -1401,7 +4531,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/PrivacyRequests: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/PrivacyRequests: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/PrivacyRequests",
    "reader": "express",
@@ -1410,7 +4540,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /api/PrivacyRequests: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /api/PrivacyRequests: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "GET",
    "path": "/api/PrivacyRequests",
    "reader": "express",
@@ -1419,403 +4549,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route POST /api/Addresss: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Addresss",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:480",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /api/Addresss: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/api/Addresss",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:480",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Addresss: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Addresss",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:481",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Addresss: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Addresss",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:481",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/api/Addresss/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:482",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/api/Addresss/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:482",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route DELETE /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "DELETE",
-   "path": "/api/Addresss/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:483",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route DELETE /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "DELETE",
-   "path": "/api/Addresss/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:483",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Addresss/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:484",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Addresss/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:484",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Deliverys: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Deliverys",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:485",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Deliverys: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Deliverys",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:485",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Deliverys/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Deliverys/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:486",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /api/Deliverys/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/api/Deliverys/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:486",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/2fa/verify: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/2fa/verify",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:490",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/2fa/verify: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/2fa/verify",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:490",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/2fa/status: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/2fa/status",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:495",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/2fa/status: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/2fa/status",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:495",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/2fa/setup: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/2fa/setup",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:497",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/2fa/setup: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/2fa/setup",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:497",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/2fa/disable: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/2fa/disable",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:503",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/2fa/disable: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/2fa/disable",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:503",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/passkey/register-options: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/passkey/register-options",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:509",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/passkey/register-options: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/passkey/register-options",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:509",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/passkey/register-verify: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/passkey/register-verify",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:510",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/passkey/register-verify: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/passkey/register-verify",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:510",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/passkey/login-options: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/passkey/login-options",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:511",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/passkey/login-options: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/passkey/login-options",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:511",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/passkey/login-verify: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/passkey/login-verify",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:512",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/passkey/login-verify: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/passkey/login-verify",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:512",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/passkey/credentials: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/passkey/credentials",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:513",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/passkey/credentials: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/passkey/credentials",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:513",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route DELETE /rest/passkey/credentials/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "DELETE",
-   "path": "/rest/passkey/credentials/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:514",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route DELETE /rest/passkey/credentials/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "DELETE",
-   "path": "/rest/passkey/credentials/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:514",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/user/login: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/user/login",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:635",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/user/login: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/user/login",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:635",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/user/change-password: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/user/change-password",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:636",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/user/change-password: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/user/change-password",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:636",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/user/reset-password: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/user/reset-password",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:637",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/user/reset-password: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/user/reset-password",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:637",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/user/security-question: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/user/security-question",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:638",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/user/security-question: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/user/security-question",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:638",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/user/whoami: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/user/whoami",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:639",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/user/whoami: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/user/whoami",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:639",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/user/authentication-details: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /rest/user/authentication-details: the handler is no function of the snapshot: a call that passes a call the reader does not follow",
    "method": "GET",
    "path": "/rest/user/authentication-details",
    "reader": "express",
@@ -1824,7 +4558,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /rest/user/authentication-details: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /rest/user/authentication-details: the handler is no function of the snapshot: a call that passes a call the reader does not follow",
    "method": "GET",
    "path": "/rest/user/authentication-details",
    "reader": "express",
@@ -1833,241 +4567,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /rest/products/search: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/products/search",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:641",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/products/search: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/products/search",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:641",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/basket/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/basket/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:642",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/basket/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/basket/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:642",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/basket/:id/checkout: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/basket/:id/checkout",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:643",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/basket/:id/checkout: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/basket/:id/checkout",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:643",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/basket/:id/coupon/:coupon: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/basket/:id/coupon/:coupon",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:644",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/basket/:id/coupon/:coupon: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/basket/:id/coupon/:coupon",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:644",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/admin/application-version: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/admin/application-version",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:645",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/admin/application-version: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/admin/application-version",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:645",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/admin/application-configuration: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/admin/application-configuration",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:646",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/admin/application-configuration: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/admin/application-configuration",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:646",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/repeat-notification: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/repeat-notification",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:647",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/repeat-notification: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/repeat-notification",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:647",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/continue-code: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/continue-code",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:648",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/continue-code: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/continue-code",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:648",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/continue-code-findIt: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/continue-code-findIt",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:649",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/continue-code-findIt: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/continue-code-findIt",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:649",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/continue-code-fixIt: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/continue-code-fixIt",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:650",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/continue-code-fixIt: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/continue-code-fixIt",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:650",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/continue-code-findIt/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/continue-code-findIt/apply/:continueCode",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:651",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/continue-code-findIt/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/continue-code-findIt/apply/:continueCode",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:651",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/continue-code-fixIt/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/continue-code-fixIt/apply/:continueCode",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:652",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/continue-code-fixIt/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/continue-code-fixIt/apply/:continueCode",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:652",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/continue-code/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/continue-code/apply/:continueCode",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:653",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/continue-code/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/continue-code/apply/:continueCode",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:653",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/captcha: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /rest/captcha: the handler is no function of the snapshot: a call that passes a call the reader does not follow",
    "method": "GET",
    "path": "/rest/captcha",
    "reader": "express",
@@ -2076,7 +4576,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /rest/captcha: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /rest/captcha: the handler is no function of the snapshot: a call that passes a call the reader does not follow",
    "method": "GET",
    "path": "/rest/captcha",
    "reader": "express",
@@ -2085,601 +4585,7 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /rest/image-captcha: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/image-captcha",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:655",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/image-captcha: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/image-captcha",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:655",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/track-order/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/track-order/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:656",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/track-order/:id: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/track-order/:id",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:656",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/country-mapping: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/country-mapping",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:657",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/country-mapping: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/country-mapping",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:657",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/saveLoginIp: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/saveLoginIp",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:658",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/saveLoginIp: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/saveLoginIp",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:658",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/user/data-export: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/user/data-export",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:659",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/user/data-export: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/user/data-export",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:659",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/user/data-export: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/user/data-export",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:660",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/user/data-export: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/user/data-export",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:660",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/languages: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/languages",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:661",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/languages: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/languages",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:661",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/tags: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/tags",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:662",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/tags: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/tags",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:662",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/order-history: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/order-history",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:663",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/order-history: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/order-history",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:663",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/order-history/orders: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/order-history/orders",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:664",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/order-history/orders: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/order-history/orders",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:664",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/order-history/:id/delivery-status: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/order-history/:id/delivery-status",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:665",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/order-history/:id/delivery-status: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/order-history/:id/delivery-status",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:665",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/wallet/balance: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/wallet/balance",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:666",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/wallet/balance: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/wallet/balance",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:666",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/wallet/balance: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/wallet/balance",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:667",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/wallet/balance: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/wallet/balance",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:667",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/deluxe-membership: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/deluxe-membership",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:668",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/deluxe-membership: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/deluxe-membership",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:668",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/deluxe-membership: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/deluxe-membership",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:669",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/deluxe-membership: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/deluxe-membership",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:669",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/memories: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/memories",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:670",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/memories: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/memories",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:670",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/products/:id/reviews: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/products/:id/reviews",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:672",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/products/:id/reviews: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/products/:id/reviews",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:672",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/products/:id/reviews: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/products/:id/reviews",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:673",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PUT /rest/products/:id/reviews: the handler is no function of the snapshot: the value a function returns",
-   "method": "PUT",
-   "path": "/rest/products/:id/reviews",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:673",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PATCH /rest/products/reviews: the handler is no function of the snapshot: the value a function returns",
-   "method": "PATCH",
-   "path": "/rest/products/reviews",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:674",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route PATCH /rest/products/reviews: the handler is no function of the snapshot: the value a function returns",
-   "method": "PATCH",
-   "path": "/rest/products/reviews",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:674",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/products/reviews: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/products/reviews",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:675",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/products/reviews: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/products/reviews",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:675",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/chat: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/chat",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:678",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/chat: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/chat",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:678",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/web3/submitKey: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/web3/submitKey",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:681",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/web3/submitKey: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/web3/submitKey",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:681",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/web3/nftUnlocked: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/web3/nftUnlocked",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:682",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/web3/nftUnlocked: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/web3/nftUnlocked",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:682",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/web3/nftMintListen: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/web3/nftMintListen",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:683",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /rest/web3/nftMintListen: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/rest/web3/nftMintListen",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:683",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/web3/walletNFTVerify: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/web3/walletNFTVerify",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:684",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/web3/walletNFTVerify: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/web3/walletNFTVerify",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:684",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/web3/walletExploitAddress: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/web3/walletExploitAddress",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:685",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /rest/web3/walletExploitAddress: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/rest/web3/walletExploitAddress",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:685",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /b2b/v2/orders: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/b2b/v2/orders",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:688",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /b2b/v2/orders: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/b2b/v2/orders",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:688",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:691",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:691",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:692",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:692",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:693",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:693",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /redirect: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/redirect",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:699",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /redirect: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/redirect",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:699",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /promotion: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/promotion",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:702",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /promotion: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/promotion",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:702",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /video: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/video",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:703",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /video: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/video",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:703",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /profile: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /profile: the handler is no function of the snapshot: a call that passes a call the reader does not follow",
    "method": "GET",
    "path": "/profile",
    "reader": "express",
@@ -2688,133 +4594,16 @@
    "symbol": "server.ts::<module>"
   },
   {
-   "gap": "express route GET /profile: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /profile: the handler is no function of the snapshot: a call that passes a call the reader does not follow",
    "method": "GET",
    "path": "/profile",
    "reader": "express",
    "shape": "method",
    "site": "server.ts:706",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /profile: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/profile",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:707",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /profile: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/profile",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:707",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /snippets/:challenge: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/snippets/:challenge",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:710",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /snippets/:challenge: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/snippets/:challenge",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:710",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /snippets/verdict: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/snippets/verdict",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:711",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /snippets/verdict: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/snippets/verdict",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:711",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /snippets/fixes/:key: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/snippets/fixes/:key",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:712",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /snippets/fixes/:key: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/snippets/fixes/:key",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:712",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /snippets/fixes: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/snippets/fixes",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:713",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route POST /snippets/fixes: the handler is no function of the snapshot: the value a function returns",
-   "method": "POST",
-   "path": "/snippets/fixes",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:713",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /metrics: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/metrics",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:716",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /metrics: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/metrics",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:716",
-   "symbol": "server.ts::<module>"
-  },
-  {
-   "gap": "express route GET /metrics: the handler is no function of the snapshot: the value a function returns",
-   "method": "GET",
-   "path": "/metrics",
-   "reader": "express",
-   "shape": "method",
-   "site": "server.ts:771",
    "symbol": "server.ts::<module>"
   }
  ],
- "express_seconds": 3.5,
+ "express_seconds": 5.1,
  "name": "juice-shop",
  "noir": {
   "argv": [
@@ -2826,7 +4615,7 @@
    "--no-log"
   ],
   "returncode": 0,
-  "seconds": 2.4,
+  "seconds": 2.7,
   "stderr_tail": ""
  },
  "noir_rows": [
@@ -4828,7 +6617,235 @@
    "symbol": "routes/vulnCodeFixes.ts::checkCorrectFix"
   }
  ],
+ "sections": [
+  "express"
+ ],
  "sites": {
+  "lib/insecurity.ts::function@176:9": [
+   "lib/insecurity.ts:176",
+   [
+    176,
+    9,
+    183,
+    3
+   ]
+  ],
+  "routes/2fa.ts::function@142:7": [
+   "routes/2fa.ts:142",
+   [
+    142,
+    7,
+    170,
+    1
+   ]
+  ],
+  "routes/2fa.ts::function@16:7": [
+   "routes/2fa.ts:16",
+   [
+    16,
+    7,
+    51,
+    1
+   ]
+  ],
+  "routes/2fa.ts::function@58:7": [
+   "routes/2fa.ts:58",
+   [
+    58,
+    7,
+    86,
+    1
+   ]
+  ],
+  "routes/2fa.ts::function@97:7": [
+   "routes/2fa.ts:97",
+   [
+    97,
+    7,
+    137,
+    1
+   ]
+  ],
+  "routes/address.ts::function@10:9": [
+   "routes/address.ts:10",
+   [
+    10,
+    9,
+    13,
+    3
+   ]
+  ],
+  "routes/address.ts::function@17:9": [
+   "routes/address.ts:17",
+   [
+    17,
+    9,
+    24,
+    3
+   ]
+  ],
+  "routes/address.ts::function@28:9": [
+   "routes/address.ts:28",
+   [
+    28,
+    9,
+    35,
+    3
+   ]
+  ],
+  "routes/appConfiguration.ts::function@10:9": [
+   "routes/appConfiguration.ts:10",
+   [
+    10,
+    9,
+    16,
+    3
+   ]
+  ],
+  "routes/appVersion.ts::function@12:9": [
+   "routes/appVersion.ts:12",
+   [
+    12,
+    9,
+    16,
+    3
+   ]
+  ],
+  "routes/b2bOrder.ts::function@17:9": [
+   "routes/b2bOrder.ts:17",
+   [
+    17,
+    9,
+    38,
+    3
+   ]
+  ],
+  "routes/basket.ts::function@16:9": [
+   "routes/basket.ts:16",
+   [
+    16,
+    9,
+    36,
+    3
+   ]
+  ],
+  "routes/basketItems.ts::function@20:9": [
+   "routes/basketItems.ts:20",
+   [
+    20,
+    9,
+    55,
+    3
+   ]
+  ],
+  "routes/basketItems.ts::function@66:9": [
+   "routes/basketItems.ts:66",
+   [
+    66,
+    9,
+    84,
+    3
+   ]
+  ],
+  "routes/changePassword.ts::function@13:9": [
+   "routes/changePassword.ts:13",
+   [
+    13,
+    9,
+    60,
+    3
+   ]
+  ],
+  "routes/chat.ts::function@116:9": [
+   "routes/chat.ts:116",
+   [
+    116,
+    9,
+    273,
+    3
+   ]
+  ],
+  "routes/checkKeys.ts::function@35:9": [
+   "routes/checkKeys.ts:35",
+   [
+    35,
+    9,
+    41,
+    3
+   ]
+  ],
+  "routes/checkKeys.ts::function@7:9": [
+   "routes/checkKeys.ts:7",
+   [
+    7,
+    9,
+    32,
+    3
+   ]
+  ],
+  "routes/continueCode.ts::function@14:9": [
+   "routes/continueCode.ts:14",
+   [
+    14,
+    9,
+    21,
+    3
+   ]
+  ],
+  "routes/continueCode.ts::function@26:9": [
+   "routes/continueCode.ts:26",
+   [
+    26,
+    9,
+    34,
+    3
+   ]
+  ],
+  "routes/continueCode.ts::function@39:9": [
+   "routes/continueCode.ts:39",
+   [
+    39,
+    9,
+    47,
+    3
+   ]
+  ],
+  "routes/countryMapping.ts::function@11:9": [
+   "routes/countryMapping.ts:11",
+   [
+    11,
+    9,
+    23,
+    3
+   ]
+  ],
+  "routes/coupon.ts::function@11:9": [
+   "routes/coupon.ts:11",
+   [
+    11,
+    9,
+    33,
+    3
+   ]
+  ],
+  "routes/createProductReviews.ts::function@15:9": [
+   "routes/createProductReviews.ts:15",
+   [
+    15,
+    9,
+    34,
+    3
+   ]
+  ],
+  "routes/currentUser.ts::function@12:9": [
+   "routes/currentUser.ts:12",
+   [
+    12,
+    9,
+    60,
+    3
+   ]
+  ],
   "routes/dataErasure.ts::function@24:16": [
    "routes/dataErasure.ts:24",
    [
@@ -4847,12 +6864,237 @@
     1
    ]
   ],
+  "routes/dataExport.ts::function@16:9": [
+   "routes/dataExport.ts:16",
+   [
+    16,
+    9,
+    115,
+    3
+   ]
+  ],
+  "routes/delivery.ts::function@12:9": [
+   "routes/delivery.ts:12",
+   [
+    12,
+    9,
+    29,
+    3
+   ]
+  ],
+  "routes/delivery.ts::function@33:9": [
+   "routes/delivery.ts:33",
+   [
+    33,
+    9,
+    47,
+    3
+   ]
+  ],
+  "routes/deluxe.ts::function@17:9": [
+   "routes/deluxe.ts:17",
+   [
+    17,
+    9,
+    57,
+    3
+   ]
+  ],
+  "routes/deluxe.ts::function@61:9": [
+   "routes/deluxe.ts:61",
+   [
+    61,
+    9,
+    69,
+    3
+   ]
+  ],
+  "routes/easterEgg.ts::function@12:9": [
+   "routes/easterEgg.ts:12",
+   [
+    12,
+    9,
+    15,
+    3
+   ]
+  ],
   "routes/fileUpload.ts::function@103:0": [
    "routes/fileUpload.ts:103",
    [
     103,
     0,
     134,
+    1
+   ]
+  ],
+  "routes/imageCaptcha.ts::function@13:9": [
+   "routes/imageCaptcha.ts:13",
+   [
+    13,
+    9,
+    35,
+    3
+   ]
+  ],
+  "routes/imageCaptcha.ts::function@38:40": [
+   "routes/imageCaptcha.ts:38",
+   [
+    38,
+    40,
+    60,
+    1
+   ]
+  ],
+  "routes/languages.ts::function@13:9": [
+   "routes/languages.ts:13",
+   [
+    13,
+    9,
+    78,
+    3
+   ]
+  ],
+  "routes/likeProductReviews.ts::function@17:9": [
+   "routes/likeProductReviews.ts:17",
+   [
+    17,
+    9,
+    61,
+    3
+   ]
+  ],
+  "routes/login.ts::function@32:9": [
+   "routes/login.ts:32",
+   [
+    32,
+    9,
+    55,
+    3
+   ]
+  ],
+  "routes/memory.ts::function@11:9": [
+   "routes/memory.ts:11",
+   [
+    11,
+    9,
+    19,
+    3
+   ]
+  ],
+  "routes/memory.ts::function@23:9": [
+   "routes/memory.ts:23",
+   [
+    23,
+    9,
+    26,
+    3
+   ]
+  ],
+  "routes/metrics.ts::function@85:9": [
+   "routes/metrics.ts:85",
+   [
+    85,
+    9,
+    93,
+    3
+   ]
+  ],
+  "routes/nftMint.ts::function@14:9": [
+   "routes/nftMint.ts:14",
+   [
+    14,
+    9,
+    35,
+    3
+   ]
+  ],
+  "routes/nftMint.ts::function@39:9": [
+   "routes/nftMint.ts:39",
+   [
+    39,
+    9,
+    52,
+    3
+   ]
+  ],
+  "routes/order.ts::function@33:9": [
+   "routes/order.ts:33",
+   [
+    33,
+    9,
+    187,
+    3
+   ]
+  ],
+  "routes/orderHistory.ts::function@12:9": [
+   "routes/orderHistory.ts:12",
+   [
+    12,
+    9,
+    22,
+    3
+   ]
+  ],
+  "routes/orderHistory.ts::function@26:9": [
+   "routes/orderHistory.ts:26",
+   [
+    26,
+    9,
+    29,
+    3
+   ]
+  ],
+  "routes/orderHistory.ts::function@33:9": [
+   "routes/orderHistory.ts:33",
+   [
+    33,
+    9,
+    38,
+    3
+   ]
+  ],
+  "routes/passkey.ts::function@106:7": [
+   "routes/passkey.ts:106",
+   [
+    106,
+    7,
+    152,
+    1
+   ]
+  ],
+  "routes/passkey.ts::function@158:7": [
+   "routes/passkey.ts:158",
+   [
+    158,
+    7,
+    174,
+    1
+   ]
+  ],
+  "routes/passkey.ts::function@180:7": [
+   "routes/passkey.ts:180",
+   [
+    180,
+    7,
+    223,
+    1
+   ]
+  ],
+  "routes/passkey.ts::function@241:7": [
+   "routes/passkey.ts:241",
+   [
+    241,
+    7,
+    257,
+    1
+   ]
+  ],
+  "routes/passkey.ts::function@262:7": [
+   "routes/passkey.ts:262",
+   [
+    262,
+    7,
+    270,
     1
    ]
   ],
@@ -4865,6 +7107,303 @@
     1
    ]
   ],
+  "routes/passkey.ts::function@74:7": [
+   "routes/passkey.ts:74",
+   [
+    74,
+    7,
+    100,
+    1
+   ]
+  ],
+  "routes/payment.ts::function@19:9": [
+   "routes/payment.ts:19",
+   [
+    19,
+    9,
+    36,
+    3
+   ]
+  ],
+  "routes/payment.ts::function@40:9": [
+   "routes/payment.ts:40",
+   [
+    40,
+    9,
+    65,
+    3
+   ]
+  ],
+  "routes/payment.ts::function@69:9": [
+   "routes/payment.ts:69",
+   [
+    69,
+    9,
+    76,
+    3
+   ]
+  ],
+  "routes/premiumReward.ts::function@12:9": [
+   "routes/premiumReward.ts:12",
+   [
+    12,
+    9,
+    15,
+    3
+   ]
+  ],
+  "routes/privacyPolicyProof.ts::function@12:9": [
+   "routes/privacyPolicyProof.ts:12",
+   [
+    12,
+    9,
+    15,
+    3
+   ]
+  ],
+  "routes/profileImageFileUpload.ts::function@15:9": [
+   "routes/profileImageFileUpload.ts:15",
+   [
+    15,
+    9,
+    57,
+    3
+   ]
+  ],
+  "routes/profileImageUrlUpload.ts::function@17:9": [
+   "routes/profileImageUrlUpload.ts:17",
+   [
+    17,
+    9,
+    50,
+    3
+   ]
+  ],
+  "routes/recycles.ts::function@11:36": [
+   "routes/recycles.ts:11",
+   [
+    11,
+    36,
+    21,
+    1
+   ]
+  ],
+  "routes/recycles.ts::function@23:39": [
+   "routes/recycles.ts:23",
+   [
+    23,
+    39,
+    26,
+    1
+   ]
+  ],
+  "routes/redirect.ts::function@13:9": [
+   "routes/redirect.ts:13",
+   [
+    13,
+    9,
+    23,
+    3
+   ]
+  ],
+  "routes/repeatNotification.ts::function@10:9": [
+   "routes/repeatNotification.ts:10",
+   [
+    10,
+    9,
+    19,
+    3
+   ]
+  ],
+  "routes/resetPassword.ts::function@17:9": [
+   "routes/resetPassword.ts:17",
+   [
+    17,
+    9,
+    54,
+    3
+   ]
+  ],
+  "routes/restoreProgress.ts::function@17:9": [
+   "routes/restoreProgress.ts:17",
+   [
+    17,
+    9,
+    37,
+    3
+   ]
+  ],
+  "routes/restoreProgress.ts::function@41:9": [
+   "routes/restoreProgress.ts:41",
+   [
+    41,
+    9,
+    58,
+    3
+   ]
+  ],
+  "routes/restoreProgress.ts::function@63:9": [
+   "routes/restoreProgress.ts:63",
+   [
+    63,
+    9,
+    79,
+    3
+   ]
+  ],
+  "routes/saveLoginIp.ts::function@15:9": [
+   "routes/saveLoginIp.ts:15",
+   [
+    15,
+    9,
+    40,
+    3
+   ]
+  ],
+  "routes/search.ts::function@20:9": [
+   "routes/search.ts:20",
+   [
+    20,
+    9,
+    75,
+    3
+   ]
+  ],
+  "routes/securityQuestion.ts::function@12:9": [
+   "routes/securityQuestion.ts:12",
+   [
+    12,
+    9,
+    30,
+    3
+   ]
+  ],
+  "routes/showProductReviews.ts::function@29:9": [
+   "routes/showProductReviews.ts:29",
+   [
+    29,
+    9,
+    49,
+    3
+   ]
+  ],
+  "routes/tags.ts::function@11:9": [
+   "routes/tags.ts:11",
+   [
+    11,
+    9,
+    18,
+    3
+   ]
+  ],
+  "routes/trackOrder.ts::function@13:9": [
+   "routes/trackOrder.ts:13",
+   [
+    13,
+    9,
+    28,
+    3
+   ]
+  ],
+  "routes/updateProductReviews.ts::function@15:9": [
+   "routes/updateProductReviews.ts:15",
+   [
+    15,
+    9,
+    29,
+    3
+   ]
+  ],
+  "routes/updateUserProfile.ts::function@16:9": [
+   "routes/updateUserProfile.ts:16",
+   [
+    16,
+    9,
+    48,
+    3
+   ]
+  ],
+  "routes/videoHandler.ts::function@19:9": [
+   "routes/videoHandler.ts:19",
+   [
+    19,
+    9,
+    47,
+    3
+   ]
+  ],
+  "routes/videoHandler.ts::function@51:9": [
+   "routes/videoHandler.ts:51",
+   [
+    51,
+    9,
+    74,
+    3
+   ]
+  ],
+  "routes/vulnCodeFixes.ts::function@58:36": [
+   "routes/vulnCodeFixes.ts:58",
+   [
+    58,
+    36,
+    70,
+    1
+   ]
+  ],
+  "routes/vulnCodeFixes.ts::function@72:37": [
+   "routes/vulnCodeFixes.ts:72",
+   [
+    72,
+    37,
+    101,
+    1
+   ]
+  ],
+  "routes/vulnCodeSnippet.ts::function@42:38": [
+   "routes/vulnCodeSnippet.ts:42",
+   [
+    42,
+    38,
+    54,
+    1
+   ]
+  ],
+  "routes/vulnCodeSnippet.ts::function@70:36": [
+   "routes/vulnCodeSnippet.ts:70",
+   [
+    70,
+    36,
+    116,
+    1
+   ]
+  ],
+  "routes/wallet.ts::function@11:9": [
+   "routes/wallet.ts:11",
+   [
+    11,
+    9,
+    18,
+    3
+   ]
+  ],
+  "routes/wallet.ts::function@22:9": [
+   "routes/wallet.ts:22",
+   [
+    22,
+    9,
+    35,
+    3
+   ]
+  ],
+  "routes/web3Wallet.ts::function@14:9": [
+   "routes/web3Wallet.ts:14",
+   [
+    14,
+    9,
+    38,
+    3
+   ]
+  ],
   "server.ts::function@440:25": [
    "server.ts:440",
    [
@@ -4875,5 +7414,5 @@
    ]
   ]
  },
- "snapshot_seconds": 45.8
+ "snapshot_seconds": 46.1
 }

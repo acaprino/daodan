@@ -134,3 +134,26 @@ Le cause, per peso:
 - **`use` con prefisso non letterale** (il punto aperto di `T1.C.8`): in node-express-boilerplate (`router.use(route.path, route.route)` in un `forEach`) le rotte cadono prima sulla lacuna del gestore; nelle altre tre non compare. Non pesa oggi.
 
 Dove il modulo lega, compone i prefissi che Noir perde: 236 rotte di anything-llm hanno la stessa funzione di Noir e il percorso con `/api` che Noir non mette. Su tududi la regola `offre` (`benchmarks/tududi-flow/rules.json`, sola, nei link) offre 306 registrazioni: il modulo le legge tutte (righe o lacune) e ne lega 52.
+
+## Gestori metodo, chiamata e router passato (`T1.C.13`)
+
+Il modulo (VERSION 4) chiude le tre cause di `T1.C.9` con i dati di `read_code`: un gestore che è un metodo di un oggetto scritto o di un'istanza di una classe del progetto (`new Controller()`) è la `method_definition` o il campo con quel nome; un gestore che è una chiamata (`catchAsync(fn)`, una fabbrica, scritta sul posto o legata a un nome) è la funzione che il suo argomento esegue (un argomento che è a sua volta una chiamata conta per ciò che quella esegue: `asyncHandler(chat())` è ciò che `chat()` restituisce, mai l'involucro), altrimenti ciò che la funzione chiamata restituisce, altrimenti lacuna; un router passato come argomento si segue di funzione in funzione, ognuna una volta. Stessa regola, scritta prima della corsa di `T1.C.9`, stessa misura.
+
+### Esito (Modal, 28 novembre 2026, app `ap-wtUgyg4WBJBLCXnmphtsZV`; campione `ap-2oQCeWw7cxPOvQrInVEEBK`)
+
+| Applicazione | Righe del modulo | Legate dal modulo (`T1.C.9`) | Legate da Noir | Stessa rotta e funzione | Stessa funzione, percorso diverso | Solo del modulo / solo di Noir | Tempo del modulo |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| node-express-boilerplate | 15 | **0** (0) | 13 | 0 | 0 | 0 / 13 | 0,2 s |
+| anything-llm | 344 | **336** (261) | 354 | 20 | 310 | 4 / 22 | 10,8 s |
+| juice-shop | 247 | **90** (5) | 106 | 14 | 0 | 76 / 92 | 5,1 s |
+| tududi | 384 | **350** (76) | 369 | 303 | 3 | 44 / 66 | 18,8 s |
+| **Totale** | 990 | **776** (342) | 842 | 337 | 313 | 124 / 193 | |
+
+**Decisione: non collegato.** Il criterio 1 non passa in nessuna applicazione (776 contro 842); il criterio 2 passa: il campione (20 delle 124 rotte solo del modulo, seme 24) ha **0 legami sbagliati**: 13 fabbriche di juice-shop (la funzione restituita, anche dentro `utils.asyncHandler(...)`), 2 gestori `handle(async ...)` di tududi (chiavi di un oggetto), 2 `OPTIONS` di CalDAV, 2 `app.all("*")` di anything-llm, 1 `all` dei test di tududi. Una prima corsa (`ap-E0XRtG29KLvGyHrNf22uF9`, campione `ap-kZszgZkOpmXbVMQB4k7j2x`) legava `utils.asyncHandler(chat())` all'involucro di `asyncHandler` (9 legami sbagliati su 20): da qui l'argomento che è una chiamata e la lacuna «a call that passes a call the reader does not follow». Su tududi la regola `offre` offre 306 registrazioni: il modulo le legge tutte e ne lega 286 (52 in `T1.C.9`).
+
+Le cause che restano:
+
+- **node-express-boilerplate:** i router si montano in un `forEach` su un array di oggetti (`defaultRoutes.forEach((route) => router.use(route.path, route.route))`): il parametro della funzione passata a `forEach` non ha chiamate da seguire, «a router no app mounts» (13).
+- **juice-shop:** 48 rotte il cui ultimo argomento è un middleware che non restituisce una funzione del progetto (`security.denyAll()`, `security.appendUserId()` da soli), 8 involucri di una chiamata che il lettore non segue, 10 lacune del legatore (funzioni che condividono il nodo in `routes/verify.ts`); Noir lega 92 rotte che il modulo non lega con quel metodo.
+- **anything-llm:** 22 rotte solo di Noir, fra cui gli `app.all("*")` che Noir scrive metodo per metodo.
+- **tududi:** «a router no app mounts» (20) e percorsi non letterali (13), come in `T1.C.9`.

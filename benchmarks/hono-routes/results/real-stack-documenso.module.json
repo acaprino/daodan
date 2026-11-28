@@ -262,7 +262,7 @@
   "same_function_other_path": 27,
   "same_route_and_function": 8
  },
- "express_peak_mb": 1352.4,
+ "express_peak_mb": 1361.4,
  "express_rows": [
   {
    "gap": "hono route POST /: mounted by no app the reader reaches",
@@ -1091,7 +1091,7 @@
    "symbol": "packages/ee/server-only/signing/csc/hono/session-status.ts::<module>"
   }
  ],
- "express_seconds": 50.7,
+ "express_seconds": 68.4,
  "name": "real-stack-documenso",
  "noir": {
   "argv": [
@@ -1103,7 +1103,7 @@
    "--no-log"
   ],
   "returncode": 0,
-  "seconds": 2.8,
+  "seconds": 3.5,
   "stderr_tail": ""
  },
  "noir_outside": 341,
@@ -2353,5 +2353,5 @@
    ]
   ]
  },
- "snapshot_seconds": 93.0
+ "snapshot_seconds": 113.2
 }
