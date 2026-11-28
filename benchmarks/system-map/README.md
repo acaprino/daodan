@@ -112,6 +112,7 @@ Una prova del 20 novembre 2026: un programma a parte sul compilatore TypeScript,
 | Tre corse sullo stesso progetto (task 2b) | `python benchmarks/system-map/score.py runs DA-ZERO SENZA-MODIFICHE UN-MODULO`, su tre cartelle con `pipeline-events.jsonl`, i `container-runs.jsonl` e `links.json` (`found`, `of`, di `possible.py`): tempo, ripristini, avvii degli indicizzatori e dell'app, collegamenti ritrovati; una corsa che costa meno e ritrova meno collegamenti è segnata, non contata come un guadagno. CPU, picco di RAM e spazio temporaneo non sono in nessun evento: «non misurato», finché la pipeline non li scrive. *Scritto il 23 novembre 2026 con uscite sintetiche; la misura su Modal aspetta il via del proprietario.* |
 | Collegamenti possibili | sullo snapshot di un caso con il motore: `python daodan/core/flows.py links MANIFEST --rules RULES > LINKS.json`, poi `python benchmarks/system-map/possible.py MANIFEST LINKS.json EXPECTED-system.json --generators ritorno,incerto` (`--generators ""` per i soli collegamenti certi) |
 | Ingressi senza regole | `modal run benchmarks/system-map/modal_map.py::entries --tars CASO=ARCHIVIO[,CASO=ARCHIVIO]`, poi `python entries.py measure results/system/entries/CASO/candidates.json expected/CASO-system.json results/system/entries/CASO/files.txt` |
+| Avvio e preparazione dei passi | `modal run benchmarks/system-map/modal_map.py::steps --tars CASO=ARCHIVIO[,CASO=ARCHIVIO] [--tag TAG]`: rapporto, diario dei passi e log delle corse nel container in `results/system/TAG/CASO/steps.json` e sul volume, `TAG/CASO/runs` |
 
 ## Risultati
 
@@ -374,6 +375,41 @@ Domande per il proprietario (nessuna scelta qui):
 3. Le righe di Renovate dei gestori senza ecosistema (`terraform`, `cloudbuild`, `helm-values`) restano scartate, o la pre-mappa ne tiene `packageFile` e gestore come fatto?
 4. Il `COPY` in `/docker-entrypoint-initdb.d` su un'immagine `postgres` è un ingresso: lo dice una tabella di dati sulle immagini ufficiali (come `http-clients.json` sulle librerie), o resta al mapper?
 5. Gli orari scritti con `Thread`/`Thread.sleep` (e gli equivalenti di altri linguaggi) si cercano dai simboli del compilatore in una tabella dati: si apre il passo, dopo la correzione di `--targetroot` per Java?
+
+### Avvio e preparazione su Bank of Anthos (28 novembre 2026)
+
+Stesso archivio della diagnosi (sha256 `2650240f…ccbcdc`), nessun LLM, i container della pipeline su Modal Sandboxes. Comando: `modal run benchmarks/system-map/modal_map.py::steps --tars bank-of-anthos=<archivio> --tag TAG`, che scrive il rapporto del passaggio, il diario dei passi (`pipeline-events.jsonl`) e i log di ogni corsa nel container in `results/system/TAG/bank-of-anthos/` e, i log, sul volume (`TAG/bank-of-anthos/runs`). Prima: develop `ae3ab3e`, tag `boa-prep-before`, app `ap-Xc5YjsVqmEeqhP5UqS1lH7`. Dopo: con le due correzioni sotto, tag `boa-prep-after`, app `ap-nEt1y5jkih2CULrghmsD9d`. Il primo `find_modules`, quello di `snapshot.py write --no-engine`, dice «no container engine» per ogni sorgente: il passaggio lo rifà con il motore, ed è quello che conta qui.
+
+| Linguaggio, modulo | Passo | Prima | Dopo | Causa |
+| --- | --- | --- | --- | --- |
+| Python, `src/accounts/{contacts,userservice}`, `src/frontend`, `src/loadgenerator` | pre-mappa uv (`uv export`, `uv tree`, 8 comandi) | failed | fresh | prima: `approval_required` per `github.com` e i tre host di GitHub, dove mise prende Python 3.14 (`requires-python >=3.14`) che `uv tree` chiedeva per filtrare l'albero |
+| Java, reattore Maven alla radice | pre-mappa Maven | fresh | fresh | |
+| tutti | pre-mappa Renovate, BuildKit, Noir | fresh | fresh | |
+| tutti | pre-mappa Make (`make -pn`) | parziale | parziale | `Makefile:102: PROJECT_ID is undefined`: il Makefile del progetto si ferma senza la variabile |
+| Java, `ledgerwriter`, `transactionhistory`, `balancereader`, `ledgermonolith` (un reattore) | restore e build (`mvn clean verify` di `scip-java index`) | fresh | fresh | `BUILD SUCCESS` |
+| Java, stessi | indice SCIP (scip-java 0.14.2) | fresh | fresh | 797 KB; in `T0.B.2` era `failed`, corretto da `--targetroot` fuori da `target/` (`indexers/jvm.py`), qui misurato per la prima volta |
+| Java, stessi | preparazione di `run_and_observe` (agente, compilazione, provider di Surefire) e test | fresh | fresh | 38 test in tre moduli (21, 8, 9), nessuno in `ledgermonolith`; 520 siti osservati |
+| Python, i cinque progetti | restore dell'ambiente dell'indice (sull'host, solo wheel) | failed in parte | failed in parte | `sqlalchemy==1.4.54` non ha wheel per CPython 3.14 e l'ambiente si fa con `--no-build`: `contacts` e `userservice` sono indicizzati senza SQLAlchemy |
+| Python, stessi | indice SCIP (scip-python 0.6.8) | fresh | fresh | |
+| Python, `contacts`, `userservice` | preparazione di `run_and_observe` (uv, `uv sync --locked`, gruppo `dev`) e test | failed | fresh | prima: `uv: not found`; dopo 19 e 17 test passati, 535 siti, 176 buchi chiusi |
+| Python, `frontend`, `loadgenerator` | `run_and_observe` | non eseguito | non eseguito | il progetto non dichiara test |
+| JavaScript, `src/frontend/static/scripts`, `.github/workflows/ui-tests` | restore (`@types/node`) e indice SCIP (scip-typescript 0.6.2) | fresh | fresh | |
+| JavaScript, stessi | `run_and_observe` | non eseguito | non eseguito | nessun `package.json` con uno script `test` |
+| fogli di stile | indice | fresh | fresh | nessun osservatore per questo linguaggio |
+
+Correzioni, entrambe colpa di Daodan:
+
+1. **Gli strumenti della preparazione su Modal.** `container.tool_phase` installa da root le ricette di `preparation.NEEDS` (qui uv) prima di un restore, ma `modal_pipeline.sandbox_run` riceveva `tools` e lo ignorava: su Modal il restore Python non aveva uv. Ora il copione della fase (`container.tool_script`, lo stesso con Docker) apre la preparazione della sandbox (`prepare_line`), e il suo log apre `prepare.log` come con Docker. Test: `test_the_tools_a_restore_needs_install_first_in_the_preparations_sandbox`.
+2. **uv legge il lock senza Python.** `uv tree --frozen` filtra l'albero con un interprete del `requires-python` del progetto e senza uno si ferma (provato su Modal sull'immagine con Python 3.12, `ap-6rAKX2gJw4zMsKDRtqb67M`: «No interpreter found for Python >=3.14»; `uv export --frozen` risponde). L'opzione ufficiale `--universal` dà l'albero per ogni Python e piattaforma del lock senza interprete. Così lo strumento `uv` di `container_runner` non installa più il Python del progetto con mise, che lo prende da GitHub, un host che chiede all'utente. Le risposte registrate di `uv_workspace` e `local_deps` hanno il nuovo comando, preso con `modal_premap.py --store` (`ap-3rKqOkTXVTWrIzEEcl2yOz`), e l'albero è lo stesso. Test: `test_uv_reads_the_lock_on_no_python_of_the_project`.
+
+Suite intera su Modal con le due correzioni (`--shards 33 -q -n 2`, `ap-iH3xVIIaCNTw4XUPIBIb9u`): 4870 passati, 0 falliti; `benchmarks/project-model/test_modal_pipeline.py`: 11 passati (`ap-6bLHQoIij6EPzwoeSG3IMk`).
+
+Lacune che restano, non colpa della preparazione di Daodan o da decidere:
+
+- **SQLAlchemy 1.4.54 su Python 3.14 (scelta del proprietario).** L'ambiente che scip-python legge si fa sull'host solo con wheel (`--no-build`), perché costruire un sdist esegue il suo `setup.py`. Per questa versione PyPI non ha una wheel per CPython 3.14. Le strade sono due: costruire l'ambiente dell'indice nel container, oppure lasciare la lacuna. Il restore nel container del passo dinamico lo costruisce già.
+- **Il registratore Python su 3.14.6.** Le due corse dicono `recorder_unverified`: il registratore è verificato su CPython 3.12 e 3.13. È un limite del registratore, non della preparazione.
+- **Make.** Il `Makefile` del progetto chiede `PROJECT_ID`.
+- **Test non dichiarati.** Né JavaScript né `frontend` o `loadgenerator` dichiarano test.
 
 ### Due analisi complete sullo stesso snapshot JavaScript, 21 novembre 2026
 

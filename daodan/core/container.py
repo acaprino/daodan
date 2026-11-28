@@ -1684,16 +1684,20 @@ def own(engine: Engine, image: str, copy: Path | None, mounts: list[str], limits
                  flags=OWN)
 
 
+def tool_script(tools: dict) -> str:
+    """The script of `tool_phase`: the recipes (`tools`' `lines`) into the state volume, then the volume given to
+    `NOBODY`. Another engine runs it as the first part of its preparation (`benchmarks/project-model/modal_pipeline.py`)."""
+    return "\n".join(["set -u", f'mkdir -p "$HOME" {STATE}/tools/bin', *tools["lines"], f"chown -R {NOBODY} {STATE}"])
+
+
 def tool_phase(engine: Engine, image: str, tools: dict, network: str, env: dict[str, str], state: str,
                limits: dict, timeout: float, out_dir: Path, log: str = "prepare") -> dict:
     """The recipes of `preparation.NEEDS` (`tools`' `lines`) as root, with the state volume (`state`, `name:path`)
     and without /work, with no capability but those their recipes need (`tools`' `caps`) and `CHOWN`, which then
     gives the state volume back to `NOBODY`; on `network`, the proxy's. Its log begins `<log>.log`; its row."""
     caps = sorted({"CHOWN", *tools.get("caps", ())})
-    script = "\n".join(["set -u", f'mkdir -p "$HOME" {STATE}/tools/bin', *tools["lines"],
-                        f"chown -R {NOBODY} {STATE}"])
-    return phase(engine, "tools", image=image, command=["sh", "-c", script], network=network, env=env, limits=limits,
-                 timeout=timeout, copy=None, outputs=[], out_dir=out_dir, volumes=[state],
+    return phase(engine, "tools", image=image, command=["sh", "-c", tool_script(tools)], network=network, env=env,
+                 limits=limits, timeout=timeout, copy=None, outputs=[], out_dir=out_dir, volumes=[state],
                  flags=("--cap-drop", "ALL", *(word for cap in caps for word in ("--cap-add", cap))), log=log)
 
 

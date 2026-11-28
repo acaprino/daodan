@@ -81,9 +81,9 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
                           "registries": True, "values": True},
     "cargo": {"files": preparation.NEEDS["rust"]["files"], "setup": preparation.NEEDS["rust"]["setup"],
               "runs_on": ("rust",)},
+    # uv reads the lock with no interpreter (`premap.uv`): it runs on no Python of the project
     "uv": {"files": [preparation.UV],
-           "setup": [f"tar -xzf {IN}/uv.tar.gz -C {T} && cp {T}/uv-x86_64-unknown-linux-gnu/uv {T}/bin/"],
-           "runs_on": ("python",)},
+           "setup": [f"tar -xzf {IN}/uv.tar.gz -C {T} && cp {T}/uv-x86_64-unknown-linux-gnu/uv {T}/bin/"]},
     "npm": {"files": [NODE], "setup": [UNPACK["node"]], "runs_on": ("node",)},
     # a tsconfig extends files of the installed packages and files their install generates: `restores`, the
     # family of `preparation.RESTORES` whose packages the setup restores first, their lifecycle scripts after with no network

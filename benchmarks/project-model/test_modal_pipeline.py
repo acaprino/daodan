@@ -27,6 +27,21 @@ def test_a_run_that_starts_valgrind_or_services_takes_a_vm_sandbox():
     assert not modal_pipeline.vm(["sh", "-c", "npm test"], ())
 
 
+def test_the_tools_a_restore_needs_install_first_in_the_preparations_sandbox():
+    """`container.tool_phase` installs the recipes of `preparation.NEEDS` as root before a restore; on Modal they run
+    first in the preparation's sandbox. Bank of Anthos, 28 November 2026: without them uv was missing and the Python
+    tests' restore said `uv: not found`."""
+    import container
+    import preparation
+    tools = preparation.setup({"uv"})
+    line = modal_pipeline.prepare_line("cd /work", ["sh", "-c", "uv sync"], {"lines": tools["lines"], "caps": []})
+    installed = line.index(preparation.UNPACK_UV.split(" && ")[0])
+    assert line.startswith("cd /work && ") and installed < line.index("exec sh -c 'uv sync'")
+    assert f"chown -R {container.NOBODY}" in line
+    assert modal_pipeline.prepare_line("cd /work", ["true"], None) == 'cd /work && mkdir -p "$HOME" && exec true'
+    assert modal_pipeline.prepare_line("cd /work", ["true"], {"lines": [], "caps": []}).endswith("exec true")
+
+
 def git(cwd: Path, *args: str) -> str:
     return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=cwd, check=True,
                           capture_output=True, text=True).stdout.strip()

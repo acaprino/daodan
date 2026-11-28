@@ -19,6 +19,7 @@ benchmarks/system-map/results/system/TAG` brings a run here. Nothing heavy runs 
     modal run --detach benchmarks/system-map/modal_map.py::links --case tududi --out PATH
     modal run benchmarks/system-map/modal_map.py::entries --tars CASE=PATH[,CASE=PATH] [--tag entries]
     modal run benchmarks/system-map/modal_map.py::facts --tars CASE=PATH[,CASE=PATH] [--tag facts]
+    modal run benchmarks/system-map/modal_map.py::steps --tars CASE=PATH[,CASE=PATH] [--tag steps]
     modal run benchmarks/system-map/modal_map.py::possible --snapshot VOLUME-DIR --source VOLUME-DIR --rules PATH
            --expected PATH --out PATH [--generators ritorno,incerto]
     modal run benchmarks/system-map/modal_map.py::engine_proof_run [--tag TAG] [--out PATH]
@@ -936,6 +937,48 @@ def facts(tars: str, tag: str = "facts"):
         (out / "facts.json").write_bytes(json.dumps(result, ensure_ascii=False, indent=1).encode())
         print(result["case"], len(result["renovate"]), "Renovate rows", len(result["declared_entries"]), "declared",
               len(result["candidates"]), "candidates", {key: len(result[key]) for key in FACTS})
+
+
+@app.function(cpu=4, memory=16384, timeout=3 * 3600, volumes={"/results": volume}, single_use_containers=True)
+def steps_case(name: str, case: dict, archive: bytes | None, tag: str) -> dict:
+    """The pipeline's steps on a case without any model, as the engine pass of a run gives them: the pass's answer, its
+    whole report (each analyzer's preparation, build, index and gaps) and the journal of the steps (`pipeline/events`,
+    with the gaps of `run_and_observe`), under TAG/CASE/. Nothing of the project runs in this function."""
+    work = Path("/work") / name
+    target = _source(work / "src", case, archive)
+    manifest = work / "snapshot/manifest.sqlite"
+    _run([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target), "--out", str(manifest), "--no-engine",
+          "--no-index"])
+    engine = _engine_pass(manifest)
+    report, journal = HOME / "engine-report.json", manifest.with_name("pipeline-events.jsonl")
+    found = {"case": name, "engine": engine,
+             "report": json.loads(report.read_text(encoding="utf-8")) if report.is_file() else None,
+             "journal": journal.read_text(encoding="utf-8") if journal.is_file() else ""}
+    _save(tag, f"{name}/steps.json", found)
+    # the logs and records of each container run beside the snapshot (the pre-map's, the analyzers', the dynamic
+    # step's), for the steps' causes: `modal volume get daodan-flow-results TAG/CASE/runs`
+    for path in sorted(manifest.parent.rglob("*")):
+        if path.is_file() and path.suffix in (".log", ".json", ".jsonl") and path.stat().st_size < 4 * 2**20:
+            kept = Path("/results") / tag / name / "runs" / path.relative_to(manifest.parent)
+            kept.parent.mkdir(parents=True, exist_ok=True)
+            kept.write_bytes(path.read_bytes())
+    volume.commit()
+    return found
+
+
+@app.local_entrypoint()
+def steps(tars: str, tag: str = "steps"):
+    """The pipeline's steps for each case of `--tars CASE=PATH[,CASE=PATH]` (`steps_case`), here in
+    results/system/TAG/CASE/steps.json."""
+    calls = [(name, CASES[name], Path(path).read_bytes(), tag) for name, path in _pairs(tars.split(","), "tars").items()]
+    for result in steps_case.starmap(calls, return_exceptions=True):
+        if isinstance(result, Exception):
+            print("FAILED", repr(result)[:2000])
+            continue
+        out = RESULTS / "system" / tag / result["case"]
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "steps.json").write_bytes(json.dumps(result, ensure_ascii=False, indent=1).encode("utf-8"))
+        print(result["case"], json.dumps(result["engine"], ensure_ascii=False)[:2000])
 
 
 def _bring(results, tag: str) -> None:

@@ -70,7 +70,8 @@
      "tree",
      "--frozen",
      "--depth",
-     "1"
+     "1",
+     "--universal"
     ],
     "cwd": ".",
     "env": {
@@ -83,7 +84,7 @@
    "result": {
     "returncode": 0,
     "stdout": "ws-core v0.1.0\nws-app v0.1.0\n└── ws-core v0.1.0\n",
-    "stderr": "Using CPython 3.12.10 interpreter at: /usr/local/bin/python3\n",
+    "stderr": "",
     "root": "/work/uv_workspace"
    }
   }
