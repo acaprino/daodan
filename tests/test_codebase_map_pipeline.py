@@ -263,6 +263,38 @@ def test_the_union_says_why_no_run_was_observed_when_the_dynamic_step_gave_no_re
                                             "the recorder's file is gone"]
 
 
+def test_the_union_counts_the_routes_of_the_static_links_and_says_the_calls_no_route_answers(tmp_path):
+    """The union reads the static links with no rule (`flows.cached_links(manifest, [])`, the ones the envelope reads
+    back): it reports the routes offered, called and linked, and a gap with the HTTP calls no single route answers;
+    links that cannot be computed are an error that stops neither the other reports nor the graph."""
+    import flows
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    (tmp_path / "p").mkdir()
+    (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
+    snapshot.read_project(tmp_path / "p", manifest)
+    asked = []
+
+    def links(path, rules):
+        asked.append(rules)
+        return {"routes": {"offered": 2, "called": 3, "linked": 1}}
+
+    seen = []
+    with mock.patch.object(flows, "cached_links", side_effect=links):
+        result = pipeline.run(manifest, listeners=[seen.append], start="union")
+    assert asked == [[]] and result["union"]["routes"] == {"offered": 2, "called": 3, "linked": 1}
+    [gap] = [e["data"]["gap"] for e in seen if e["kind"] == "gap" and e["data"]["gap"]["kind"] == "routes-not-joined"]
+    assert (gap["calls"], gap["called"], gap["offered"]) == (2, 3, 2)
+    assert "2 of 3 HTTP calls are linked to no route" in gap["detail"]
+    seen.clear()
+    with mock.patch.object(flows, "cached_links", side_effect=ValueError("the inputs changed")):
+        result = pipeline.run(manifest, listeners=[seen.append], start="union")
+    assert "routes" not in result["union"]
+    [said] = [e for e in seen if e["level"] == "error"]
+    assert said["step"] == "union" and "ValueError" in said["data"]["cause"] and said["data"]["remedy"]
+    assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "union"}
+    assert any(e["kind"] == "graph.ready" for e in seen)
+
+
 def test_an_interrupted_step_says_it_ends_before_the_interruption_leaves(tmp_path):
     manifest = tmp_path / "out" / "manifest.sqlite"
     (tmp_path / "p").mkdir()

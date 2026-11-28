@@ -76,7 +76,9 @@ def test_payload_bytes_for_ten_distinct_inspectors_and_one_source_edit(tmp_path,
     try:
         first, *other = files
         app.symbols({"file": "file:" + first.name})
-        expected = {path.name: len(data) for path, data in files.items()}
+        # twice: the graph's evidence is verified (`store_graph`), and the static links read the syntax trees
+        # (`flows.cached_links`, kept in `flow-links.json` after it)
+        expected = {path.name: 2 * len(data) for path, data in files.items()}
         if cacheable:
             assert reads == expected
         reads.clear()
@@ -538,3 +540,51 @@ def test_exported_event_stops_at_a_sampled_binding_even_if_the_handler_can_write
     [flow], _ = visual._flows(manifest, entities, {}, {}, [], entity)
     assert not flow["complete"] and not flow["steps"] and flow["nodes"] == ["symbol:ui.py::save"]
     assert flow["gaps"][0]["site"] == "ui.py:3" and "sampled" in flow["gaps"][0]["reason"]
+
+
+def test_without_flow_rules_the_envelope_has_flows_and_an_http_arc_between_two_modules(tmp_path):
+    """The static union with no rule of the model (`flows.cached_links(manifest, [])`): the declared routes are flows,
+    the call of the client in one module meets the route of the other, and the app's graph draws the arc between the
+    two. The snapshot is the one of `fixtures/http-wrapper` with the index scip-typescript wrote for it, Noir's report
+    written here."""
+    import app_view
+    import code_graph
+    import entry_points
+    import resolve_edges
+    from entry_points import noir
+    from indexers import typescript
+    from snapshot_store import STORAGE_VERSION
+    sys.path.insert(0, str(ROOT / "tests"))
+    from test_codebase_map_flows import read_project
+    from test_codebase_map_flows_http_static import NOIR
+    from test_codebase_map_flows_http_wrapper import FIXTURE, sources
+    declared = {"schema": "daodan/declared-modules/v1", "modules": [
+        {"name": name, "kind": "component", "location": "internal", "responsibility": responsibility,
+         "members": [path], "evidence": [path]}
+        for name, responsibility, path in (("orders-client", "Asks for orders", "src/static.ts"),
+                                           ("orders-server", "Serves the orders", "src/server.ts"))]}
+    manifest = read_project(tmp_path, {**sources(), "codebase-modules.json": json.dumps(declared)})
+    with code_graph.Snapshot(manifest) as snap:
+        index = code_graph.Index(snap.root)
+        index.load(FIXTURE / "index.scip")
+        hops, traversal, _ = code_graph.adapter_traversal(typescript, index, snap)
+        built = {language: code_graph.build(index, snap, language, hops,
+                                            {"name": "scip-typescript", "version": typescript.VERSION}, None, traversal)
+                 for language in ("javascript", "typescript")}
+        code_graph.write_store(snap, resolve_edges.default_edge_store(manifest), built,
+                               f"scip-typescript@{typescript.VERSION}")
+    entry_points.write(manifest, sources=(noir,), runner=lambda commands: [
+        {"root": "/work", "returncode": 0, "stdout": json.dumps(NOIR), "stderr": ""}])
+    (tmp_path / "state.json").write_text(json.dumps({"snapshot": {
+        "format": "sqlite", "storage_version": STORAGE_VERSION, "path": "snapshot/manifest.sqlite"}}), encoding="utf-8")
+    assert not manifest.with_name("flow-rules.json").exists()
+    envelope = visual.build_envelope(tmp_path)
+    visual.validate_envelope(envelope)
+    assert "symbol:src/server.ts::createOrder" in {flow["entry"] for flow in envelope["flows"]}
+    [relation] = [item for item in envelope["relations"]
+                  if item.get("key") == "* POST /api/orders" and item["source"] == "file:src/static.ts"]
+    assert (relation["kind"], relation["target"], relation["status"]) == ("calls", "file:src/server.ts", "confirmed")
+    modules = {item["name"]: item["ref"] for item in envelope["entities"] if item["type"] == "component"}
+    arcs = {(edge["source"], edge["target"]) for edge in app_view.graph(envelope)["edges"]
+            if any(site.get("key") == "* POST /api/orders" for site in edge["evidence"])}
+    assert (modules["orders-client"], modules["orders-server"]) in arcs
