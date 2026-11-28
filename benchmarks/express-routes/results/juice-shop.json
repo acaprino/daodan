@@ -1,0 +1,4879 @@
+{
+ "application": {
+  "commit": "c9f99228d9d56afb5f5ca7925376292f7fa44b13",
+  "licence": "MIT",
+  "repository": "juice-shop/juice-shop"
+ },
+ "compare": {
+  "common_routes": 5,
+  "express_bound": 5,
+  "express_gaps": {
+   "the handler is no function of the snapshot": 237,
+   "the path is no literal": 2
+  },
+  "express_rows": 247,
+  "noir_bound": 106,
+  "noir_gaps": 82,
+  "noir_rows": 188,
+  "only_express": [],
+  "only_noir": [
+   [
+    "DELETE",
+    "/api/Addresss/{}",
+    "routes/address.ts::function@27:7"
+   ],
+   [
+    "DELETE",
+    "/api/Cards/{}",
+    "routes/payment.ts::function@68:7"
+   ],
+   [
+    "DELETE",
+    "/encryptionkeys/{}",
+    "routes/keyServer.ts::function@9:7"
+   ],
+   [
+    "DELETE",
+    "/ftp/quarantine/{}",
+    "routes/quarantineServer.ts::function@9:7"
+   ],
+   [
+    "DELETE",
+    "/rest/passkey/credentials/{}",
+    "routes/passkey.ts::function@262:7"
+   ],
+   [
+    "DELETE",
+    "/support/logs/{}",
+    "routes/logfileServer.ts::function@9:7"
+   ],
+   [
+    "GET",
+    "/api/Addresss",
+    "routes/address.ts::function@9:7"
+   ],
+   [
+    "GET",
+    "/api/Addresss/{}",
+    "routes/address.ts::function@16:7"
+   ],
+   [
+    "GET",
+    "/api/Cards",
+    "routes/payment.ts::function@18:7"
+   ],
+   [
+    "GET",
+    "/api/Cards/{}",
+    "routes/payment.ts::function@39:7"
+   ],
+   [
+    "GET",
+    "/api/Deliverys",
+    "routes/delivery.ts::function@11:7"
+   ],
+   [
+    "GET",
+    "/api/Deliverys/{}",
+    "routes/delivery.ts::function@32:7"
+   ],
+   [
+    "GET",
+    "/api/Recycles",
+    "routes/recycles.ts::function@23:33"
+   ],
+   [
+    "GET",
+    "/api/Recycles/{}",
+    "routes/recycles.ts::function@11:30"
+   ],
+   [
+    "GET",
+    "/encryptionkeys/{}",
+    "routes/keyServer.ts::function@9:7"
+   ],
+   [
+    "GET",
+    "/ftp/quarantine/{}",
+    "routes/quarantineServer.ts::function@9:7"
+   ],
+   [
+    "GET",
+    "/metrics",
+    "routes/metrics.ts::function@84:7"
+   ],
+   [
+    "GET",
+    "/profile",
+    "routes/userProfile.ts::function@24:7"
+   ],
+   [
+    "GET",
+    "/redirect",
+    "routes/redirect.ts::function@12:7"
+   ],
+   [
+    "GET",
+    "/rest/2fa/status",
+    "routes/2fa.ts::function@58:7"
+   ],
+   [
+    "GET",
+    "/rest/admin/application-configuration",
+    "routes/appConfiguration.ts::function@9:7"
+   ],
+   [
+    "GET",
+    "/rest/admin/application-version",
+    "routes/appVersion.ts::function@11:7"
+   ],
+   [
+    "GET",
+    "/rest/basket/{}",
+    "routes/basket.ts::function@15:7"
+   ],
+   [
+    "GET",
+    "/rest/captcha",
+    "routes/captcha.ts::function@9:7"
+   ],
+   [
+    "GET",
+    "/rest/continue-code",
+    "routes/continueCode.ts::function@12:7"
+   ],
+   [
+    "GET",
+    "/rest/continue-code-findIt",
+    "routes/continueCode.ts::function@24:7"
+   ],
+   [
+    "GET",
+    "/rest/continue-code-fixIt",
+    "routes/continueCode.ts::function@37:7"
+   ],
+   [
+    "GET",
+    "/rest/country-mapping",
+    "routes/countryMapping.ts::function@10:7"
+   ],
+   [
+    "GET",
+    "/rest/deluxe-membership",
+    "routes/deluxe.ts::function@60:7"
+   ],
+   [
+    "GET",
+    "/rest/image-captcha",
+    "routes/imageCaptcha.ts::function@12:7"
+   ],
+   [
+    "GET",
+    "/rest/memories",
+    "routes/memory.ts::function@22:7"
+   ],
+   [
+    "GET",
+    "/rest/order-history",
+    "routes/orderHistory.ts::function@11:7"
+   ],
+   [
+    "GET",
+    "/rest/order-history/orders",
+    "routes/orderHistory.ts::function@25:7"
+   ],
+   [
+    "GET",
+    "/rest/passkey/credentials",
+    "routes/passkey.ts::function@241:7"
+   ],
+   [
+    "GET",
+    "/rest/passkey/register-options",
+    "routes/passkey.ts::function@74:7"
+   ],
+   [
+    "GET",
+    "/rest/products/search",
+    "routes/search.ts::function@19:7"
+   ],
+   [
+    "GET",
+    "/rest/products/{}/reviews",
+    "routes/showProductReviews.ts::function@28:7"
+   ],
+   [
+    "GET",
+    "/rest/repeat-notification",
+    "routes/repeatNotification.ts::function@9:7"
+   ],
+   [
+    "GET",
+    "/rest/saveLoginIp",
+    "routes/saveLoginIp.ts::function@14:7"
+   ],
+   [
+    "GET",
+    "/rest/tags",
+    "routes/tags.ts::function@10:7"
+   ],
+   [
+    "GET",
+    "/rest/track-order/{}",
+    "routes/trackOrder.ts::function@12:7"
+   ],
+   [
+    "GET",
+    "/rest/user/authentication-details",
+    "routes/authenticatedUsers.ts::function@37:15"
+   ],
+   [
+    "GET",
+    "/rest/user/change-password",
+    "routes/changePassword.ts::function@12:7"
+   ],
+   [
+    "GET",
+    "/rest/user/security-question",
+    "routes/securityQuestion.ts::function@11:7"
+   ],
+   [
+    "GET",
+    "/rest/user/whoami",
+    "routes/currentUser.ts::function@11:7"
+   ],
+   [
+    "GET",
+    "/rest/wallet/balance",
+    "routes/wallet.ts::function@10:7"
+   ],
+   [
+    "GET",
+    "/rest/web3/nftMintListen",
+    "routes/nftMint.ts::function@13:7"
+   ],
+   [
+    "GET",
+    "/rest/web3/nftUnlocked",
+    "routes/checkKeys.ts::function@34:7"
+   ],
+   [
+    "GET",
+    "/snippets/fixes/{}",
+    "routes/vulnCodeFixes.ts::function@58:30"
+   ],
+   [
+    "GET",
+    "/snippets/{}",
+    "routes/vulnCodeSnippet.ts::function@42:32"
+   ],
+   [
+    "GET",
+    "/support/logs/{}",
+    "routes/logfileServer.ts::function@9:7"
+   ],
+   [
+    "GET",
+    "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+    "routes/easterEgg.ts::function@11:7"
+   ],
+   [
+    "GET",
+    "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+    "routes/premiumReward.ts::function@11:7"
+   ],
+   [
+    "GET",
+    "/video",
+    "routes/videoHandler.ts::function@18:24"
+   ],
+   [
+    "GET",
+    "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+    "routes/privacyPolicyProof.ts::function@11:7"
+   ],
+   [
+    "HEAD",
+    "/encryptionkeys/{}",
+    "routes/keyServer.ts::function@9:7"
+   ],
+   [
+    "HEAD",
+    "/ftp/quarantine/{}",
+    "routes/quarantineServer.ts::function@9:7"
+   ],
+   [
+    "HEAD",
+    "/support/logs/{}",
+    "routes/logfileServer.ts::function@9:7"
+   ],
+   [
+    "OPTIONS",
+    "/encryptionkeys/{}",
+    "routes/keyServer.ts::function@9:7"
+   ],
+   [
+    "OPTIONS",
+    "/ftp/quarantine/{}",
+    "routes/quarantineServer.ts::function@9:7"
+   ],
+   [
+    "OPTIONS",
+    "/support/logs/{}",
+    "routes/logfileServer.ts::function@9:7"
+   ],
+   [
+    "PATCH",
+    "/encryptionkeys/{}",
+    "routes/keyServer.ts::function@9:7"
+   ],
+   [
+    "PATCH",
+    "/ftp/quarantine/{}",
+    "routes/quarantineServer.ts::function@9:7"
+   ],
+   [
+    "PATCH",
+    "/rest/products/reviews",
+    "routes/updateProductReviews.ts::function@14:7"
+   ],
+   [
+    "PATCH",
+    "/support/logs/{}",
+    "routes/logfileServer.ts::function@9:7"
+   ],
+   [
+    "POST",
+    "/api/BasketItems",
+    "routes/basketItems.ts::function@19:7"
+   ],
+   [
+    "POST",
+    "/api/Feedbacks",
+    "routes/verify.ts::function@30:39"
+   ],
+   [
+    "POST",
+    "/encryptionkeys/{}",
+    "routes/keyServer.ts::function@9:7"
+   ],
+   [
+    "POST",
+    "/ftp/quarantine/{}",
+    "routes/quarantineServer.ts::function@9:7"
+   ],
+   [
+    "POST",
+    "/profile",
+    "routes/updateUserProfile.ts::function@15:7"
+   ],
+   [
+    "POST",
+    "/profile/image/file",
+    "routes/profileImageFileUpload.ts::function@14:7"
+   ],
+   [
+    "POST",
+    "/profile/image/url",
+    "routes/profileImageUrlUpload.ts::function@16:7"
+   ],
+   [
+    "POST",
+    "/rest/2fa/disable",
+    "routes/2fa.ts::function@142:7"
+   ],
+   [
+    "POST",
+    "/rest/2fa/setup",
+    "routes/2fa.ts::function@97:7"
+   ],
+   [
+    "POST",
+    "/rest/2fa/verify",
+    "routes/2fa.ts::function@16:7"
+   ],
+   [
+    "POST",
+    "/rest/basket/{}/checkout",
+    "routes/order.ts::function@32:7"
+   ],
+   [
+    "POST",
+    "/rest/chat",
+    "routes/chat.ts::function@115:7"
+   ],
+   [
+    "POST",
+    "/rest/deluxe-membership",
+    "routes/deluxe.ts::function@16:7"
+   ],
+   [
+    "POST",
+    "/rest/memories",
+    "routes/memory.ts::function@10:7"
+   ],
+   [
+    "POST",
+    "/rest/passkey/login-options",
+    "routes/passkey.ts::function@158:7"
+   ],
+   [
+    "POST",
+    "/rest/passkey/register-verify",
+    "routes/passkey.ts::function@106:7"
+   ],
+   [
+    "POST",
+    "/rest/products/reviews",
+    "routes/likeProductReviews.ts::function@16:7"
+   ],
+   [
+    "POST",
+    "/rest/user/data-export",
+    "routes/dataExport.ts::function@15:7"
+   ],
+   [
+    "POST",
+    "/rest/user/reset-password",
+    "routes/resetPassword.ts::function@16:7"
+   ],
+   [
+    "POST",
+    "/rest/web3/submitKey",
+    "routes/checkKeys.ts::function@6:7"
+   ],
+   [
+    "POST",
+    "/rest/web3/walletExploitAddress",
+    "routes/web3Wallet.ts::function@13:7"
+   ],
+   [
+    "POST",
+    "/rest/web3/walletNFTVerify",
+    "routes/nftMint.ts::function@38:7"
+   ],
+   [
+    "POST",
+    "/snippets/fixes",
+    "routes/vulnCodeFixes.ts::function@72:31"
+   ],
+   [
+    "POST",
+    "/snippets/verdict",
+    "routes/vulnCodeSnippet.ts::function@70:30"
+   ],
+   [
+    "POST",
+    "/support/logs/{}",
+    "routes/logfileServer.ts::function@9:7"
+   ],
+   [
+    "PUT",
+    "/api/BasketItems/{}",
+    "routes/basketItems.ts::function@65:7"
+   ],
+   [
+    "PUT",
+    "/encryptionkeys/{}",
+    "routes/keyServer.ts::function@9:7"
+   ],
+   [
+    "PUT",
+    "/ftp/quarantine/{}",
+    "routes/quarantineServer.ts::function@9:7"
+   ],
+   [
+    "PUT",
+    "/rest/basket/{}/coupon/{}",
+    "routes/coupon.ts::function@10:7"
+   ],
+   [
+    "PUT",
+    "/rest/continue-code-findIt/apply/{}",
+    "routes/restoreProgress.ts::function@40:7"
+   ],
+   [
+    "PUT",
+    "/rest/continue-code-fixIt/apply/{}",
+    "routes/restoreProgress.ts::function@61:7"
+   ],
+   [
+    "PUT",
+    "/rest/continue-code/apply/{}",
+    "routes/restoreProgress.ts::function@16:7"
+   ],
+   [
+    "PUT",
+    "/rest/order-history/{}/delivery-status",
+    "routes/orderHistory.ts::function@32:7"
+   ],
+   [
+    "PUT",
+    "/rest/products/{}/reviews",
+    "routes/createProductReviews.ts::function@14:7"
+   ],
+   [
+    "PUT",
+    "/rest/wallet/balance",
+    "routes/wallet.ts::function@21:7"
+   ],
+   [
+    "PUT",
+    "/support/logs/{}",
+    "routes/logfileServer.ts::function@9:7"
+   ]
+  ],
+  "same_function_other_path": 0,
+  "same_route_and_function": 5
+ },
+ "express_peak_mb": 655.9,
+ "express_rows": [
+  {
+   "function": "routes/dataErasure.ts::function@24:16",
+   "method": "GET",
+   "path": "/dataerasure",
+   "reader": "express",
+   "registered": "routes/dataErasure.ts:24",
+   "schema": "/dataerasure",
+   "shape": "method",
+   "site": "routes/dataErasure.ts:24",
+   "span": [
+    24,
+    16,
+    66,
+    1
+   ],
+   "symbol": "routes/dataErasure.ts::GET /dataerasure"
+  },
+  {
+   "function": "routes/dataErasure.ts::function@74:17",
+   "method": "POST",
+   "path": "/dataerasure",
+   "reader": "express",
+   "registered": "routes/dataErasure.ts:74",
+   "schema": "/dataerasure",
+   "shape": "method",
+   "site": "routes/dataErasure.ts:74",
+   "span": [
+    74,
+    17,
+    132,
+    1
+   ],
+   "symbol": "routes/dataErasure.ts::POST /dataerasure"
+  },
+  {
+   "function": "routes/fileUpload.ts::function@103:0",
+   "method": "POST",
+   "path": "/file-upload",
+   "reader": "express",
+   "registered": "server.ts:341",
+   "schema": "/file-upload",
+   "shape": "method",
+   "site": "routes/fileUpload.ts:103",
+   "span": [
+    103,
+    0,
+    134,
+    1
+   ],
+   "symbol": "routes/fileUpload.ts::handleYamlUpload"
+  },
+  {
+   "function": "routes/fileUpload.ts::function@103:0",
+   "method": "POST",
+   "path": "/file-upload",
+   "reader": "express",
+   "registered": "server.ts:341",
+   "schema": "/file-upload",
+   "shape": "method",
+   "site": "routes/fileUpload.ts:103",
+   "span": [
+    103,
+    0,
+    134,
+    1
+   ],
+   "symbol": "routes/fileUpload.ts::handleYamlUpload"
+  },
+  {
+   "function": "routes/passkey.ts::function@276:7",
+   "method": "GET",
+   "path": "/.well-known/passkey-endpoints",
+   "reader": "express",
+   "registered": "server.ts:228",
+   "schema": "/.well-known/passkey-endpoints",
+   "shape": "method",
+   "site": "routes/passkey.ts:276",
+   "span": [
+    276,
+    7,
+    279,
+    1
+   ],
+   "symbol": "routes/passkey.ts::passkeyEndpoints"
+  },
+  {
+   "function": "routes/passkey.ts::function@276:7",
+   "method": "GET",
+   "path": "/.well-known/passkey-endpoints",
+   "reader": "express",
+   "registered": "server.ts:228",
+   "schema": "/.well-known/passkey-endpoints",
+   "shape": "method",
+   "site": "routes/passkey.ts:276",
+   "span": [
+    276,
+    7,
+    279,
+    1
+   ],
+   "symbol": "routes/passkey.ts::passkeyEndpoints"
+  },
+  {
+   "gap": "express route OPTIONS *: the handler is no function of the snapshot: a external",
+   "method": "OPTIONS",
+   "path": "*",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:184",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route OPTIONS *: the handler is no function of the snapshot: a external",
+   "method": "OPTIONS",
+   "path": "*",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:184",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET (computed): the path is no literal",
+   "method": "GET",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:216",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET (computed): the path is no literal",
+   "method": "GET",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:216",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /profile/image/file: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/profile/image/file",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:342",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /profile/image/file: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/profile/image/file",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:342",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /profile/image/url: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/profile/image/url",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:343",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /profile/image/url: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/profile/image/url",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:343",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/memories: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/memories",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:344",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/memories: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/memories",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:344",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Users",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:395",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Users",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:395",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Users/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:396",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Users/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:396",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Users/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:396",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Users/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:396",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Users/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:396",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Users/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Users/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:396",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Products: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Products",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:401",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Products: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Products",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:401",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Products/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Products/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:403",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Products/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Products/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:403",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Challenges: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Challenges",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:405",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Challenges: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Challenges",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:405",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Hints: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Hints",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:408",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Hints: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Hints",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:408",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Hints/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Hints/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:409",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Hints/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Hints/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:409",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Hints/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Hints/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:409",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Hints/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Hints/:id",
+   "reader": "express",
+   "shape": "route",
+   "site": "server.ts:409",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Complaints: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Complaints",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:413",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Complaints: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Complaints",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:413",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Complaints: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Complaints",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:414",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Complaints: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Complaints",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:414",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Recycles: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Recycles",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:417",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Recycles: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Recycles",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:417",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Recycles: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Recycles",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:418",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Recycles: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Recycles",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:418",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Recycles/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:420",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Recycles/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:420",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Recycles/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:421",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Recycles/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:421",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Recycles/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:422",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Recycles/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Recycles/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:422",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/SecurityQuestions: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/SecurityQuestions",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:424",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/SecurityQuestions: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/SecurityQuestions",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:424",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/SecurityAnswers: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/SecurityAnswers",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:427",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/SecurityAnswers: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/SecurityAnswers",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:427",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:434",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:434",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:436",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:436",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:438",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Feedbacks: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:438",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "function": "server.ts::function@440:25",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "registered": "server.ts:440",
+   "schema": "/api/Users",
+   "shape": "method",
+   "site": "server.ts:440",
+   "span": [
+    440,
+    25,
+    451,
+    3
+   ],
+   "symbol": "server.ts::POST /api/Users"
+  },
+  {
+   "function": "server.ts::function@440:25",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "registered": "server.ts:440",
+   "schema": "/api/Users",
+   "shape": "method",
+   "site": "server.ts:440",
+   "span": [
+    440,
+    25,
+    451,
+    3
+   ],
+   "symbol": "server.ts::POST /api/Users"
+  },
+  {
+   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:452",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:452",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:453",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:453",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:454",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Users: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:454",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/BasketItems/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/BasketItems/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:458",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/BasketItems/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/BasketItems/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:458",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/BasketItems: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/BasketItems",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:459",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/BasketItems: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/BasketItems",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:459",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Quantitys/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Quantitys/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:461",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Quantitys/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Quantitys/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:461",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Quantitys: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Quantitys",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:462",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Quantitys: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Quantitys",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:462",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Feedbacks/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Feedbacks/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:465",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Feedbacks/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Feedbacks/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:465",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Cards: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Cards",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:470",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Cards: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Cards",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:470",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Cards: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Cards",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:471",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Cards: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Cards",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:471",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:472",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:472",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:473",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:473",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:474",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Cards/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Cards/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:474",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/PrivacyRequests: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/PrivacyRequests",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:476",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/PrivacyRequests: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/PrivacyRequests",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:476",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/PrivacyRequests: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/PrivacyRequests",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:477",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/PrivacyRequests: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/PrivacyRequests",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:477",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Addresss: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Addresss",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:480",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /api/Addresss: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/api/Addresss",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:480",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Addresss: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Addresss",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:481",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Addresss: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Addresss",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:481",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:482",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:482",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:483",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:483",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:484",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Addresss/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Addresss/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:484",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Deliverys: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Deliverys",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:485",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Deliverys: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Deliverys",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:485",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Deliverys/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Deliverys/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:486",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /api/Deliverys/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/api/Deliverys/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:486",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/2fa/verify: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/2fa/verify",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:490",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/2fa/verify: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/2fa/verify",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:490",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/2fa/status: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/2fa/status",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:495",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/2fa/status: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/2fa/status",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:495",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/2fa/setup: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/2fa/setup",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:497",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/2fa/setup: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/2fa/setup",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:497",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/2fa/disable: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/2fa/disable",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:503",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/2fa/disable: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/2fa/disable",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:503",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/passkey/register-options: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/passkey/register-options",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:509",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/passkey/register-options: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/passkey/register-options",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:509",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/passkey/register-verify: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/passkey/register-verify",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:510",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/passkey/register-verify: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/passkey/register-verify",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:510",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/passkey/login-options: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/passkey/login-options",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:511",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/passkey/login-options: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/passkey/login-options",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:511",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/passkey/login-verify: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/passkey/login-verify",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:512",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/passkey/login-verify: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/passkey/login-verify",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:512",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/passkey/credentials: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/passkey/credentials",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:513",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/passkey/credentials: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/passkey/credentials",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:513",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /rest/passkey/credentials/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/rest/passkey/credentials/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:514",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route DELETE /rest/passkey/credentials/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "DELETE",
+   "path": "/rest/passkey/credentials/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:514",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/user/login: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/user/login",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:635",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/user/login: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/user/login",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:635",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/user/change-password: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/user/change-password",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:636",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/user/change-password: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/user/change-password",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:636",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/user/reset-password: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/user/reset-password",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:637",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/user/reset-password: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/user/reset-password",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:637",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/user/security-question: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/user/security-question",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:638",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/user/security-question: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/user/security-question",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:638",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/user/whoami: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/user/whoami",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:639",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/user/whoami: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/user/whoami",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:639",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/user/authentication-details: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/user/authentication-details",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:640",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/user/authentication-details: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/user/authentication-details",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:640",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/products/search: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/products/search",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:641",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/products/search: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/products/search",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:641",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/basket/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/basket/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:642",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/basket/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/basket/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:642",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/basket/:id/checkout: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/basket/:id/checkout",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:643",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/basket/:id/checkout: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/basket/:id/checkout",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:643",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/basket/:id/coupon/:coupon: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/basket/:id/coupon/:coupon",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:644",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/basket/:id/coupon/:coupon: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/basket/:id/coupon/:coupon",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:644",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/admin/application-version: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/admin/application-version",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:645",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/admin/application-version: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/admin/application-version",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:645",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/admin/application-configuration: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/admin/application-configuration",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:646",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/admin/application-configuration: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/admin/application-configuration",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:646",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/repeat-notification: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/repeat-notification",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:647",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/repeat-notification: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/repeat-notification",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:647",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/continue-code: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/continue-code",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:648",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/continue-code: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/continue-code",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:648",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/continue-code-findIt: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/continue-code-findIt",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:649",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/continue-code-findIt: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/continue-code-findIt",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:649",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/continue-code-fixIt: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/continue-code-fixIt",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:650",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/continue-code-fixIt: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/continue-code-fixIt",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:650",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/continue-code-findIt/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/continue-code-findIt/apply/:continueCode",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:651",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/continue-code-findIt/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/continue-code-findIt/apply/:continueCode",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:651",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/continue-code-fixIt/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/continue-code-fixIt/apply/:continueCode",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:652",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/continue-code-fixIt/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/continue-code-fixIt/apply/:continueCode",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:652",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/continue-code/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/continue-code/apply/:continueCode",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:653",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/continue-code/apply/:continueCode: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/continue-code/apply/:continueCode",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:653",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/captcha: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/captcha",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:654",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/captcha: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/captcha",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:654",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/image-captcha: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/image-captcha",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:655",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/image-captcha: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/image-captcha",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:655",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/track-order/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/track-order/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:656",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/track-order/:id: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/track-order/:id",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:656",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/country-mapping: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/country-mapping",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:657",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/country-mapping: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/country-mapping",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:657",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/saveLoginIp: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/saveLoginIp",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:658",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/saveLoginIp: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/saveLoginIp",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:658",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/user/data-export: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/user/data-export",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:659",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/user/data-export: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/user/data-export",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:659",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/user/data-export: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/user/data-export",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:660",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/user/data-export: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/user/data-export",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:660",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/languages: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/languages",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:661",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/languages: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/languages",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:661",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/tags: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/tags",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:662",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/tags: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/tags",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:662",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/order-history: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/order-history",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:663",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/order-history: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/order-history",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:663",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/order-history/orders: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/order-history/orders",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:664",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/order-history/orders: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/order-history/orders",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:664",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/order-history/:id/delivery-status: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/order-history/:id/delivery-status",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:665",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/order-history/:id/delivery-status: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/order-history/:id/delivery-status",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:665",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/wallet/balance: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/wallet/balance",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:666",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/wallet/balance: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/wallet/balance",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:666",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/wallet/balance: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/wallet/balance",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:667",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/wallet/balance: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/wallet/balance",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:667",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/deluxe-membership: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/deluxe-membership",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:668",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/deluxe-membership: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/deluxe-membership",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:668",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/deluxe-membership: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/deluxe-membership",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:669",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/deluxe-membership: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/deluxe-membership",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:669",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/memories: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/memories",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:670",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/memories: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/memories",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:670",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/products/:id/reviews: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/products/:id/reviews",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:672",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/products/:id/reviews: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/products/:id/reviews",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:672",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/products/:id/reviews: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/products/:id/reviews",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:673",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PUT /rest/products/:id/reviews: the handler is no function of the snapshot: the value a function returns",
+   "method": "PUT",
+   "path": "/rest/products/:id/reviews",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:673",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PATCH /rest/products/reviews: the handler is no function of the snapshot: the value a function returns",
+   "method": "PATCH",
+   "path": "/rest/products/reviews",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:674",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route PATCH /rest/products/reviews: the handler is no function of the snapshot: the value a function returns",
+   "method": "PATCH",
+   "path": "/rest/products/reviews",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:674",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/products/reviews: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/products/reviews",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:675",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/products/reviews: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/products/reviews",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:675",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/chat: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/chat",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:678",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/chat: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/chat",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:678",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/web3/submitKey: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/web3/submitKey",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:681",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/web3/submitKey: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/web3/submitKey",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:681",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/web3/nftUnlocked: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/web3/nftUnlocked",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:682",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/web3/nftUnlocked: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/web3/nftUnlocked",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:682",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/web3/nftMintListen: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/web3/nftMintListen",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:683",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /rest/web3/nftMintListen: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/rest/web3/nftMintListen",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:683",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/web3/walletNFTVerify: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/web3/walletNFTVerify",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:684",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/web3/walletNFTVerify: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/web3/walletNFTVerify",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:684",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/web3/walletExploitAddress: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/web3/walletExploitAddress",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:685",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /rest/web3/walletExploitAddress: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/rest/web3/walletExploitAddress",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:685",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /b2b/v2/orders: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/b2b/v2/orders",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:688",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /b2b/v2/orders: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/b2b/v2/orders",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:688",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:691",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:691",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:692",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:692",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:693",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:693",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /redirect: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/redirect",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:699",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /redirect: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/redirect",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:699",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /promotion: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/promotion",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:702",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /promotion: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/promotion",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:702",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /video: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/video",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:703",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /video: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/video",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:703",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /profile: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/profile",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:706",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /profile: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/profile",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:706",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /profile: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/profile",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:707",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /profile: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/profile",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:707",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /snippets/:challenge: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/snippets/:challenge",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:710",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /snippets/:challenge: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/snippets/:challenge",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:710",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /snippets/verdict: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/snippets/verdict",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:711",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /snippets/verdict: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/snippets/verdict",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:711",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /snippets/fixes/:key: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/snippets/fixes/:key",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:712",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /snippets/fixes/:key: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/snippets/fixes/:key",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:712",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /snippets/fixes: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/snippets/fixes",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:713",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route POST /snippets/fixes: the handler is no function of the snapshot: the value a function returns",
+   "method": "POST",
+   "path": "/snippets/fixes",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:713",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /metrics: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/metrics",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:716",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /metrics: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/metrics",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:716",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "express route GET /metrics: the handler is no function of the snapshot: the value a function returns",
+   "method": "GET",
+   "path": "/metrics",
+   "reader": "express",
+   "shape": "method",
+   "site": "server.ts:771",
+   "symbol": "server.ts::<module>"
+  }
+ ],
+ "express_seconds": 3.5,
+ "name": "juice-shop",
+ "noir": {
+  "argv": [
+   "noir",
+   "scan",
+   "/work",
+   "-f",
+   "json",
+   "--no-log"
+  ],
+  "returncode": 0,
+  "seconds": 2.4,
+  "stderr_tail": ""
+ },
+ "noir_rows": [
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/ftp",
+   "reader": "noir",
+   "schema": "/ftp",
+   "shape": "http",
+   "site": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts:2",
+   "symbol": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/.well-known",
+   "reader": "noir",
+   "schema": "/.well-known",
+   "shape": "http",
+   "site": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts:6",
+   "symbol": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/encryptionkeys",
+   "reader": "noir",
+   "schema": "/encryptionkeys",
+   "shape": "http",
+   "site": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts:10",
+   "symbol": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api-docs",
+   "reader": "noir",
+   "schema": "/api-docs",
+   "shape": "http",
+   "site": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts:14",
+   "symbol": "data/static/codefixes/accessLogDisclosureChallenge_1_correct.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/support/logs",
+   "reader": "noir",
+   "schema": "/support/logs",
+   "shape": "http",
+   "site": "data/static/codefixes/accessLogDisclosureChallenge_2.ts:14",
+   "symbol": "data/static/codefixes/accessLogDisclosureChallenge_2.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Users",
+   "reader": "noir",
+   "schema": "/api/Users",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:10",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Users/:id",
+   "reader": "noir",
+   "schema": "/api/Users/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:12",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Users/:id",
+   "reader": "noir",
+   "schema": "/api/Users/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:13",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/Users/:id",
+   "reader": "noir",
+   "schema": "/api/Users/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:14",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/Products",
+   "reader": "noir",
+   "schema": "/api/Products",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:16",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/Products/:id",
+   "reader": "noir",
+   "schema": "/api/Products/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:17",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/Challenges",
+   "reader": "noir",
+   "schema": "/api/Challenges",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:19",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/Hints",
+   "reader": "noir",
+   "schema": "/api/Hints",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:22",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Hints/:id",
+   "reader": "noir",
+   "schema": "/api/Hints/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:24",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/Hints/:id",
+   "reader": "noir",
+   "schema": "/api/Hints/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:25",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Complaints",
+   "reader": "noir",
+   "schema": "/api/Complaints",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:27",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/Complaints",
+   "reader": "noir",
+   "schema": "/api/Complaints",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:28",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "function": "routes/recycles.ts::function@23:33",
+   "handler": "recycles.blockRecycleItems()",
+   "method": "GET",
+   "path": "/api/Recycles",
+   "reader": "noir",
+   "schema": "/api/Recycles",
+   "shape": "http",
+   "site": "routes/recycles.ts:23",
+   "symbol": "routes/recycles.ts::blockRecycleItems"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/Recycles",
+   "reader": "noir",
+   "schema": "/api/Recycles",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:32",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "function": "routes/recycles.ts::function@11:30",
+   "handler": "recycles.getRecycleItem()",
+   "method": "GET",
+   "path": "/api/Recycles/:id",
+   "reader": "noir",
+   "schema": "/api/Recycles/{}",
+   "shape": "http",
+   "site": "routes/recycles.ts:11",
+   "symbol": "routes/recycles.ts::getRecycleItem"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Recycles/:id",
+   "reader": "noir",
+   "schema": "/api/Recycles/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:35",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/Recycles/:id",
+   "reader": "noir",
+   "schema": "/api/Recycles/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:36",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/SecurityQuestions",
+   "reader": "noir",
+   "schema": "/api/SecurityQuestions",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:38",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/SecurityAnswers",
+   "reader": "noir",
+   "schema": "/api/SecurityAnswers",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:41",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "function": "routes/basketItems.ts::function@65:7",
+   "handler": "basketItems.quantityCheckBeforeBasketItemUpdate()",
+   "method": "PUT",
+   "path": "/api/BasketItems/:id",
+   "reader": "noir",
+   "schema": "/api/BasketItems/{}",
+   "shape": "http",
+   "site": "routes/basketItems.ts:65",
+   "symbol": "routes/basketItems.ts::quantityCheckBeforeBasketItemUpdate"
+  },
+  {
+   "function": "routes/basketItems.ts::function@19:7",
+   "handler": "basketItems.addBasketItem()",
+   "method": "POST",
+   "path": "/api/BasketItems",
+   "reader": "noir",
+   "schema": "/api/BasketItems",
+   "shape": "http",
+   "site": "routes/basketItems.ts:19",
+   "symbol": "routes/basketItems.ts::addBasketItem"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/Quantitys/:id",
+   "reader": "noir",
+   "schema": "/api/Quantitys/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:53",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/Quantitys",
+   "reader": "noir",
+   "schema": "/api/Quantitys",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:54",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Feedbacks/:id",
+   "reader": "noir",
+   "schema": "/api/Feedbacks/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:57",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/Cards",
+   "reader": "noir",
+   "schema": "/api/Cards",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:62",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "function": "routes/payment.ts::function@18:7",
+   "handler": "payment.getPaymentMethods()",
+   "method": "GET",
+   "path": "/api/Cards",
+   "reader": "noir",
+   "schema": "/api/Cards",
+   "shape": "http",
+   "site": "routes/payment.ts:18",
+   "symbol": "routes/payment.ts::getPaymentMethods"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Cards/:id",
+   "reader": "noir",
+   "schema": "/api/Cards/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:64",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "function": "routes/payment.ts::function@68:7",
+   "handler": "payment.delPaymentMethodById()",
+   "method": "DELETE",
+   "path": "/api/Cards/:id",
+   "reader": "noir",
+   "schema": "/api/Cards/{}",
+   "shape": "http",
+   "site": "routes/payment.ts:68",
+   "symbol": "routes/payment.ts::delPaymentMethodById"
+  },
+  {
+   "function": "routes/payment.ts::function@39:7",
+   "handler": "payment.getPaymentMethodById()",
+   "method": "GET",
+   "path": "/api/Cards/:id",
+   "reader": "noir",
+   "schema": "/api/Cards/{}",
+   "shape": "http",
+   "site": "routes/payment.ts:39",
+   "symbol": "routes/payment.ts::getPaymentMethodById"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/PrivacyRequests",
+   "reader": "noir",
+   "schema": "/api/PrivacyRequests",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:68",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/PrivacyRequests",
+   "reader": "noir",
+   "schema": "/api/PrivacyRequests",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:69",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/Addresss",
+   "reader": "noir",
+   "schema": "/api/Addresss",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:72",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "function": "routes/address.ts::function@9:7",
+   "handler": "address.getAddress()",
+   "method": "GET",
+   "path": "/api/Addresss",
+   "reader": "noir",
+   "schema": "/api/Addresss",
+   "shape": "http",
+   "site": "routes/address.ts:9",
+   "symbol": "routes/address.ts::getAddress"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Addresss/:id",
+   "reader": "noir",
+   "schema": "/api/Addresss/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_1.ts:74",
+   "symbol": "data/static/codefixes/changeProductChallenge_1.ts::<module>"
+  },
+  {
+   "function": "routes/address.ts::function@27:7",
+   "handler": "address.delAddressById()",
+   "method": "DELETE",
+   "path": "/api/Addresss/:id",
+   "reader": "noir",
+   "schema": "/api/Addresss/{}",
+   "shape": "http",
+   "site": "routes/address.ts:27",
+   "symbol": "routes/address.ts::delAddressById"
+  },
+  {
+   "function": "routes/address.ts::function@16:7",
+   "handler": "address.getAddressById()",
+   "method": "GET",
+   "path": "/api/Addresss/:id",
+   "reader": "noir",
+   "schema": "/api/Addresss/{}",
+   "shape": "http",
+   "site": "routes/address.ts:16",
+   "symbol": "routes/address.ts::getAddressById"
+  },
+  {
+   "function": "routes/delivery.ts::function@11:7",
+   "handler": "delivery.getDeliveryMethods()",
+   "method": "GET",
+   "path": "/api/Deliverys",
+   "reader": "noir",
+   "schema": "/api/Deliverys",
+   "shape": "http",
+   "site": "routes/delivery.ts:11",
+   "symbol": "routes/delivery.ts::getDeliveryMethods"
+  },
+  {
+   "function": "routes/delivery.ts::function@32:7",
+   "handler": "delivery.getDeliveryMethod()",
+   "method": "GET",
+   "path": "/api/Deliverys/:id",
+   "reader": "noir",
+   "schema": "/api/Deliverys/{}",
+   "shape": "http",
+   "site": "routes/delivery.ts:32",
+   "symbol": "routes/delivery.ts::getDeliveryMethod"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Products/:id",
+   "reader": "noir",
+   "schema": "/api/Products/{}",
+   "shape": "http",
+   "site": "data/static/codefixes/changeProductChallenge_3_correct.ts:17",
+   "symbol": "data/static/codefixes/changeProductChallenge_3_correct.ts::<module>"
+  },
+  {
+   "function": "routes/metrics.ts::function@84:7",
+   "handler": "metrics.serveMetrics()",
+   "method": "GET",
+   "path": "/metrics",
+   "reader": "noir",
+   "schema": "/metrics",
+   "shape": "http",
+   "site": "routes/metrics.ts:84",
+   "symbol": "routes/metrics.ts::serveMetrics"
+  },
+  {
+   "function": "routes/dataErasure.ts::function@24:16",
+   "handler": "closure",
+   "method": "GET",
+   "path": "/dataerasure/",
+   "reader": "noir",
+   "schema": "/dataerasure",
+   "shape": "http",
+   "site": "routes/dataErasure.ts:24",
+   "symbol": "routes/dataErasure.ts::GET /dataerasure/"
+  },
+  {
+   "function": "routes/dataErasure.ts::function@74:17",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/dataerasure/",
+   "reader": "noir",
+   "schema": "/dataerasure",
+   "shape": "http",
+   "site": "routes/dataErasure.ts:74",
+   "symbol": "routes/dataErasure.ts::POST /dataerasure/"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "OPTIONS",
+   "path": "/*",
+   "reader": "noir",
+   "schema": "/*",
+   "shape": "http",
+   "site": "server.ts:184",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/.well-known/security.txt",
+   "reader": "noir",
+   "schema": "/.well-known/security.txt",
+   "shape": "http",
+   "site": "server.ts:216",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/security.txt",
+   "reader": "noir",
+   "schema": "/security.txt",
+   "shape": "http",
+   "site": "server.ts:216",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "function": "routes/passkey.ts::function@276:7",
+   "handler": "passkey.passkeyEndpoints",
+   "method": "GET",
+   "path": "/.well-known/passkey-endpoints",
+   "reader": "noir",
+   "schema": "/.well-known/passkey-endpoints",
+   "shape": "http",
+   "site": "routes/passkey.ts:276",
+   "symbol": "routes/passkey.ts::passkeyEndpoints"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/infrastructure",
+   "reader": "noir",
+   "schema": "/infrastructure",
+   "shape": "http",
+   "site": "server.ts:273",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles",
+   "handler": "servePublicFiles()",
+   "method": "DELETE",
+   "path": "/ftp/:file",
+   "reader": "noir",
+   "schema": "/ftp/{}",
+   "shape": "http",
+   "site": "routes/fileServer.ts:13",
+   "symbol": "routes/fileServer.ts::servePublicFiles()"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles",
+   "handler": "servePublicFiles()",
+   "method": "GET",
+   "path": "/ftp/:file",
+   "reader": "noir",
+   "schema": "/ftp/{}",
+   "shape": "http",
+   "site": "routes/fileServer.ts:13",
+   "symbol": "routes/fileServer.ts::servePublicFiles()"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles",
+   "handler": "servePublicFiles()",
+   "method": "HEAD",
+   "path": "/ftp/:file",
+   "reader": "noir",
+   "schema": "/ftp/{}",
+   "shape": "http",
+   "site": "routes/fileServer.ts:13",
+   "symbol": "routes/fileServer.ts::servePublicFiles()"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles",
+   "handler": "servePublicFiles()",
+   "method": "OPTIONS",
+   "path": "/ftp/:file",
+   "reader": "noir",
+   "schema": "/ftp/{}",
+   "shape": "http",
+   "site": "routes/fileServer.ts:13",
+   "symbol": "routes/fileServer.ts::servePublicFiles()"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles",
+   "handler": "servePublicFiles()",
+   "method": "PATCH",
+   "path": "/ftp/:file",
+   "reader": "noir",
+   "schema": "/ftp/{}",
+   "shape": "http",
+   "site": "routes/fileServer.ts:13",
+   "symbol": "routes/fileServer.ts::servePublicFiles()"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles",
+   "handler": "servePublicFiles()",
+   "method": "POST",
+   "path": "/ftp/:file",
+   "reader": "noir",
+   "schema": "/ftp/{}",
+   "shape": "http",
+   "site": "routes/fileServer.ts:13",
+   "symbol": "routes/fileServer.ts::servePublicFiles()"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names servePublicFiles(), a function that builds the handler: the one it returns is not folded into servePublicFiles",
+   "handler": "servePublicFiles()",
+   "method": "PUT",
+   "path": "/ftp/:file",
+   "reader": "noir",
+   "schema": "/ftp/{}",
+   "shape": "http",
+   "site": "routes/fileServer.ts:13",
+   "symbol": "routes/fileServer.ts::servePublicFiles()"
+  },
+  {
+   "function": "routes/quarantineServer.ts::function@9:7",
+   "handler": "serveQuarantineFiles()",
+   "method": "DELETE",
+   "path": "/ftp/quarantine/:file",
+   "reader": "noir",
+   "schema": "/ftp/quarantine/{}",
+   "shape": "http",
+   "site": "routes/quarantineServer.ts:9",
+   "symbol": "routes/quarantineServer.ts::serveQuarantineFiles"
+  },
+  {
+   "function": "routes/quarantineServer.ts::function@9:7",
+   "handler": "serveQuarantineFiles()",
+   "method": "GET",
+   "path": "/ftp/quarantine/:file",
+   "reader": "noir",
+   "schema": "/ftp/quarantine/{}",
+   "shape": "http",
+   "site": "routes/quarantineServer.ts:9",
+   "symbol": "routes/quarantineServer.ts::serveQuarantineFiles"
+  },
+  {
+   "function": "routes/quarantineServer.ts::function@9:7",
+   "handler": "serveQuarantineFiles()",
+   "method": "HEAD",
+   "path": "/ftp/quarantine/:file",
+   "reader": "noir",
+   "schema": "/ftp/quarantine/{}",
+   "shape": "http",
+   "site": "routes/quarantineServer.ts:9",
+   "symbol": "routes/quarantineServer.ts::serveQuarantineFiles"
+  },
+  {
+   "function": "routes/quarantineServer.ts::function@9:7",
+   "handler": "serveQuarantineFiles()",
+   "method": "OPTIONS",
+   "path": "/ftp/quarantine/:file",
+   "reader": "noir",
+   "schema": "/ftp/quarantine/{}",
+   "shape": "http",
+   "site": "routes/quarantineServer.ts:9",
+   "symbol": "routes/quarantineServer.ts::serveQuarantineFiles"
+  },
+  {
+   "function": "routes/quarantineServer.ts::function@9:7",
+   "handler": "serveQuarantineFiles()",
+   "method": "PATCH",
+   "path": "/ftp/quarantine/:file",
+   "reader": "noir",
+   "schema": "/ftp/quarantine/{}",
+   "shape": "http",
+   "site": "routes/quarantineServer.ts:9",
+   "symbol": "routes/quarantineServer.ts::serveQuarantineFiles"
+  },
+  {
+   "function": "routes/quarantineServer.ts::function@9:7",
+   "handler": "serveQuarantineFiles()",
+   "method": "POST",
+   "path": "/ftp/quarantine/:file",
+   "reader": "noir",
+   "schema": "/ftp/quarantine/{}",
+   "shape": "http",
+   "site": "routes/quarantineServer.ts:9",
+   "symbol": "routes/quarantineServer.ts::serveQuarantineFiles"
+  },
+  {
+   "function": "routes/quarantineServer.ts::function@9:7",
+   "handler": "serveQuarantineFiles()",
+   "method": "PUT",
+   "path": "/ftp/quarantine/:file",
+   "reader": "noir",
+   "schema": "/ftp/quarantine/{}",
+   "shape": "http",
+   "site": "routes/quarantineServer.ts:9",
+   "symbol": "routes/quarantineServer.ts::serveQuarantineFiles"
+  },
+  {
+   "function": "routes/keyServer.ts::function@9:7",
+   "handler": "serveKeyFiles()",
+   "method": "DELETE",
+   "path": "/encryptionkeys/:file",
+   "reader": "noir",
+   "schema": "/encryptionkeys/{}",
+   "shape": "http",
+   "site": "routes/keyServer.ts:9",
+   "symbol": "routes/keyServer.ts::serveKeyFiles"
+  },
+  {
+   "function": "routes/keyServer.ts::function@9:7",
+   "handler": "serveKeyFiles()",
+   "method": "GET",
+   "path": "/encryptionkeys/:file",
+   "reader": "noir",
+   "schema": "/encryptionkeys/{}",
+   "shape": "http",
+   "site": "routes/keyServer.ts:9",
+   "symbol": "routes/keyServer.ts::serveKeyFiles"
+  },
+  {
+   "function": "routes/keyServer.ts::function@9:7",
+   "handler": "serveKeyFiles()",
+   "method": "HEAD",
+   "path": "/encryptionkeys/:file",
+   "reader": "noir",
+   "schema": "/encryptionkeys/{}",
+   "shape": "http",
+   "site": "routes/keyServer.ts:9",
+   "symbol": "routes/keyServer.ts::serveKeyFiles"
+  },
+  {
+   "function": "routes/keyServer.ts::function@9:7",
+   "handler": "serveKeyFiles()",
+   "method": "OPTIONS",
+   "path": "/encryptionkeys/:file",
+   "reader": "noir",
+   "schema": "/encryptionkeys/{}",
+   "shape": "http",
+   "site": "routes/keyServer.ts:9",
+   "symbol": "routes/keyServer.ts::serveKeyFiles"
+  },
+  {
+   "function": "routes/keyServer.ts::function@9:7",
+   "handler": "serveKeyFiles()",
+   "method": "PATCH",
+   "path": "/encryptionkeys/:file",
+   "reader": "noir",
+   "schema": "/encryptionkeys/{}",
+   "shape": "http",
+   "site": "routes/keyServer.ts:9",
+   "symbol": "routes/keyServer.ts::serveKeyFiles"
+  },
+  {
+   "function": "routes/keyServer.ts::function@9:7",
+   "handler": "serveKeyFiles()",
+   "method": "POST",
+   "path": "/encryptionkeys/:file",
+   "reader": "noir",
+   "schema": "/encryptionkeys/{}",
+   "shape": "http",
+   "site": "routes/keyServer.ts:9",
+   "symbol": "routes/keyServer.ts::serveKeyFiles"
+  },
+  {
+   "function": "routes/keyServer.ts::function@9:7",
+   "handler": "serveKeyFiles()",
+   "method": "PUT",
+   "path": "/encryptionkeys/:file",
+   "reader": "noir",
+   "schema": "/encryptionkeys/{}",
+   "shape": "http",
+   "site": "routes/keyServer.ts:9",
+   "symbol": "routes/keyServer.ts::serveKeyFiles"
+  },
+  {
+   "function": "routes/logfileServer.ts::function@9:7",
+   "handler": "serveLogFiles()",
+   "method": "DELETE",
+   "path": "/support/logs/:file",
+   "reader": "noir",
+   "schema": "/support/logs/{}",
+   "shape": "http",
+   "site": "routes/logfileServer.ts:9",
+   "symbol": "routes/logfileServer.ts::serveLogFiles"
+  },
+  {
+   "function": "routes/logfileServer.ts::function@9:7",
+   "handler": "serveLogFiles()",
+   "method": "GET",
+   "path": "/support/logs/:file",
+   "reader": "noir",
+   "schema": "/support/logs/{}",
+   "shape": "http",
+   "site": "routes/logfileServer.ts:9",
+   "symbol": "routes/logfileServer.ts::serveLogFiles"
+  },
+  {
+   "function": "routes/logfileServer.ts::function@9:7",
+   "handler": "serveLogFiles()",
+   "method": "HEAD",
+   "path": "/support/logs/:file",
+   "reader": "noir",
+   "schema": "/support/logs/{}",
+   "shape": "http",
+   "site": "routes/logfileServer.ts:9",
+   "symbol": "routes/logfileServer.ts::serveLogFiles"
+  },
+  {
+   "function": "routes/logfileServer.ts::function@9:7",
+   "handler": "serveLogFiles()",
+   "method": "OPTIONS",
+   "path": "/support/logs/:file",
+   "reader": "noir",
+   "schema": "/support/logs/{}",
+   "shape": "http",
+   "site": "routes/logfileServer.ts:9",
+   "symbol": "routes/logfileServer.ts::serveLogFiles"
+  },
+  {
+   "function": "routes/logfileServer.ts::function@9:7",
+   "handler": "serveLogFiles()",
+   "method": "PATCH",
+   "path": "/support/logs/:file",
+   "reader": "noir",
+   "schema": "/support/logs/{}",
+   "shape": "http",
+   "site": "routes/logfileServer.ts:9",
+   "symbol": "routes/logfileServer.ts::serveLogFiles"
+  },
+  {
+   "function": "routes/logfileServer.ts::function@9:7",
+   "handler": "serveLogFiles()",
+   "method": "POST",
+   "path": "/support/logs/:file",
+   "reader": "noir",
+   "schema": "/support/logs/{}",
+   "shape": "http",
+   "site": "routes/logfileServer.ts:9",
+   "symbol": "routes/logfileServer.ts::serveLogFiles"
+  },
+  {
+   "function": "routes/logfileServer.ts::function@9:7",
+   "handler": "serveLogFiles()",
+   "method": "PUT",
+   "path": "/support/logs/:file",
+   "reader": "noir",
+   "schema": "/support/logs/{}",
+   "shape": "http",
+   "site": "routes/logfileServer.ts:9",
+   "symbol": "routes/logfileServer.ts::serveLogFiles"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/vendor/beercss",
+   "reader": "noir",
+   "schema": "/vendor/beercss",
+   "shape": "http",
+   "site": "server.ts:325",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/vendor/material-icons",
+   "reader": "noir",
+   "schema": "/vendor/material-icons",
+   "shape": "http",
+   "site": "server.ts:326",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/vendor/fontsource-roboto",
+   "reader": "noir",
+   "schema": "/vendor/fontsource-roboto",
+   "shape": "http",
+   "site": "server.ts:327",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "function": "routes/fileUpload.ts::function@103:0",
+   "handler": "handleYamlUpload",
+   "method": "POST",
+   "path": "/file-upload",
+   "reader": "noir",
+   "schema": "/file-upload",
+   "shape": "http",
+   "site": "routes/fileUpload.ts:103",
+   "symbol": "routes/fileUpload.ts::handleYamlUpload"
+  },
+  {
+   "function": "routes/profileImageFileUpload.ts::function@14:7",
+   "handler": "profileImageFileUpload()",
+   "method": "POST",
+   "path": "/profile/image/file",
+   "reader": "noir",
+   "schema": "/profile/image/file",
+   "shape": "http",
+   "site": "routes/profileImageFileUpload.ts:14",
+   "symbol": "routes/profileImageFileUpload.ts::profileImageFileUpload"
+  },
+  {
+   "function": "routes/profileImageUrlUpload.ts::function@16:7",
+   "handler": "profileImageUrlUpload()",
+   "method": "POST",
+   "path": "/profile/image/url",
+   "reader": "noir",
+   "schema": "/profile/image/url",
+   "shape": "http",
+   "site": "routes/profileImageUrlUpload.ts:16",
+   "symbol": "routes/profileImageUrlUpload.ts::profileImageUrlUpload"
+  },
+  {
+   "function": "routes/memory.ts::function@10:7",
+   "handler": "addMemory()",
+   "method": "POST",
+   "path": "/rest/memories",
+   "reader": "noir",
+   "schema": "/rest/memories",
+   "shape": "http",
+   "site": "routes/memory.ts:10",
+   "symbol": "routes/memory.ts::addMemory"
+  },
+  {
+   "function": "routes/verify.ts::function@30:39",
+   "handler": "verify.forgedFeedbackChallenge()",
+   "method": "POST",
+   "path": "/api/Feedbacks",
+   "reader": "noir",
+   "schema": "/api/Feedbacks",
+   "shape": "http",
+   "site": "routes/verify.ts:30",
+   "symbol": "routes/verify.ts::forgedFeedbackChallenge"
+  },
+  {
+   "function": "server.ts::function@440:25",
+   "handler": "closure",
+   "method": "POST",
+   "path": "/api/Users",
+   "reader": "noir",
+   "schema": "/api/Users",
+   "shape": "http",
+   "site": "server.ts:440",
+   "symbol": "server.ts::POST /api/Users"
+  },
+  {
+   "function": "routes/2fa.ts::function@16:7",
+   "handler": "twoFactorAuth.verify",
+   "method": "POST",
+   "path": "/rest/2fa/verify",
+   "reader": "noir",
+   "schema": "/rest/2fa/verify",
+   "shape": "http",
+   "site": "routes/2fa.ts:16",
+   "symbol": "routes/2fa.ts::verify"
+  },
+  {
+   "function": "routes/2fa.ts::function@58:7",
+   "handler": "twoFactorAuth.status",
+   "method": "GET",
+   "path": "/rest/2fa/status",
+   "reader": "noir",
+   "schema": "/rest/2fa/status",
+   "shape": "http",
+   "site": "routes/2fa.ts:58",
+   "symbol": "routes/2fa.ts::status"
+  },
+  {
+   "function": "routes/2fa.ts::function@97:7",
+   "handler": "twoFactorAuth.setup",
+   "method": "POST",
+   "path": "/rest/2fa/setup",
+   "reader": "noir",
+   "schema": "/rest/2fa/setup",
+   "shape": "http",
+   "site": "routes/2fa.ts:97",
+   "symbol": "routes/2fa.ts::setup"
+  },
+  {
+   "function": "routes/2fa.ts::function@142:7",
+   "handler": "twoFactorAuth.disable",
+   "method": "POST",
+   "path": "/rest/2fa/disable",
+   "reader": "noir",
+   "schema": "/rest/2fa/disable",
+   "shape": "http",
+   "site": "routes/2fa.ts:142",
+   "symbol": "routes/2fa.ts::disable"
+  },
+  {
+   "function": "routes/passkey.ts::function@74:7",
+   "handler": "passkey.registerOptions",
+   "method": "GET",
+   "path": "/rest/passkey/register-options",
+   "reader": "noir",
+   "schema": "/rest/passkey/register-options",
+   "shape": "http",
+   "site": "routes/passkey.ts:74",
+   "symbol": "routes/passkey.ts::registerOptions"
+  },
+  {
+   "function": "routes/passkey.ts::function@106:7",
+   "handler": "passkey.registerVerify",
+   "method": "POST",
+   "path": "/rest/passkey/register-verify",
+   "reader": "noir",
+   "schema": "/rest/passkey/register-verify",
+   "shape": "http",
+   "site": "routes/passkey.ts:106",
+   "symbol": "routes/passkey.ts::registerVerify"
+  },
+  {
+   "function": "routes/passkey.ts::function@158:7",
+   "handler": "passkey.loginOptions",
+   "method": "POST",
+   "path": "/rest/passkey/login-options",
+   "reader": "noir",
+   "schema": "/rest/passkey/login-options",
+   "shape": "http",
+   "site": "routes/passkey.ts:158",
+   "symbol": "routes/passkey.ts::loginOptions"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/rest/passkey/login-verify",
+   "reader": "noir",
+   "schema": "/rest/passkey/login-verify",
+   "shape": "http",
+   "site": "server.ts:512",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "function": "routes/passkey.ts::function@241:7",
+   "handler": "passkey.listCredentials",
+   "method": "GET",
+   "path": "/rest/passkey/credentials",
+   "reader": "noir",
+   "schema": "/rest/passkey/credentials",
+   "shape": "http",
+   "site": "routes/passkey.ts:241",
+   "symbol": "routes/passkey.ts::listCredentials"
+  },
+  {
+   "function": "routes/passkey.ts::function@262:7",
+   "handler": "passkey.deleteCredential",
+   "method": "DELETE",
+   "path": "/rest/passkey/credentials/:id",
+   "reader": "noir",
+   "schema": "/rest/passkey/credentials/{}",
+   "shape": "http",
+   "site": "routes/passkey.ts:262",
+   "symbol": "routes/passkey.ts::deleteCredential"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/BasketItems",
+   "reader": "noir",
+   "schema": "/api/BasketItems",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/BasketItems/:id",
+   "reader": "noir",
+   "schema": "/api/BasketItems/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/BasketItems/:id",
+   "reader": "noir",
+   "schema": "/api/BasketItems/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Challenges",
+   "reader": "noir",
+   "schema": "/api/Challenges",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/Challenges/:id",
+   "reader": "noir",
+   "schema": "/api/Challenges/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Challenges/:id",
+   "reader": "noir",
+   "schema": "/api/Challenges/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Challenges/:id",
+   "reader": "noir",
+   "schema": "/api/Challenges/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/Complaints/:id",
+   "reader": "noir",
+   "schema": "/api/Complaints/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Complaints/:id",
+   "reader": "noir",
+   "schema": "/api/Complaints/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Complaints/:id",
+   "reader": "noir",
+   "schema": "/api/Complaints/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Feedbacks",
+   "reader": "noir",
+   "schema": "/api/Feedbacks",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/Feedbacks/:id",
+   "reader": "noir",
+   "schema": "/api/Feedbacks/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Feedbacks/:id",
+   "reader": "noir",
+   "schema": "/api/Feedbacks/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Hints",
+   "reader": "noir",
+   "schema": "/api/Hints",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Hints/:id",
+   "reader": "noir",
+   "schema": "/api/Hints/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/PrivacyRequests/:id",
+   "reader": "noir",
+   "schema": "/api/PrivacyRequests/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/PrivacyRequests/:id",
+   "reader": "noir",
+   "schema": "/api/PrivacyRequests/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/PrivacyRequests/:id",
+   "reader": "noir",
+   "schema": "/api/PrivacyRequests/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Products",
+   "reader": "noir",
+   "schema": "/api/Products",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Products/:id",
+   "reader": "noir",
+   "schema": "/api/Products/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Quantitys",
+   "reader": "noir",
+   "schema": "/api/Quantitys",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/Quantitys/:id",
+   "reader": "noir",
+   "schema": "/api/Quantitys/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/Quantitys/:id",
+   "reader": "noir",
+   "schema": "/api/Quantitys/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/api/SecurityAnswers",
+   "reader": "noir",
+   "schema": "/api/SecurityAnswers",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/SecurityAnswers/:id",
+   "reader": "noir",
+   "schema": "/api/SecurityAnswers/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/SecurityAnswers/:id",
+   "reader": "noir",
+   "schema": "/api/SecurityAnswers/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/SecurityAnswers/:id",
+   "reader": "noir",
+   "schema": "/api/SecurityAnswers/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/SecurityQuestions",
+   "reader": "noir",
+   "schema": "/api/SecurityQuestions",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/api/SecurityQuestions/:id",
+   "reader": "noir",
+   "schema": "/api/SecurityQuestions/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/api/SecurityQuestions/:id",
+   "reader": "noir",
+   "schema": "/api/SecurityQuestions/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PUT",
+   "path": "/api/SecurityQuestions/:id",
+   "reader": "noir",
+   "schema": "/api/SecurityQuestions/{}",
+   "shape": "http",
+   "site": "server.ts:540",
+   "symbol": "server.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names login(), a function that builds the handler: the one it returns is not folded into login",
+   "handler": "login()",
+   "method": "POST",
+   "path": "/rest/user/login",
+   "reader": "noir",
+   "schema": "/rest/user/login",
+   "shape": "http",
+   "site": "routes/login.ts:18",
+   "symbol": "routes/login.ts::login()"
+  },
+  {
+   "function": "routes/changePassword.ts::function@12:7",
+   "handler": "changePassword()",
+   "method": "GET",
+   "path": "/rest/user/change-password",
+   "reader": "noir",
+   "schema": "/rest/user/change-password",
+   "shape": "http",
+   "site": "routes/changePassword.ts:12",
+   "symbol": "routes/changePassword.ts::changePassword"
+  },
+  {
+   "function": "routes/resetPassword.ts::function@16:7",
+   "handler": "resetPassword()",
+   "method": "POST",
+   "path": "/rest/user/reset-password",
+   "reader": "noir",
+   "schema": "/rest/user/reset-password",
+   "shape": "http",
+   "site": "routes/resetPassword.ts:16",
+   "symbol": "routes/resetPassword.ts::resetPassword"
+  },
+  {
+   "function": "routes/securityQuestion.ts::function@11:7",
+   "handler": "securityQuestion()",
+   "method": "GET",
+   "path": "/rest/user/security-question",
+   "reader": "noir",
+   "schema": "/rest/user/security-question",
+   "shape": "http",
+   "site": "routes/securityQuestion.ts:11",
+   "symbol": "routes/securityQuestion.ts::securityQuestion"
+  },
+  {
+   "function": "routes/currentUser.ts::function@11:7",
+   "handler": "retrieveLoggedInUser()",
+   "method": "GET",
+   "path": "/rest/user/whoami",
+   "reader": "noir",
+   "schema": "/rest/user/whoami",
+   "shape": "http",
+   "site": "routes/currentUser.ts:11",
+   "symbol": "routes/currentUser.ts::retrieveLoggedInUser"
+  },
+  {
+   "function": "routes/authenticatedUsers.ts::function@37:15",
+   "handler": "authenticatedUsers()",
+   "method": "GET",
+   "path": "/rest/user/authentication-details",
+   "reader": "noir",
+   "schema": "/rest/user/authentication-details",
+   "shape": "http",
+   "site": "routes/authenticatedUsers.ts:37",
+   "symbol": "routes/authenticatedUsers.ts::GET /rest/user/authentication-details"
+  },
+  {
+   "function": "routes/search.ts::function@19:7",
+   "handler": "searchProducts()",
+   "method": "GET",
+   "path": "/rest/products/search",
+   "reader": "noir",
+   "schema": "/rest/products/search",
+   "shape": "http",
+   "site": "routes/search.ts:19",
+   "symbol": "routes/search.ts::searchProducts"
+  },
+  {
+   "function": "routes/basket.ts::function@15:7",
+   "handler": "retrieveBasket()",
+   "method": "GET",
+   "path": "/rest/basket/:id",
+   "reader": "noir",
+   "schema": "/rest/basket/{}",
+   "shape": "http",
+   "site": "routes/basket.ts:15",
+   "symbol": "routes/basket.ts::retrieveBasket"
+  },
+  {
+   "function": "routes/order.ts::function@32:7",
+   "handler": "placeOrder()",
+   "method": "POST",
+   "path": "/rest/basket/:id/checkout",
+   "reader": "noir",
+   "schema": "/rest/basket/{}/checkout",
+   "shape": "http",
+   "site": "routes/order.ts:32",
+   "symbol": "routes/order.ts::placeOrder"
+  },
+  {
+   "function": "routes/coupon.ts::function@10:7",
+   "handler": "applyCoupon()",
+   "method": "PUT",
+   "path": "/rest/basket/:id/coupon/:coupon",
+   "reader": "noir",
+   "schema": "/rest/basket/{}/coupon/{}",
+   "shape": "http",
+   "site": "routes/coupon.ts:10",
+   "symbol": "routes/coupon.ts::applyCoupon"
+  },
+  {
+   "function": "routes/appVersion.ts::function@11:7",
+   "handler": "retrieveAppVersion()",
+   "method": "GET",
+   "path": "/rest/admin/application-version",
+   "reader": "noir",
+   "schema": "/rest/admin/application-version",
+   "shape": "http",
+   "site": "routes/appVersion.ts:11",
+   "symbol": "routes/appVersion.ts::retrieveAppVersion"
+  },
+  {
+   "function": "routes/appConfiguration.ts::function@9:7",
+   "handler": "retrieveAppConfiguration()",
+   "method": "GET",
+   "path": "/rest/admin/application-configuration",
+   "reader": "noir",
+   "schema": "/rest/admin/application-configuration",
+   "shape": "http",
+   "site": "routes/appConfiguration.ts:9",
+   "symbol": "routes/appConfiguration.ts::retrieveAppConfiguration"
+  },
+  {
+   "function": "routes/repeatNotification.ts::function@9:7",
+   "handler": "repeatNotification()",
+   "method": "GET",
+   "path": "/rest/repeat-notification",
+   "reader": "noir",
+   "schema": "/rest/repeat-notification",
+   "shape": "http",
+   "site": "routes/repeatNotification.ts:9",
+   "symbol": "routes/repeatNotification.ts::repeatNotification"
+  },
+  {
+   "function": "routes/continueCode.ts::function@12:7",
+   "handler": "continueCode()",
+   "method": "GET",
+   "path": "/rest/continue-code",
+   "reader": "noir",
+   "schema": "/rest/continue-code",
+   "shape": "http",
+   "site": "routes/continueCode.ts:12",
+   "symbol": "routes/continueCode.ts::continueCode"
+  },
+  {
+   "function": "routes/continueCode.ts::function@24:7",
+   "handler": "continueCodeFindIt()",
+   "method": "GET",
+   "path": "/rest/continue-code-findIt",
+   "reader": "noir",
+   "schema": "/rest/continue-code-findIt",
+   "shape": "http",
+   "site": "routes/continueCode.ts:24",
+   "symbol": "routes/continueCode.ts::continueCodeFindIt"
+  },
+  {
+   "function": "routes/continueCode.ts::function@37:7",
+   "handler": "continueCodeFixIt()",
+   "method": "GET",
+   "path": "/rest/continue-code-fixIt",
+   "reader": "noir",
+   "schema": "/rest/continue-code-fixIt",
+   "shape": "http",
+   "site": "routes/continueCode.ts:37",
+   "symbol": "routes/continueCode.ts::continueCodeFixIt"
+  },
+  {
+   "function": "routes/restoreProgress.ts::function@40:7",
+   "handler": "restoreProgress.restoreProgressFindIt()",
+   "method": "PUT",
+   "path": "/rest/continue-code-findIt/apply/:continueCode",
+   "reader": "noir",
+   "schema": "/rest/continue-code-findIt/apply/{}",
+   "shape": "http",
+   "site": "routes/restoreProgress.ts:40",
+   "symbol": "routes/restoreProgress.ts::restoreProgressFindIt"
+  },
+  {
+   "function": "routes/restoreProgress.ts::function@61:7",
+   "handler": "restoreProgress.restoreProgressFixIt()",
+   "method": "PUT",
+   "path": "/rest/continue-code-fixIt/apply/:continueCode",
+   "reader": "noir",
+   "schema": "/rest/continue-code-fixIt/apply/{}",
+   "shape": "http",
+   "site": "routes/restoreProgress.ts:61",
+   "symbol": "routes/restoreProgress.ts::restoreProgressFixIt"
+  },
+  {
+   "function": "routes/restoreProgress.ts::function@16:7",
+   "handler": "restoreProgress.restoreProgress()",
+   "method": "PUT",
+   "path": "/rest/continue-code/apply/:continueCode",
+   "reader": "noir",
+   "schema": "/rest/continue-code/apply/{}",
+   "shape": "http",
+   "site": "routes/restoreProgress.ts:16",
+   "symbol": "routes/restoreProgress.ts::restoreProgress"
+  },
+  {
+   "function": "routes/captcha.ts::function@9:7",
+   "handler": "captchas()",
+   "method": "GET",
+   "path": "/rest/captcha",
+   "reader": "noir",
+   "schema": "/rest/captcha",
+   "shape": "http",
+   "site": "routes/captcha.ts:9",
+   "symbol": "routes/captcha.ts::captchas"
+  },
+  {
+   "function": "routes/imageCaptcha.ts::function@12:7",
+   "handler": "imageCaptchas()",
+   "method": "GET",
+   "path": "/rest/image-captcha",
+   "reader": "noir",
+   "schema": "/rest/image-captcha",
+   "shape": "http",
+   "site": "routes/imageCaptcha.ts:12",
+   "symbol": "routes/imageCaptcha.ts::imageCaptchas"
+  },
+  {
+   "function": "routes/trackOrder.ts::function@12:7",
+   "handler": "trackOrder()",
+   "method": "GET",
+   "path": "/rest/track-order/:id",
+   "reader": "noir",
+   "schema": "/rest/track-order/{}",
+   "shape": "http",
+   "site": "routes/trackOrder.ts:12",
+   "symbol": "routes/trackOrder.ts::trackOrder"
+  },
+  {
+   "function": "routes/countryMapping.ts::function@10:7",
+   "handler": "countryMapping()",
+   "method": "GET",
+   "path": "/rest/country-mapping",
+   "reader": "noir",
+   "schema": "/rest/country-mapping",
+   "shape": "http",
+   "site": "routes/countryMapping.ts:10",
+   "symbol": "routes/countryMapping.ts::countryMapping"
+  },
+  {
+   "function": "routes/saveLoginIp.ts::function@14:7",
+   "handler": "saveLoginIp()",
+   "method": "GET",
+   "path": "/rest/saveLoginIp",
+   "reader": "noir",
+   "schema": "/rest/saveLoginIp",
+   "shape": "http",
+   "site": "routes/saveLoginIp.ts:14",
+   "symbol": "routes/saveLoginIp.ts::saveLoginIp"
+  },
+  {
+   "function": "routes/dataExport.ts::function@15:7",
+   "handler": "dataExport()",
+   "method": "POST",
+   "path": "/rest/user/data-export",
+   "reader": "noir",
+   "schema": "/rest/user/data-export",
+   "shape": "http",
+   "site": "routes/dataExport.ts:15",
+   "symbol": "routes/dataExport.ts::dataExport"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names getLanguageList(), a function that builds the handler: the one it returns is not folded into getLanguageList",
+   "handler": "getLanguageList()",
+   "method": "GET",
+   "path": "/rest/languages",
+   "reader": "noir",
+   "schema": "/rest/languages",
+   "shape": "http",
+   "site": "routes/languages.ts:12",
+   "symbol": "routes/languages.ts::getLanguageList()"
+  },
+  {
+   "function": "routes/tags.ts::function@10:7",
+   "handler": "getTagGroups()",
+   "method": "GET",
+   "path": "/rest/tags",
+   "reader": "noir",
+   "schema": "/rest/tags",
+   "shape": "http",
+   "site": "routes/tags.ts:10",
+   "symbol": "routes/tags.ts::getTagGroups"
+  },
+  {
+   "function": "routes/orderHistory.ts::function@11:7",
+   "handler": "orderHistory()",
+   "method": "GET",
+   "path": "/rest/order-history",
+   "reader": "noir",
+   "schema": "/rest/order-history",
+   "shape": "http",
+   "site": "routes/orderHistory.ts:11",
+   "symbol": "routes/orderHistory.ts::orderHistory"
+  },
+  {
+   "function": "routes/orderHistory.ts::function@25:7",
+   "handler": "allOrders()",
+   "method": "GET",
+   "path": "/rest/order-history/orders",
+   "reader": "noir",
+   "schema": "/rest/order-history/orders",
+   "shape": "http",
+   "site": "routes/orderHistory.ts:25",
+   "symbol": "routes/orderHistory.ts::allOrders"
+  },
+  {
+   "function": "routes/orderHistory.ts::function@32:7",
+   "handler": "toggleDeliveryStatus()",
+   "method": "PUT",
+   "path": "/rest/order-history/:id/delivery-status",
+   "reader": "noir",
+   "schema": "/rest/order-history/{}/delivery-status",
+   "shape": "http",
+   "site": "routes/orderHistory.ts:32",
+   "symbol": "routes/orderHistory.ts::toggleDeliveryStatus"
+  },
+  {
+   "function": "routes/wallet.ts::function@10:7",
+   "handler": "getWalletBalance()",
+   "method": "GET",
+   "path": "/rest/wallet/balance",
+   "reader": "noir",
+   "schema": "/rest/wallet/balance",
+   "shape": "http",
+   "site": "routes/wallet.ts:10",
+   "symbol": "routes/wallet.ts::getWalletBalance"
+  },
+  {
+   "function": "routes/wallet.ts::function@21:7",
+   "handler": "addWalletBalance()",
+   "method": "PUT",
+   "path": "/rest/wallet/balance",
+   "reader": "noir",
+   "schema": "/rest/wallet/balance",
+   "shape": "http",
+   "site": "routes/wallet.ts:21",
+   "symbol": "routes/wallet.ts::addWalletBalance"
+  },
+  {
+   "function": "routes/deluxe.ts::function@60:7",
+   "handler": "deluxeMembershipStatus()",
+   "method": "GET",
+   "path": "/rest/deluxe-membership",
+   "reader": "noir",
+   "schema": "/rest/deluxe-membership",
+   "shape": "http",
+   "site": "routes/deluxe.ts:60",
+   "symbol": "routes/deluxe.ts::deluxeMembershipStatus"
+  },
+  {
+   "function": "routes/deluxe.ts::function@16:7",
+   "handler": "upgradeToDeluxe()",
+   "method": "POST",
+   "path": "/rest/deluxe-membership",
+   "reader": "noir",
+   "schema": "/rest/deluxe-membership",
+   "shape": "http",
+   "site": "routes/deluxe.ts:16",
+   "symbol": "routes/deluxe.ts::upgradeToDeluxe"
+  },
+  {
+   "function": "routes/memory.ts::function@22:7",
+   "handler": "getMemories()",
+   "method": "GET",
+   "path": "/rest/memories",
+   "reader": "noir",
+   "schema": "/rest/memories",
+   "shape": "http",
+   "site": "routes/memory.ts:22",
+   "symbol": "routes/memory.ts::getMemories"
+  },
+  {
+   "function": "routes/showProductReviews.ts::function@28:7",
+   "handler": "showProductReviews()",
+   "method": "GET",
+   "path": "/rest/products/:id/reviews",
+   "reader": "noir",
+   "schema": "/rest/products/{}/reviews",
+   "shape": "http",
+   "site": "routes/showProductReviews.ts:28",
+   "symbol": "routes/showProductReviews.ts::showProductReviews"
+  },
+  {
+   "function": "routes/createProductReviews.ts::function@14:7",
+   "handler": "createProductReviews()",
+   "method": "PUT",
+   "path": "/rest/products/:id/reviews",
+   "reader": "noir",
+   "schema": "/rest/products/{}/reviews",
+   "shape": "http",
+   "site": "routes/createProductReviews.ts:14",
+   "symbol": "routes/createProductReviews.ts::createProductReviews"
+  },
+  {
+   "function": "routes/updateProductReviews.ts::function@14:7",
+   "handler": "updateProductReviews()",
+   "method": "PATCH",
+   "path": "/rest/products/reviews",
+   "reader": "noir",
+   "schema": "/rest/products/reviews",
+   "shape": "http",
+   "site": "routes/updateProductReviews.ts:14",
+   "symbol": "routes/updateProductReviews.ts::updateProductReviews"
+  },
+  {
+   "function": "routes/likeProductReviews.ts::function@16:7",
+   "handler": "likeProductReviews()",
+   "method": "POST",
+   "path": "/rest/products/reviews",
+   "reader": "noir",
+   "schema": "/rest/products/reviews",
+   "shape": "http",
+   "site": "routes/likeProductReviews.ts:16",
+   "symbol": "routes/likeProductReviews.ts::likeProductReviews"
+  },
+  {
+   "function": "routes/chat.ts::function@115:7",
+   "handler": "chat()",
+   "method": "POST",
+   "path": "/rest/chat",
+   "reader": "noir",
+   "schema": "/rest/chat",
+   "shape": "http",
+   "site": "routes/chat.ts:115",
+   "symbol": "routes/chat.ts::chat"
+  },
+  {
+   "function": "routes/checkKeys.ts::function@6:7",
+   "handler": "checkKeys()",
+   "method": "POST",
+   "path": "/rest/web3/submitKey",
+   "reader": "noir",
+   "schema": "/rest/web3/submitKey",
+   "shape": "http",
+   "site": "routes/checkKeys.ts:6",
+   "symbol": "routes/checkKeys.ts::checkKeys"
+  },
+  {
+   "function": "routes/checkKeys.ts::function@34:7",
+   "handler": "nftUnlocked()",
+   "method": "GET",
+   "path": "/rest/web3/nftUnlocked",
+   "reader": "noir",
+   "schema": "/rest/web3/nftUnlocked",
+   "shape": "http",
+   "site": "routes/checkKeys.ts:34",
+   "symbol": "routes/checkKeys.ts::nftUnlocked"
+  },
+  {
+   "function": "routes/nftMint.ts::function@13:7",
+   "handler": "nftMintListener()",
+   "method": "GET",
+   "path": "/rest/web3/nftMintListen",
+   "reader": "noir",
+   "schema": "/rest/web3/nftMintListen",
+   "shape": "http",
+   "site": "routes/nftMint.ts:13",
+   "symbol": "routes/nftMint.ts::nftMintListener"
+  },
+  {
+   "function": "routes/nftMint.ts::function@38:7",
+   "handler": "walletNFTVerify()",
+   "method": "POST",
+   "path": "/rest/web3/walletNFTVerify",
+   "reader": "noir",
+   "schema": "/rest/web3/walletNFTVerify",
+   "shape": "http",
+   "site": "routes/nftMint.ts:38",
+   "symbol": "routes/nftMint.ts::walletNFTVerify"
+  },
+  {
+   "function": "routes/web3Wallet.ts::function@13:7",
+   "handler": "contractExploitListener()",
+   "method": "POST",
+   "path": "/rest/web3/walletExploitAddress",
+   "reader": "noir",
+   "schema": "/rest/web3/walletExploitAddress",
+   "shape": "http",
+   "site": "routes/web3Wallet.ts:13",
+   "symbol": "routes/web3Wallet.ts::contractExploitListener"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names b2bOrder(), a function that builds the handler: the one it returns is not folded into b2bOrder",
+   "handler": "b2bOrder()",
+   "method": "POST",
+   "path": "/b2b/v2/orders",
+   "reader": "noir",
+   "schema": "/b2b/v2/orders",
+   "shape": "http",
+   "site": "routes/b2bOrder.ts:16",
+   "symbol": "routes/b2bOrder.ts::b2bOrder()"
+  },
+  {
+   "function": "routes/easterEgg.ts::function@11:7",
+   "handler": "serveEasterEgg()",
+   "method": "GET",
+   "path": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+   "reader": "noir",
+   "schema": "/the/devs/are/so/funny/they/hid/an/easter/egg/within/the/easter/egg",
+   "shape": "http",
+   "site": "routes/easterEgg.ts:11",
+   "symbol": "routes/easterEgg.ts::serveEasterEgg"
+  },
+  {
+   "function": "routes/premiumReward.ts::function@11:7",
+   "handler": "servePremiumContent()",
+   "method": "GET",
+   "path": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+   "reader": "noir",
+   "schema": "/this/page/is/hidden/behind/an/incredibly/high/paywall/that/could/only/be/unlocked/by/sending/1btc/to/us",
+   "shape": "http",
+   "site": "routes/premiumReward.ts:11",
+   "symbol": "routes/premiumReward.ts::servePremiumContent"
+  },
+  {
+   "function": "routes/privacyPolicyProof.ts::function@11:7",
+   "handler": "servePrivacyPolicyProof()",
+   "method": "GET",
+   "path": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+   "reader": "noir",
+   "schema": "/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility",
+   "shape": "http",
+   "site": "routes/privacyPolicyProof.ts:11",
+   "symbol": "routes/privacyPolicyProof.ts::servePrivacyPolicyProof"
+  },
+  {
+   "function": "routes/redirect.ts::function@12:7",
+   "handler": "performRedirect()",
+   "method": "GET",
+   "path": "/redirect",
+   "reader": "noir",
+   "schema": "/redirect",
+   "shape": "http",
+   "site": "routes/redirect.ts:12",
+   "symbol": "routes/redirect.ts::performRedirect"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site: Noir names promotionVideo(), a function that builds the handler: the one it returns is not folded into promotionVideo",
+   "handler": "promotionVideo()",
+   "method": "GET",
+   "path": "/promotion",
+   "reader": "noir",
+   "schema": "/promotion",
+   "shape": "http",
+   "site": "routes/videoHandler.ts:50",
+   "symbol": "routes/videoHandler.ts::promotionVideo()"
+  },
+  {
+   "function": "routes/videoHandler.ts::function@18:24",
+   "handler": "getVideo()",
+   "method": "GET",
+   "path": "/video",
+   "reader": "noir",
+   "schema": "/video",
+   "shape": "http",
+   "site": "routes/videoHandler.ts:18",
+   "symbol": "routes/videoHandler.ts::getVideo"
+  },
+  {
+   "function": "routes/userProfile.ts::function@24:7",
+   "handler": "getUserProfile()",
+   "method": "GET",
+   "path": "/profile",
+   "reader": "noir",
+   "schema": "/profile",
+   "shape": "http",
+   "site": "routes/userProfile.ts:24",
+   "symbol": "routes/userProfile.ts::getUserProfile"
+  },
+  {
+   "function": "routes/updateUserProfile.ts::function@15:7",
+   "handler": "updateUserProfile()",
+   "method": "POST",
+   "path": "/profile",
+   "reader": "noir",
+   "schema": "/profile",
+   "shape": "http",
+   "site": "routes/updateUserProfile.ts:15",
+   "symbol": "routes/updateUserProfile.ts::updateUserProfile"
+  },
+  {
+   "function": "routes/vulnCodeSnippet.ts::function@42:32",
+   "handler": "serveCodeSnippet()",
+   "method": "GET",
+   "path": "/snippets/:challenge",
+   "reader": "noir",
+   "schema": "/snippets/{}",
+   "shape": "http",
+   "site": "routes/vulnCodeSnippet.ts:42",
+   "symbol": "routes/vulnCodeSnippet.ts::serveCodeSnippet"
+  },
+  {
+   "function": "routes/vulnCodeSnippet.ts::function@70:30",
+   "handler": "checkVulnLines()",
+   "method": "POST",
+   "path": "/snippets/verdict",
+   "reader": "noir",
+   "schema": "/snippets/verdict",
+   "shape": "http",
+   "site": "routes/vulnCodeSnippet.ts:70",
+   "symbol": "routes/vulnCodeSnippet.ts::checkVulnLines"
+  },
+  {
+   "function": "routes/vulnCodeFixes.ts::function@58:30",
+   "handler": "serveCodeFixes()",
+   "method": "GET",
+   "path": "/snippets/fixes/:key",
+   "reader": "noir",
+   "schema": "/snippets/fixes/{}",
+   "shape": "http",
+   "site": "routes/vulnCodeFixes.ts:58",
+   "symbol": "routes/vulnCodeFixes.ts::serveCodeFixes"
+  },
+  {
+   "function": "routes/vulnCodeFixes.ts::function@72:31",
+   "handler": "checkCorrectFix()",
+   "method": "POST",
+   "path": "/snippets/fixes",
+   "reader": "noir",
+   "schema": "/snippets/fixes",
+   "shape": "http",
+   "site": "routes/vulnCodeFixes.ts:72",
+   "symbol": "routes/vulnCodeFixes.ts::checkCorrectFix"
+  }
+ ],
+ "sites": {
+  "routes/dataErasure.ts::function@24:16": [
+   "routes/dataErasure.ts:24",
+   [
+    24,
+    16,
+    66,
+    1
+   ]
+  ],
+  "routes/dataErasure.ts::function@74:17": [
+   "routes/dataErasure.ts:74",
+   [
+    74,
+    17,
+    132,
+    1
+   ]
+  ],
+  "routes/fileUpload.ts::function@103:0": [
+   "routes/fileUpload.ts:103",
+   [
+    103,
+    0,
+    134,
+    1
+   ]
+  ],
+  "routes/passkey.ts::function@276:7": [
+   "routes/passkey.ts:276",
+   [
+    276,
+    7,
+    279,
+    1
+   ]
+  ],
+  "server.ts::function@440:25": [
+   "server.ts:440",
+   [
+    440,
+    25,
+    451,
+    3
+   ]
+  ]
+ },
+ "snapshot_seconds": 45.8
+}

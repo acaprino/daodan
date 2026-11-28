@@ -3,6 +3,8 @@
     modal run benchmarks/hono-routes/modal_probe.py --mode lock          the fixture's package-lock.json (network open, no script)
     modal run benchmarks/hono-routes/modal_probe.py                      every application of `apps.APPS`
     modal run benchmarks/hono-routes/modal_probe.py --only fixture       some of them
+    modal run benchmarks/hono-routes/modal_probe.py --compare            T1.C.10: Express's module on Hono against Noir (`_module`)
+    modal run benchmarks/hono-routes/modal_probe.py --compare --sample   its sample, with the source's lines (printed, never written)
 
 (behind the session's proxy, with `modal[api-proxy-support]`; `PYTHONUTF8=1 PYTHONIOENCODING=utf-8`.)
 
@@ -354,7 +356,38 @@ def _functions(name: str):
     return runner, reader, after
 
 
-FUNCTIONS = {name: _functions(name) for name in NAMES}
+# `--compare` builds only the read images: the probes' run images restore and build the projects (minutes each), and it needs none of them
+FUNCTIONS = {name: _functions(name) for name in NAMES} if not (LOCAL and "--compare" in sys.argv) else {}
+EXPRESS = "/daodan/express-measure"  # `benchmarks/express-routes/{measure,counts}.py`: the measure of `T1.C.9`, shared
+
+
+def _module_image(name: str) -> modal.Image:
+    if not LOCAL:
+        return modal.Image.debian_slim()
+    return (_read_image(name).add_local_file(REPO / "benchmarks/express-routes/measure.py", f"{EXPRESS}/measure.py")
+            .add_local_file(REPO / "benchmarks/express-routes/counts.py", f"{EXPRESS}/counts.py"))
+
+
+def _module(name: str):
+    """`T1.C.10`: the module of Express on the `hono` section (`express.rows(facts, ("hono",))`) against Noir, as `T1.C.9` measures it
+    (`measure.run`), Noir's rows counted only in the files that import a package of the section; with `wanted`, the source's lines."""
+    def run(wanted: list | None = None):
+        import traceback
+        try:
+            sys.path[:0] = [EXPRESS, "/daodan/core"]
+            import entries
+            import measure
+            answer = measure.lines(wanted) if wanted is not None else \
+                measure.run(name, ("hono",), packages=tuple(entries.QUERIES["hono"]["packages"]))
+        except BaseException:
+            answer = {"name": name, "failed": traceback.format_exc()[-3000:]}
+        yield from _chunks(answer)
+    run.__name__ = run.__qualname__ = "module_" + name.replace("-", "_")
+    globals()[run.__name__] = function = app.function(image=_module_image(name), timeout=3600, block_network=True, memory=12288, cpu=4)(run)
+    return function
+
+
+MODULES = {name: _module(name) for name in NAMES}
 
 
 @app.function(image=_read_image("fixture"), timeout=600)
@@ -408,8 +441,34 @@ def _one(name: str) -> dict:
     return {"application": dict(zip(("repository", "commit", "licence", "chosen", "note"), apps.APPS[name])), "run": ran, "read": read, **counts}
 
 
+def _compare(only: str, sample: bool) -> None:
+    """`--compare`: `results/<application>.module.json`; with `--sample`, the sample of the rule printed over those results."""
+    out = HERE / "results"
+    chosen = [n for n in NAMES if not only or n in only.split(",")]
+    if sample:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("express_counts", REPO / "benchmarks/express-routes/counts.py")
+        shown = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(shown)
+        results = {n: json.loads((out / f"{n}.module.json").read_text(encoding="utf-8")) for n in chosen if n != "fixture"}
+        return shown.show(results, lambda name, wanted: _collect(MODULES[name], wanted)["lines"])
+    with concurrent.futures.ThreadPoolExecutor(len(chosen)) as pool:
+        calls = {name: pool.submit(_collect, MODULES[name]) for name in chosen}
+        for name, call in calls.items():
+            try:
+                answer = call.result()
+            except Exception as error:  # a container that failed is a missing answer with its cause, not the end of the others
+                answer = {"name": name, "failed": f"{type(error).__name__}: {str(error)[-800:]}"}
+            (out / f"{name}.module.json").write_bytes((json.dumps(answer, indent=1, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8"))
+            compared = answer.get("compare") or {}
+            print("===", name, answer.get("failed") or "", answer.get("noir_outside"),
+                  json.dumps({k: v for k, v in compared.items() if not k.startswith("only_")}))
+
+
 @app.local_entrypoint()
-def main(mode: str = "probes", only: str = ""):
+def main(mode: str = "probes", only: str = "", compare: bool = False, sample: bool = False):
+    if compare:
+        return _compare(only, sample)
     if mode == "lock":
         answer = lock.remote()
         print("exit", answer["returncode"], answer["stderr"][-300:])

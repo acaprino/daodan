@@ -1,0 +1,9 @@
+{
+  "name": "hono-fixture",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "hono": "4.9.8"
+  }
+}

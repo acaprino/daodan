@@ -1,0 +1,112 @@
+{
+ "compare": {
+  "common_routes": 0,
+  "express_bound": 0,
+  "express_gaps": {
+   "the handler is no function of the snapshot": 1
+  },
+  "express_rows": 1,
+  "noir_bound": 0,
+  "noir_gaps": 6,
+  "noir_rows": 6,
+  "only_express": [],
+  "only_noir": [],
+  "same_function_other_path": 0,
+  "same_route_and_function": 0
+ },
+ "express_peak_mb": 103.8,
+ "express_rows": [
+  {
+   "gap": "hono route GET /reference: the handler is no function of the snapshot: a external",
+   "method": "GET",
+   "path": "/reference",
+   "reader": "hono",
+   "shape": "method",
+   "site": "src/lib/configure-open-api.ts:16",
+   "symbol": "src/lib/configure-open-api.ts::<module>"
+  }
+ ],
+ "express_seconds": 0.0,
+ "name": "hono-open-api-starter",
+ "noir": {
+  "argv": [
+   "noir",
+   "scan",
+   "/work",
+   "-f",
+   "json",
+   "--no-log"
+  ],
+  "returncode": 0,
+  "seconds": 0.6,
+  "stderr_tail": ""
+ },
+ "noir_outside": 1,
+ "noir_rows": [
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/",
+   "reader": "noir",
+   "schema": "/",
+   "shape": "http",
+   "site": "src/routes/index.route.ts:10",
+   "symbol": "src/routes/index.route.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/tasks",
+   "reader": "noir",
+   "schema": "/tasks",
+   "shape": "http",
+   "site": "src/routes/tasks/tasks.routes.ts:11",
+   "symbol": "src/routes/tasks/tasks.routes.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "POST",
+   "path": "/tasks",
+   "reader": "noir",
+   "schema": "/tasks",
+   "shape": "http",
+   "site": "src/routes/tasks/tasks.routes.ts:23",
+   "symbol": "src/routes/tasks/tasks.routes.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "GET",
+   "path": "/tasks/{id}",
+   "reader": "noir",
+   "schema": "/tasks/{}",
+   "shape": "http",
+   "site": "src/routes/tasks/tasks.routes.ts:45",
+   "symbol": "src/routes/tasks/tasks.routes.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "PATCH",
+   "path": "/tasks/{id}",
+   "reader": "noir",
+   "schema": "/tasks/{}",
+   "shape": "http",
+   "site": "src/routes/tasks/tasks.routes.ts:68",
+   "symbol": "src/routes/tasks/tasks.routes.ts::<module>"
+  },
+  {
+   "gap": "noir reports this entry without a unique snapshot handler at its site",
+   "method": "DELETE",
+   "path": "/tasks/{id}",
+   "reader": "noir",
+   "schema": "/tasks/{}",
+   "shape": "http",
+   "site": "src/routes/tasks/tasks.routes.ts:96",
+   "symbol": "src/routes/tasks/tasks.routes.ts::<module>"
+  }
+ ],
+ "sections": [
+  "hono"
+ ],
+ "sites": {},
+ "snapshot_seconds": 0.4
+}

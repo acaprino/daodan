@@ -81,3 +81,56 @@ Dai risultati già nel repository (`benchmarks/noir-binding/results/summary.json
 | **Totale** | | **647** | **627** | **484** | **5** | **473** | **154** |
 
 «Legati dal legatore di oggi» è `bound_now` di `after.json`: la seconda versione del legatore (posizione e nome concorde), misurata con una copia congelata il 24 novembre; `daodan/core/binder.py` di develop (`d8bf191`) ha la stessa impronta registrata nel README di `noir-binding` (`ffc1518965192abd`), mentre `flows.py` e `premap/noir.py` sono cambiati da allora: la cifra vale per quel legatore, non è rimisurata qui. Dei 627 `http`, 143 non hanno un nome di gestore da Noir (70 di anything-llm vengono da un `.json`), e dei 484 con nome 11 di juice-shop sono fabbriche non legate (`servePublicFiles()`). **Il modulo di `T1.C.8` si collega (`T1.C.9`) solo se lega almeno 473 rotte su queste tre applicazioni, senza legami sbagliati nel campione.**
+
+## Il modulo contro Noir (`T1.C.9`)
+
+Domanda: il modulo nostro (`daodan/core/entry_points/express.py`, `T1.C.8`) lega ai gestori almeno le rotte che Noir 1.5.0 lega, senza legami sbagliati? Se sì, gira nello step di `find_entry_points` per l'id `express` dello stack.
+
+### Regola di decisione (scritta il 28 novembre 2026, prima della corsa)
+
+Una rotta legata è una terna distinta (metodo, `flows.path_schema` del percorso, o il percorso dove lo schema manca, simbolo) di una riga che il legatore (`binder.bind`) lega a una funzione; per Noir solo le righe `http`, legate come lo step le lega oggi (`entry_points.write` con la sola Noir: `bound`). Il modulo **si collega** solo se:
+
+1. **in ognuna delle quattro applicazioni** (`node-express-boilerplate`, `anything-llm`, `juice-shop`, `tududi`) il modulo lega almeno tante rotte quante Noir;
+2. **il campione ha 0 legami sbagliati**: 20 discordanze in cui il modulo lega una funzione che Noir non lega con quel metodo (rotta solo del modulo, o funzione diversa), estratte con seme fisso (`random.Random(24)`) fra tutte quelle delle quattro applicazioni e lette a mano sul sorgente (`sample_check.fetch` di `noir-binding`): un legame è sbagliato se la funzione legata non è quella che la rotta esegue per ultima (il gestore, non un middleware né chi registra).
+
+Altrimenti resta scollegato e la causa va qui. Le due lacune aperte da `T1.C.8` (un gestore che è una chiamata, `catchAsync(...)` e le fabbriche di juice-shop; un `use` con primo argomento non letterale, «prefisso ignoto») si contano per causa e non cambiano la regola. Su `tududi` la regola `offre` di `benchmarks/tududi-flow/rules.json` (sola, nei link: `flows.link_facts`) dà un terzo confronto, per simbolo; non entra nella regola.
+
+### Che cosa si misura
+
+| Parametro | Valori |
+| --- | --- |
+| Applicazioni | le tre Express di `benchmarks/noir-binding/apps.py` ai loro commit; `tududi` al commit di `benchmarks/system-map/modal_map.py` (`CASES`, `chrisvel/tududi` `71da9d7b34df`, MIT) |
+| Snapshot | `snapshot.read_project` (quello di `snapshot.py write --no-engine --no-index --no-modules`), rete bloccata, nulla del progetto eseguito |
+| Noir | `noir scan` 1.5.0 come lo dà `noir.commands`, la risposta registrata con `entry_points.write(sources=(noir,))` e legata da `entry_points.bound` |
+| Modulo | `express.rows(facts)` legato da `binder.bind` sugli stessi `flows.Facts` (nuovi), tempo misurato |
+| Conteggi (`counts.py`, provati in `test_express_compare.py`) | per applicazione: righe e rotte legate di ciascuno, comuni per metodo e schema, stessa funzione, lacune del modulo per causa, discordanze; il campione |
+
+```
+modal run benchmarks/express-routes/modal_compare.py                       # le quattro applicazioni: results/<applicazione>.json
+modal run benchmarks/express-routes/modal_compare.py --mode sample         # il campione, con le righe del sorgente lette nel container (stampate, mai scritte)
+modal run tests/modal_pytest.py --args "benchmarks/express-routes/test_express_compare.py -q"
+```
+
+### Esito (Modal, 28 novembre 2026, app `ap-k4hOM36BA6iC9OVB43psD6`; campione `ap-ufxqkrDHmaStIrHMeDE7zp`)
+
+| Applicazione | Righe del modulo | Legate dal modulo | Righe `http` di Noir | Legate da Noir | Stessa rotta e funzione | Stessa funzione, percorso diverso | Solo del modulo / solo di Noir | Tempo del modulo |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| node-express-boilerplate | 15 | **0** | 15 | 13 | 0 | 0 | 0 / 13 | 0,1 s |
+| anything-llm | 261 | **261** | 424 | 354 | 19 | 236 | 4 / 97 | 9,7 s |
+| juice-shop | 247 | **5** | 188 | 106 | 5 | 0 | 0 / 101 | 3,5 s |
+| tududi | 384 | **76** | 401 | 369 | 49 | 3 | 24 / 320 | 19,8 s |
+| **Totale** | 907 | **342** | 1.028 | 842 | 73 | 239 | 28 / 531 | |
+
+Rotte legate contate come terne distinte (metodo, schema, funzione); la funzione è la dichiarazione (`modal_compare._identify`), perché una funzione senza nome prende il nome della rotta che la lega e i due lettori le danno rotte diverse. Picco di memoria del processo, snapshot compreso: 1,2 GB su anything-llm, 1,6 GB su tududi.
+
+**Decisione: non collegato.** Il criterio 1 non passa in nessuna applicazione (342 legate contro 842; sulle tre di `T1.C.2` 266 contro 473). Il criterio 2 passa: il campione (20 delle 28 rotte solo del modulo) ha **0 legami sbagliati**: 12 `all`/`options` di tududi (CalDAV e le app dei test, dove Noir dà i metodi uno per uno o non dà `OPTIONS`), 4 `app.all("*", ...)` di anything-llm, `GET /billing/pay` (`billingModule.payPage`, gestore importato), 3 rotte delle app dei test di tududi; ogni funzione legata è l'ultimo argomento, quella che la rotta esegue. Le righe sono lette nel container (`--mode sample`), non con `sample_check.fetch` come scritto sopra: da questa macchina `codeload.github.com` risponde 403.
+
+Le cause, per peso:
+
+- **gestore che è il valore di un oggetto scritto con metodi** (`const c = { async list(req, res) {...} }`, `module.exports = c`, poi `router.get('/x', c.list)`): 226 righe di tududi, lacuna «the object has no key»; il lettore delle chiavi legge `chiave: valore` e `{nome}`, non la definizione di un metodo. È il primo difetto da correggere nel modulo.
+- **gestore che è una chiamata** (`catchAsync(async (req, res) => ...)`, le fabbriche di juice-shop `retrieveBasket()`): 13 righe di node-express-boilerplate, 235 di juice-shop, 30 di tududi, «the value a function returns». Noir lega la funzione scritta alla riga che cita (l'argomento di `catchAsync`) o la fabbrica; il modulo segue solo il ritorno che è un'app o un router. Legare l'argomento della chiamata o la funzione che la fabbrica restituisce è una scelta (quale funzione è il gestore) da misurare a parte.
+- **router passato attraverso due funzioni** (anything-llm: `developerEndpoints(app, apiRouter)` chiama `apiAdminEndpoints(router)`): 97 rotte di Noir che il modulo non legge affatto (nessuna riga, nessuna lacuna), perché il metodo segue un solo salto di parametro. Una rotta che il modulo non riconosce come di Express non lascia lacuna: va detto nel modulo prima di collegarlo.
+- **istanza di una classe** (`new Controller()`): 18 righe di tududi; **router che nessuna app monta** (20) e **percorso non letterale** (13 + 2): lacune come scritte.
+- **`use` con prefisso non letterale** (il punto aperto di `T1.C.8`): in node-express-boilerplate (`router.use(route.path, route.route)` in un `forEach`) le rotte cadono prima sulla lacuna del gestore; nelle altre tre non compare. Non pesa oggi.
+
+Dove il modulo lega, compone i prefissi che Noir perde: 236 rotte di anything-llm hanno la stessa funzione di Noir e il percorso con `/api` che Noir non mette. Su tududi la regola `offre` (`benchmarks/tududi-flow/rules.json`, sola, nei link) offre 306 registrazioni: il modulo le legge tutte (righe o lacune) e ne lega 52.
