@@ -14,9 +14,10 @@ sections 2-4). Its guarantees:
    (`dotenv_values`) and masked in what the run keeps (`masker`); any other file the snapshot
    never reads stays out, a `file_withheld` gap. The project is never mounted or written;
    declared outputs come back through `cp <container>:<path> -` into a folder outside it.
-3. Execution runs with `--network none`; an optional preparation runs before it on an
-   internal network whose only way out is a proxy that opens CONNECT to package registries
-   on port 443. The preparation hands execution only two named volumes, the copy at `/work`
+3. Every phase that runs the project's code (the preparation, the lifecycle scripts, the
+   execution) is on the run's internal network, whose only way out is a proxy that opens
+   CONNECT on port 443 to the hosts `egress` allows (`PROXY_SCRIPT`, `start_proxy`); an
+   optional preparation runs before the execution. The preparation hands execution only two named volumes, the copy at `/work`
    and the state at `/daodan/state` (`HOME` is there unless the caller gives one), made for
    the run and removed by name; execution starts from the same image, so anything else the
    preparation wrote is gone, and the engine keeps no image or layer of the run. Each volume
@@ -30,13 +31,12 @@ sections 2-4). Its guarantees:
    remedy, and never falls back to the host.
 
 The services a run's tests reach (`beside`: the dynamic step's, for every observer) run beside
-the execution in the shape of a Kubernetes pod: a pod container with `--network none` holds one network namespace, each
-service and the execution join it (`--network container:<pod>`), so the tests reach a
-service at localhost, or at the name the pod's hosts give it, and nothing outside. Each
+the execution in the shape of a Kubernetes pod: a pod container on the run's internal network holds one network
+namespace, each service and the execution join it (`--network container:<pod>`), so the tests reach a
+service at localhost, or at the name the pod's hosts give it, and outside only through the proxy. Each
 image is pulled by the engine before the preparation and runs by the digest its registry
 gave; the execution starts once every service is ready (`start_services`). The steps a CI job
-runs before its tests run at the end of the preparation; with services, the pod is on the
-preparation's network while they run, and leaves it, the proxy gone, before the execution.
+runs before its tests run at the end of the preparation, beside the services in the same pod.
 
 The engine is reached only through a Docker-compatible command line (`create`, `cp`,
 `start`, `rm`, `network`, `volume`), so it can be replaced. On Windows it is always Daodan's
@@ -95,7 +95,7 @@ HOME = STATE + "/home"
 VOLUME_NAME = re.compile(r"daodan-(?:work|state)-[0-9a-f]{12}")  # the only names a run removes
 IMAGE_NAME = re.compile(r"daodan-prepared-[0-9a-f]{12}")  # a preparation kept for its execution (`keep_root`)
 RESULTS = "/daodan/out/results"  # each command's code and streams, brought back by `run_commands`
-NETWORKS = ("none", "registries")
+NETWORKS = ("none", "registries")  # a command's phase (`run_commands`): the execution, the preparation
 OUTPUT_CAP = 2**30  # what the declared outputs of a run may hold together
 RUN_FILES = (RECORD_NAME, "prepare.log", "execute.log", "node-restore.log", "clone-node.log", "own.log")
 STREAM_SLACK = 2**26  # what tar headers and padding may add to the files' bytes, and far more
@@ -131,7 +131,7 @@ RESTORE = ("--cap-drop", "ALL", "--user", NOBODY)
 # postgres 18). One that needs another fails, a service gap with its cause.
 SERVICE = ("--cap-drop", "ALL", *(word for cap in ("CHOWN", "DAC_OVERRIDE", "FOWNER", "SETGID", "SETUID")
                                   for word in ("--cap-add", cap)))
-# The preparation's network: no way out (`--internal`), no IPv6, and, where the engine has the option (Docker Engine
+# The run's network: no way out (`--internal`), no IPv6, and, where the engine has the option (Docker Engine
 # 28.0, API 1.48), no address of the host on its bridge, so the network's gateway is no way to the host's listeners
 # (`benchmarks/egress`). An older engine gets the network without it, and the run says so (`GATEWAY_OPEN`).
 INTERNAL_NETWORK = ("--internal", "--ipv6=false")
@@ -1093,8 +1093,11 @@ def filled(service: dict, values: dict[str, dict[str, str]]) -> dict:
             "command": [put(word) for word in service.get("command") or ()]}
 
 
-def proxy_environment(address: str) -> dict[str, str]:
-    return {name: ("" if name.lower() == "no_proxy" or not address else address) for name in PROXY_VARIABLES}
+def proxy_environment(address: str, local: tuple[str, ...] = ()) -> dict[str, str]:
+    """The proxy variables, all set: to `address`, and NO_PROXY to the `local` names (the container itself and the
+    services of its pod, which a client reaches with no proxy); all empty without an address."""
+    return {name: ("" if not address else ",".join(local) if name.lower() == "no_proxy" else address)
+            for name in PROXY_VARIABLES}
 
 
 def append_record(record: Path, row: dict) -> None:
@@ -1303,7 +1306,7 @@ def fetch(engine: Engine, box: str, path: str, out_dir: Path, budget: int) -> tu
 
 
 def internal_network(engine: Engine, network: str) -> list[dict]:
-    """The preparation's `network` (`INTERNAL_NETWORK`): containers on it reach each other and the proxy by name, the
+    """The run's `network` (`INTERNAL_NETWORK`): containers on it reach each other and the proxy by name, the
     engine's resolver, and the host only where the engine takes its address off the bridge (`NO_HOST_ON_BRIDGE`, from
     Docker's 28.0). An engine whose API is older (Podman's, Kiri 0.2.0's, an older Docker's) would ignore or refuse
     the option: the network is made without it and the preparation goes on, with a `gateway_open` gap that says the
@@ -1318,13 +1321,13 @@ def internal_network(engine: Engine, network: str) -> list[dict]:
     return [] if isolated else [{
         "kind": "gateway_open", "engine": engine.name, "api": said.strip() or "unknown",
         "detail": f"{engine.name} (API {said.strip() or 'unknown'}) does not take the host's address off the "
-                  "preparation's network: the services of the host that listen on every address are reachable from "
+                  "run's network: the services of the host that listen on every address are reachable from "
                   "the container through its gateway",
         "remedy": "run the preparation with Docker Engine 28.0 or later, or with a Kiri that supports the option"}]
 
 
 def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, ...], project: str) -> None:
-    """The proxy of a preparation, open to the `registries` that `egress.decide` allows the project (`egress.name`):
+    """The proxy of a run, open to the `registries` that `egress.decide` allows the project (`egress.name`):
     any other host is refused, and what it was asked is in the proxy's log (`PROXY_SCRIPT`), where the host reads it
     as a request or a `host_denied` gap. The hosts the user approved for the project, always or for this analysis,
     are open too: the run that asked for one, run again after the answer, reaches it. Every host the proxy gets is one
@@ -1430,22 +1433,6 @@ def stepped(text: str, steps: list[dict], token: str, limit: float) -> list[dict
                 row["cause"] = f"it exited with code {code}" + (f": {tail}" if tail else "")
         rows.append(row)
     return rows
-
-
-def leaves(run: Callable, network: str, token: str) -> str | None:
-    """None when the engine takes a container off its first network, as the pod leaves the preparation's before
-    the tests; otherwise the engine's answer (Kiri 0.2.0 refuses: crates/kiri/src/daemon/engine.rs:2357)."""
-    box = f"daodan-probe-{token}"
-    try:
-        checked(run("create", "--name", box, *UNPRIVILEGED, "--network", network, PROXY_IMAGE, "true"),
-                "create of the probe")
-        answer = run("network", "disconnect", network, box)
-        said = (answer.stderr or answer.stdout or b"").decode("utf-8", "replace").strip()
-        return None if answer.returncode == 0 else said[-300:] or f"code {answer.returncode}"
-    except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
-        return str(error)
-    finally:
-        run("rm", "-f", box)
 
 
 def qualified(image: str) -> str:
@@ -1654,9 +1641,9 @@ def start_services(run: Callable, services: list[dict], network: str, limits: di
 
 def start_pod(engine: Engine, services: list[dict], network: str, token: str, seconds: float,
               cleanup: list) -> tuple[str | None, str | None]:
-    """The pod of `services`: a container that holds their network namespace on `network` (`none` for the tests
-    alone, the preparation's internal one while the CI's steps run beside them), with a host per name they are
-    reached by, started; its removal and theirs put first in `cleanup`. `(pod, None)`, or `(None, cause)`."""
+    """The pod of `services`: a container that holds their network namespace on `network` (the run's internal one,
+    whose way out is its proxy), with a host per name they are reached by, started; its removal and theirs put first
+    in `cleanup`. `(pod, None)`, or `(None, cause)`."""
     pod = f"daodan-pod-{token}"
     cleanup[:0] = [*(("rm", "-f", f"daodan-svc-{token}-{n}") for n in range(len(services))), ("rm", "-f", pod)]
     hosts = sorted({f"--add-host={name}:127.0.0.1" for s in services
@@ -1718,7 +1705,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                      keep_root: bool = False, dotenv_env: list[tuple[str, str]] = (), blind: bool = False,
                      node_restore: dict | None = None, tools: dict | None = None,
                      generate: str | None = None) -> dict:
-    """Run `command` in a container over a copy of `project`; `prepare` first, with the registries open.
+    """Run `command` in a container over a copy of `project`; `prepare` first. Both, and every phase between them that
+    runs the project's code, reach out only through the run's proxy, which opens the hosts `egress` allows.
 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
     called once an engine answers, which may raise Gap. With `prepare`, inputs lie under /work or /daodan/state
@@ -1726,13 +1714,12 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     Engine, "daodan" for Daodan's own, or None to find one. Within `beside`, its services start in the pod the
     execution joins and its variables reach both phases under `env`. The result's `state` is
     `done` (the command exited, `exit_code` says how), `timeout`, `failed` (with `cause`) or `gap`
-    (with `cause` and `remedy`); `refused`, when the preparation's proxy refused a host, lists each `{host, port}`
+    (with `cause` and `remedy`); `refused`, when the run's proxy refused a host, lists each `{host, port}`
     asked of it, and `asked` those the user has yet to answer (`egress.collect`), with their `gaps`:
     `host_denied`, and `approval_required` when the run failed (for `run_commands`, a command did); `outputs` lists the files brought back into `out_dir`; `services`, with
     services, each `{name, image, pinned, outcome}`, `outcome` `ready` or `failed` with `cause`: the execution
     runs without a service that failed. Within `beside` with steps, they run at the end of the preparation
-    (`steps_script`), with the services beside them where the engine takes the pod off the preparation's network
-    before the execution (`leaves`); `ci_steps` gives each one's `{declared_in, name, outcome, exit_code,
+    (`steps_script`), with the services beside them; `ci_steps` gives each one's `{declared_in, name, outcome, exit_code,
     duration_seconds, cause}` (`stepped`). `dotenv_env`, `(name, file)` of tracked .env files, reach both phases
     with their values (`dotenv_values`), never on record and masked in what the run keeps: a Dockerfile stage's
     ARG, in the environment of every RUN after it, as BuildKit gives it. With `keep_root`, execution starts from
@@ -1749,7 +1736,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     state volume alone (`tool_phase`); the preparation runs as `NOBODY` with no capability (`RESTORE`), unless the
     CI's steps run in it. Without, one preparation as root, as a CI's job runs.
     With `generate` (`preparation.rebuild`'s lines: the lifecycle scripts of the packages the preparation restored
-    without them), a phase with no network runs it after the preparation, as its user, its output in `prepare.log`;
+    without them), a phase behind the proxy runs it after the preparation, as its user, its output in `prepare.log`;
     the CI's steps then run in a phase of their own after it (`T3.A.6d`).
     """
     project, out_dir = Path(project).resolve(), Path(out_dir).resolve()
@@ -1773,11 +1760,12 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
         return declared(record, image, command, gap)
     token = uuid.uuid4().hex[:12]
     cleanup: list[tuple[str, ...]] = []
+    walled: list[str] = []  # the run's network, once `firewall` made it with its proxy
     held: tuple[Path, list[str]] | None = None
     kept_image: str | None = None  # `keep_root`'s image, on record with the volumes
     hide: Callable[[str], str] | None = None  # the masks of the tracked .env files' values (`masker`)
     result = {"state": "failed", "exit_code": None, "outputs": [], "record": str(record), "engine": found.name}
-    logged: list[str] = []  # the proxy whose refusals are still to read: after the preparation, or in `finally`
+    logged: list[str] = []  # the proxy whose refusals are still to read, in `finally`
 
     def read_refusals() -> None:
         while logged:
@@ -1815,6 +1803,22 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             exported_values = exported(dotenv_env, values)
             run_copy, mounts, env = copy, [], {"HOME": HOME, **(env or {})} if prepare else dict(env or {})
             joined, said_steps, steps = None, [], list(steps)
+            network, proxy = f"daodan-net-{token}", f"daodan-proxy-{token}"
+            local = ("localhost", "127.0.0.1", "::1", *sorted({name for s in pinned for name in (
+                s.get("host"), *s.get("aliases", ())) if name and name != "localhost"}))
+            proxied = {**env, **exported_values, **proxy_environment(f"http://proxy:{PROXY_PORT}", local)}
+
+            def firewall() -> None:
+                """The run's internal network and its proxy, its only way out, made once: every phase that runs the
+                project's code is on it, and the proxy stays until the run ends."""
+                if walled:
+                    return
+                walled.append(network)
+                if opened := internal_network(found, network):  # a note, not a stop: the run goes on
+                    result["gaps"] = [*(result.get("gaps") or ()), *opened]
+                cleanup.extend([("rm", "-f", proxy), ("network", "rm", network)])
+                start_proxy(found, proxy, network, tuple(registries), egress.name(project))
+                logged.append(proxy)
 
             def hidden(row: dict) -> dict:  # what the run printed, masked in its log, its outputs and its row
                 mask_file(row.get("log"), hide)
@@ -1878,13 +1882,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         report()
                         return result
                     prepare_copy = None
-                network, proxy = f"daodan-net-{token}", f"daodan-proxy-{token}"
-                if opened := internal_network(found, network):  # a note, not a stop: the run goes on
-                    result["gaps"] = [*(result.get("gaps") or ()), *opened]
-                cleanup += [("rm", "-f", proxy), ("network", "rm", network)]
-                start_proxy(found, proxy, network, tuple(registries), egress.name(project))
-                logged.append(proxy)
-                proxied = {**env, **exported_values, **proxy_environment(f"http://proxy:{PROXY_PORT}")}
+                firewall()
                 if split and tools.get("lines"):
                     made = tool_phase(found, image, tools, network, proxied, mounts[1], limits, prepare_timeout,
                                       out_dir)
@@ -1893,11 +1891,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         result["cause"] = made.get("cause") or f"the tools did not install; see {made['log']}"
                         report()
                         return result
-                refused = leaves(engine_cli, network, token) if steps and pinned else None
-                if refused:  # the pod could not leave the network: no step runs beside the services
-                    said_steps, steps = unrun(f"{found.name} cannot take the pod of the services off the preparation's "
-                                              f"network before the tests, so no step runs beside them: {refused}"), []
-                elif steps and pinned:  # the services first, in a pod on the preparation's network
+                if steps and pinned:  # the services first, in a pod on the run's network, for the steps and the tests
                     pod, failure = start_pod(found, pinned, network, token, prepare_timeout + 2 * timeout, cleanup)
                     if pod:
                         joined = f"container:{pod}"
@@ -1917,8 +1911,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 if generate and row["outcome"] == "exited" and row["exit_code"] == 0 and (
                         not kept_image or "committed" in row):
                     for name, net, argv, seconds, given in (
-                            ("generate", "none", ["sh", "-c", generate], prepare_timeout,
-                             {**env, **exported_values, **proxy_environment("")}),
+                            ("generate", network, ["sh", "-c", generate], prepare_timeout, proxied),
                             *((("steps", joined or network, ["sh", "-c", steps_script(steps, timeout, token), "sh",
                                                              "true"], timeout, proxied),) if steps else ())):
                         row = phase(found, name, image=kept_image or image, network=net, command=argv, env=given,
@@ -1929,7 +1922,6 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         last = row if name == "steps" else last
                         if row["outcome"] != "exited" or row["exit_code"] != 0:
                             break
-                read_refusals()  # before the proxy goes: `egress.collect` turns them into requests and gaps
                 if steps:
                     log = Path(row["log"]).read_bytes().decode("utf-8", "replace") if row.get("log") else ""
                     said_steps = stepped(log, steps, token, timeout)
@@ -1943,22 +1935,18 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                     raise Gap(f"{found.name} did not commit the preparation's container: {last.get('commit_failed')}",
                               "run Daodan with an engine that commits a container (Docker, Podman)")
                 run_copy, based, image = None, image, kept_image or image
-                if joined:  # the proxy goes and the pod leaves the network: the tests reach the services, and only them
-                    checked(cli(found, "rm", "-f", proxy), "rm of the proxy")
-                    checked(cli(found, "network", "disconnect", network, joined.partition(":")[2]),
-                            "network disconnect of the pod")
+            firewall()  # a run without a preparation is behind the proxy all the same
             if pinned and joined is None:
-                pod, failure = start_pod(found, pinned, "none", token, timeout, cleanup)
+                pod, failure = start_pod(found, pinned, network, token, timeout, cleanup)
                 if pod:
                     joined = f"container:{pod}"
                     served += start_services(engine_cli, pinned, joined, limits, token, found.name != "podman", copy)
                 else:
                     served += unstarted(failure)
-            joined = joined or "none"
             report()
-            row = phase(found, "execute", image=image, command=command, network=joined,
-                        env={**env, **exported_values, **proxy_environment("")}, limits=limits, timeout=timeout,
-                        copy=run_copy, outputs=list(outputs), out_dir=out_dir, volumes=mounts)
+            row = phase(found, "execute", image=image, command=command, network=joined or network, env=proxied,
+                        limits=limits, timeout=timeout, copy=run_copy, outputs=list(outputs), out_dir=out_dir,
+                        volumes=mounts)
             append_record(record, {**hidden(row), "copy": digest, **({"from": based} if kept_image else {})})
             result.update(exit_code=row.get("exit_code"), outputs=row["outputs"],
                           state={"exited": "done", "timeout": "timeout"}.get(row["outcome"], "failed"))
@@ -2011,8 +1999,8 @@ def command_lines(commands: list[tuple[int, dict]], into: str) -> str:
 def run_commands(project: Path, commands: list[dict], *, image: str, out_dir: Path, values: bool = False,
                  **options) -> dict:
     """Commands as data, each `{tool, argv, cwd, env, network}`, in one container run over a copy of `project`:
-    those whose `network` is "registries" in the preparation, the others ("none", the default) in execution.
-    `cwd` is relative to the copy. The result of `run_in_container` (`options` are its own), with `root`, the
+    those whose `network` is "registries" in the preparation, the others ("none", the default) in execution. The value
+    names the phase only: both phases reach out through the run's proxy alone (`run_in_container`). `cwd` is relative to the copy. The result of `run_in_container` (`options` are its own), with `root`, the
     copy's folder, and `results`: each command's `returncode` (None when it did not run), `stdout` and `stderr`,
     in the given order. The commands describe the project and see no value of its tracked `.env` files: those
     hold each value's name before they run (`named`), so what they print is kept as printed (`blind`). With

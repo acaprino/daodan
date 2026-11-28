@@ -605,14 +605,14 @@ class ObserveTest(unittest.TestCase):
         self.observe(declared=("crates.corp.example",))
         self.assertIn("crates.corp.example", self.created()[1])  # after `own`: the proxy
 
-    def test_the_dependencies_arrive_in_the_preparation_and_the_tests_run_with_no_network(self):
+    def test_the_dependencies_arrive_in_the_preparation_and_the_tests_run_behind_the_same_proxy(self):
         self.play_run()
         self.observe()
         _owned, proxy, _tools, prepare, execute = self.created()  # `T3.A`: the copy given to 65532, the recipes as root
         for host in ("index.crates.io", "static.crates.io"):
             self.assertIn(host, proxy)
         self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
-        self.assertEqual(execute[execute.index("--network") + 1], "none")
+        self.assertEqual(execute[execute.index("--network") + 1], prepare[prepare.index("--network") + 1])  # T1.F.3
         prepared, executed = self.script("prepare"), self.script("execute")
         self.assertIn("cargo fetch", prepared)
         self.assertIn("dpkg-deb -x", prepared)  # Valgrind is unpacked, never installed in the system

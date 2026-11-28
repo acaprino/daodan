@@ -1355,20 +1355,21 @@ class PodTest(unittest.TestCase):
         return [row for row in map(json.loads, lines) if row["phase"] == "service"]
 
     def test_each_service_runs_in_the_pod_s_network_by_its_pinned_image_and_the_tests_join_it(self):
-        """The shape of a Kubernetes pod: one network namespace with no way out, the service listening in it as on
-        GitHub's runner, the execution at its localhost. The image is pulled before the preparation, with the
-        engine's network, and runs by the digest the registry gave."""
+        """The shape of a Kubernetes pod: one network namespace whose only way out is the run's proxy, the service
+        listening in it as on GitHub's runner, the execution at its localhost. The image is pulled before the
+        preparation, with the engine's network, and runs by the digest the registry gave."""
         self.states(PINNED, "running starting", "running starting", "running healthy")
         result = self.run_operation([SPEC], prepare=["exit", "0"])
         self.assertEqual(result["state"], "done", result)
         calls = self.calls()
         pulled = calls.index(["pull", "docker.io/library/postgres:16-alpine"])
-        [prepare] = [c for c in self.created("daodan-") if "--network" in c
-                     and c[c.index("--network") + 1].startswith("daodan-net-")]
+        [prepare, _execute] = self.phases()
+        network = prepare[prepare.index("--network") + 1]
+        self.assertTrue(network.startswith("daodan-net-"))
         self.assertLess(pulled, calls.index(prepare))
         [pod] = self.created("daodan-pod-")
         name = pod[pod.index("--name") + 1]
-        self.assertEqual(pod[pod.index("--network") + 1], "none")
+        self.assertEqual(pod[pod.index("--network") + 1], network)  # the run's network: out through the proxy only
         self.assertIn(container.PROXY_IMAGE, pod)
         [service] = self.created("daodan-svc-")
         self.assertEqual(service[service.index("--network") + 1], f"container:{name}")
@@ -1557,11 +1558,11 @@ class PodTest(unittest.TestCase):
         lines = (self.out / container.RECORD_NAME).read_text(encoding="utf-8").splitlines()
         return [row for row in map(json.loads, lines) if row["phase"] == "ci_step"]
 
-    def test_the_ci_s_steps_run_after_the_preparation_beside_the_services_and_the_pod_leaves_its_network(self):
+    def test_the_ci_s_steps_run_after_the_preparation_beside_the_services_and_the_tests_in_the_same_pod(self):
         """As GitHub's runner runs a job: each step before the tests in order, in its folder, with its job's and its
         own variables and CI=true, the services beside it, the registries through the proxy. A step that fails is
-        said and the next one runs. Then the proxy goes and the pod leaves the preparation's network: the tests
-        reach the same services, and only them."""
+        said and the next one runs. The tests then run in the same pod, on the same network, behind the same proxy
+        (`T1.F.3`): no container leaves a network."""
         (self.project / "backend").mkdir()
         (self.project / "backend" / "app.js").write_text("module.exports = 2;\n", encoding="utf-8")
         self.states(PINNED, "running healthy")
@@ -1572,20 +1573,18 @@ class PodTest(unittest.TestCase):
         [network] = [c[-1] for c in calls if c[:3] == ["network", "create", "--internal"]]
         [pod] = self.created("daodan-pod-")
         name = pod[pod.index("--name") + 1]
-        self.assertEqual(pod[pod.index("--network") + 1], network)  # the registries' network, while it prepares
-        [probe] = [c for c in self.created("daodan-probe-")]
-        for own in (pod, probe):  # Daodan's own containers: no capability, not root (T3.A.6a)
-            self.assertEqual(own[3:9], list(container.UNPRIVILEGED))
-        self.assertIn(["network", "disconnect", network, probe[probe.index("--name") + 1]], calls)
+        self.assertEqual(pod[pod.index("--network") + 1], network)  # the run's network, for the steps and the tests
+        self.assertEqual(pod[3:9], list(container.UNPRIVILEGED))  # Daodan's own container: no capability, not root
+        self.assertEqual(self.created("daodan-probe-"), [])
+        self.assertFalse([c for c in calls if c[:2] == ["network", "disconnect"]])
         [service] = self.created("daodan-svc-")
         [prepare, execute] = self.phases()
         self.assertEqual(prepare[prepare.index("--network") + 1], f"container:{name}")
         self.assertEqual(execute[execute.index("--network") + 1], f"container:{name}")
+        self.assertIn("HTTPS_PROXY=http://proxy:3128", execute)
         self.assertLess(calls.index(["start", service[service.index("--name") + 1]]), calls.index(prepare))
         [proxy] = [c[-1] for c in calls if c[:2] == ["network", "connect"]]
-        left = calls.index(["network", "disconnect", network, name])
-        self.assertLess(calls.index(["rm", "-f", proxy]), left)
-        self.assertLess(left, calls.index(execute))
+        self.assertLess(calls.index(execute), calls.index(["rm", "-f", proxy]))  # the proxy outlives the tests
         log = (self.out / "prepare.log").read_text(encoding="utf-8")
         self.assertIn(f"migrated production {DATABASE_URL} CI=true in backend", log)
         rows = self.stepped()
@@ -1627,21 +1626,22 @@ class PodTest(unittest.TestCase):
         [prepare, _execute] = self.phases()
         self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
 
-    def test_an_engine_that_cannot_take_the_pod_off_its_network_runs_no_step_beside_the_services(self):
+    def test_an_engine_that_cannot_take_a_container_off_its_network_runs_the_steps_beside_the_services(self):
         """Kiri 0.2.0 refuses to disconnect a container from its first network (crates/kiri/src/daemon/
-        engine.rs:2357) and to connect one on `none`: the pod cannot leave the preparation's network, so no step runs
-        beside the services, each said with the engine's answer; the services start for the tests as without steps."""
+        engine.rs:2357). The pod no longer leaves the run's network (`T1.F.3`): the steps run beside the services there
+        too, and the tests after them."""
         (self.state / "no-disconnect").write_text("", encoding="utf-8")
         self.states(PINNED, "running healthy")
         result = self.run_operation([SPEC], None, self.STEPS[2:], prepare=["true"])
         self.assertEqual(result["state"], "done", result)
         [step] = result["ci_steps"]
-        self.assertEqual(step["outcome"], "not_run")
-        self.assertIn("Kiri cannot disconnect a container from its first network", step["cause"])
+        self.assertEqual(step["outcome"], "exited")
         [pod] = self.created("daodan-pod-")
-        self.assertEqual(pod[pod.index("--network") + 1], "none")
-        [prepare, _execute] = self.phases()
-        self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
+        self.assertTrue(pod[pod.index("--network") + 1].startswith("daodan-net-"))
+        [prepare, execute] = self.phases()
+        name = pod[pod.index("--name") + 1]
+        self.assertEqual([prepare[prepare.index("--network") + 1], execute[execute.index("--network") + 1]],
+                         [f"container:{name}"] * 2)
         self.assertEqual([s["outcome"] for s in result["services"]], ["ready"])
 
     def dotenv_project(self) -> Path:
@@ -1828,7 +1828,7 @@ class PodTest(unittest.TestCase):
         self.assertEqual(self.created("daodan-pod-") + self.created("daodan-svc-"), [])
         self.assertEqual([c for c in self.calls() if c[0] == "pull"], [])
         execute = self.created("daodan-")[-1]
-        self.assertEqual(execute[execute.index("--network") + 1], "none")
+        self.assertTrue(execute[execute.index("--network") + 1].startswith("daodan-net-"))  # behind the proxy
 
     def test_an_image_name_gets_the_registry_docker_reads_into_it(self):
         self.assertEqual([container.qualified(name) for name in (

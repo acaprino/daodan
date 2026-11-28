@@ -6,9 +6,9 @@ take): each source's commands in one container run, in Daodan's container. The a
 `runner(manifest)` returns the `runner(commands) -> results` that `premap.derive` and `entry_points.derive` call once per model
 source.
 It runs the commands with `container.run_commands` over a copy of the project (the same runner the JVM and clang
-analyzers use): those whose `network` is `registries` in the preparation, behind the proxy that opens only the
-package registries (`container.REGISTRIES`) and the hosts a tool names in `TOOLS` (Bazel's) that the user approved
-(`egress`), the others with no network. Before them, one setup command unpacks into `STATE/tools` the files the tool needs (`TOOLS`): each is
+analyzers use): those whose `network` is `registries` in the preparation, the others in the execution, both behind
+the proxy that opens only the package registries (`container.REGISTRIES`), the hosts a tool names in `TOOLS` (Bazel's)
+and the hosts the user approved (`egress`). Before them, one setup command unpacks into `STATE/tools` the files the tool needs (`TOOLS`): each is
 downloaded once on the host into Daodan's shared directory and checked by sha256, then carried into the container;
 a setup that installs a package from a registry (TypeScript, Renovate) runs in the preparation. A tool
 that reads what the project's packages hold (`restores`: tsc, whose tsconfigs extend installed and generated
@@ -18,9 +18,8 @@ gap on the first answer, and the commands run. The hosts the project declares fo
 Gradle's settings, where a `pluginManagement` plugin comes from) open only once the user approved them (`egress`): a
 command that fails reaching one has the `approval_required` gap of the run. The hosts an answer names that its run did
 not reach (`TOOLS`' `named`: the repositories a Gradle build declares, `gradle.retry`; a preset the project's Renovate
-config extends, `renovate.asked`) are requests with a gap on the answer, its result standing, until the user decides;
-a command with no network that names a host the user approved runs once more in the preparation, behind the proxy
-that opens it beside the registries, as every command there (`reach`). A host of the tool
+config extends, `renovate.asked`) are requests with a gap on the answer, its result standing, until the user decides
+(`reach`); an approved one the proxy opens in the run itself. A host of the tool
 that nobody decided stops the run before it starts (`egress.preflight`): the source is not run, with that gap. A run
 that does not happen (no engine, too little memory) or a setup that fails raises: the source states nothing and
 its gap says why. Each run's record lands in `premap-runs/<tool>/` beside the manifest.
@@ -89,7 +88,7 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
            "setup": [f"tar -xzf {IN}/uv.tar.gz -C {T} && cp {T}/uv-x86_64-unknown-linux-gnu/uv {T}/bin/"]},
     "npm": {"files": [NODE], "setup": [UNPACK["node"]], "runs_on": ("node",)},
     # a tsconfig extends files of the installed packages and files their install generates: `restores`, the
-    # family of `preparation.RESTORES` whose packages the setup restores first, their lifecycle scripts after with no network
+    # family of `preparation.RESTORES` whose packages the setup restores first, their lifecycle scripts after
     "tsc": {"files": [NODE], "setup": [UNPACK["node"], _npm("typescript@6.0.3")], "registries": True,
             "runs_on": ("node",), "restores": "node", "memory": 3},
     # the project's own `next` is in the packages the setup restores: no install of its own, but a preparation, where
@@ -264,33 +263,14 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                          **({"argv": ["sh", "-c", f'{preparation.UNPACK_JDK}{preparation.JAVA_PROXY}; exec "$@"',
                                      c["tool"], *c["argv"]]}
                             if spec.get("java") else {})} for c in commands)]
-        def reach(named, answers: list[dict], roots: list) -> list[dict]:
-            """The hosts the answers name (`TOOLS`' `named`): a command with no network that names an approved one runs
-            once more in the preparation, behind the proxy that opens it, and its answer stands for the first (a host
-            its second answer names is not run for again); the rest are the user's requests (`approval_required`, the
-            result standing) or `host_denied` (`egress.collect`)."""
-            name = str(project.resolve())
-            found = {n: named(answers[n]) for n in range(1, len(answers))}
-            state, answered = egress.load(name), egress.session(name)
-            closed = {n for n in found if ran[n].get("network", "none") == "none"}
-            opened = tuple(dict.fromkeys(host for n in sorted(closed) for host in found[n]
-                                         if egress.decide(host, name, state, answered) == "allow"))
-            again = [n for n in sorted(closed) if set(found[n]) & set(opened)]
-            told = []
-            if again:
-                run = contained([ran[0], *({**ran[n], "network": "registries"} for n in again)], (*hosts, *opened),
-                                f"{tool}-hosts")
-                done = run.get("results") or []
-                if run["state"] != "done" or len(done) != len(again) + 1 or done[0]["returncode"] != 0:
-                    told.append({"kind": "model_failed", "path": ".", "detail": f"{tool}: the run again with the hosts "
-                                 f"the user approved ({', '.join(opened)}) did not happen: "
-                                 f"{run.get('cause') or 'its setup failed'}"})
-                else:
-                    for n, answer in zip(again, done[1:]):
-                        answers[n], roots[n], found[n] = answer, run["root"], named(answer)
-            asked, denied = egress.collect(name, [{"host": host, "port": "443"} for host in dict.fromkeys(
-                host for named_hosts in found.values() for host in named_hosts)])
-            return told + [gap for gap in denied if gap not in gaps] + egress.approval_gap(asked, "ran")
+        def reach(named, answers: list[dict]) -> list[dict]:
+            """The hosts the answers name (`TOOLS`' `named`): the user's requests (`approval_required`, the result
+            standing) or `host_denied` (`egress.collect`). A command no longer runs again for an approved one: every
+            command is behind the proxy, which opens it in the run itself (`T1.F.3`)."""
+            found = [host for answer in answers[1:] for host in named(answer)]
+            asked, denied = egress.collect(str(project.resolve()), [{"host": host, "port": "443"}
+                                                                    for host in dict.fromkeys(found)])
+            return [gap for gap in denied if gap not in gaps] + egress.approval_gap(asked, "ran")
 
         def contained(given: list[dict], allowed: tuple, out: str) -> dict:
             with tempfile.TemporaryDirectory(prefix="daodan-inputs-") as scratch:
@@ -318,8 +298,8 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         if not answers or answers[0]["returncode"] != 0:
             raise RuntimeError(f"the {tool} setup failed: "
                                f"{(answers[0]['stderr'] if answers else '').strip()[-400:] or 'no answer'}")
-        # the preparation's gaps ride on the first answer, the tools' and the lifecycle scripts' (`generate`, with no
-        # network) on the log of the preparation
+        # the preparation's gaps ride on the first answer, the tools' and the lifecycle scripts' (`generate`) on the log
+        # of the preparation
         began = Path(result["record"]).parent / "prepare.log" if result.get("record") else None
         said = began.read_text(encoding="utf-8", errors="replace") if began and began.is_file() else ""
         gaps += ((preparation.missing(said) if tools else []) + preparation.missing(answers[0]["stderr"])
@@ -328,7 +308,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                  + list(result.get("gaps") or ()))  # and what the copy left out (`container.copy_perimeter`)
         roots = [result["root"]] * len(answers)
         if spec.get("named"):
-            gaps += reach(spec["named"], answers, roots)
+            gaps += reach(spec["named"], answers)
         # A command whose build needs a newer JVM than the image's (`asks`) runs once more on the JDK it names:
         # mise installs it in the setup, and the command runs with it as JAVA_HOME.
         asked = [(n, spec["asks"](answers[n]["stderr"] + answers[n]["stdout"], toolchains))

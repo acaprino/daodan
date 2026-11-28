@@ -845,8 +845,8 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
         self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
         self.assertIn(jvm.IMAGE, prepare)
         self.assertIn("HTTPS_PROXY=http://proxy:3128", prepare)
-        self.assertEqual(execute[execute.index("--network") + 1], "none")
-        self.assertIn("HTTPS_PROXY=", execute)
+        self.assertEqual(execute[execute.index("--network") + 1], prepare[prepare.index("--network") + 1])  # T1.F.3
+        self.assertIn("HTTPS_PROXY=http://proxy:3128", execute)
         self.assertIn(jvm.IMAGE, execute)
         self.assertEqual([call for call in self.calls() if call[0] in ("commit", "rmi")], [])
 
@@ -1434,8 +1434,8 @@ class RealContainerSmokeTest(unittest.TestCase):
         self.assertEqual(tree_digest(project), before_project)
         self.assertEqual(after, before)
         self.assertEqual(engine_after, held)  # no image, layer, volume or container left by the run
-        self.assertEqual([(record["phase"], record["network"] == "none") for record in records],
-                         [("prepare", False), ("execute", True)])
+        self.assertEqual([(record["phase"], record["network"].startswith("daodan-net-")) for record in records],
+                         [("prepare", True), ("execute", True)])  # both behind the proxy (T1.F.3)
         self.assertNotRegex(prepared, r"Downloading https://services\.gradle\.org|apache-maven/[\d.]+/apache-maven")
         if wrapper:
             self.assertNotIn("the project wrapper ran", prepared)

@@ -12,7 +12,7 @@ the least capabilities it needs (from Docker's default set, dropped one at a tim
 as `65532` with `--cap-drop ALL` on volumes owned by `65532`; a service as root with the least capabilities. The
 network is the engine's bridge: the proxy is `modal_probe.py`'s subject. The `daodan:` rows run Daodan's own
 containers as its code makes them (`container.UNPRIVILEGED`, `T3.A.6a`): the proxy opening a registry, the reader of
-the `.env` files, the probe of `leaves`, the pod and `reached`. Each recipe and restore runs once more as a split
+the `.env` files, the pod and `reached`. Each recipe and restore runs once more as a split
 preparation runs it (`code`, `T3.A.6b`): `container.own` gives the copy to `65532`, `container.tool_phase` installs
 the recipes of `preparation.NEEDS` as root without /work with their `caps`, the rest runs as `65532` with
 `--cap-drop ALL` (`container.RESTORE`). A service runs as `start_services` creates it (`container.SERVICE`,
@@ -305,14 +305,6 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
         values, _public = container.dotenv_values(erun, tar, [".env"], uuid.uuid4().hex[:12])
         return None if values == {".env": {"KEY": "value"}} else f"values {values}"
 
-    def probe() -> str | None:
-        network = f"daodan-net-{uuid.uuid4().hex[:12]}"
-        container.internal_network(engine, network)
-        try:
-            return container.leaves(erun, network, uuid.uuid4().hex[:12])
-        finally:
-            erun("network", "rm", network)
-
     def pod() -> str | None:
         token, cleanup = uuid.uuid4().hex[:12], []
         try:
@@ -336,7 +328,7 @@ def drive() -> None:  # inside the VM: Daodan's modules at /daodan/map/core, Doc
     java = f"[ -x {preparation.JDK_HOME}/bin/java ] || echo 'DAODAN-MISSING jdk' >&2"
     mise = preparation.toolchains([{"tool": "node", "version": "22.12.0"}])
     jobs = [lambda: copy_row(), lambda: own("proxy", proxy), lambda: own("dotenv", dotenv),
-            lambda: own("leaves", probe), lambda: own("pod+reached", pod)]
+            lambda: own("pod+reached", pod)]  # no probe of `leaves`: the pod stays on its network (`T1.F.3`)
     for name, base in (("node", preparation.IMAGE), ("uv", preparation.IMAGE), ("go", BUILDPACK), ("rust", BUILDPACK),
                        ("arm-none-eabi", BUILDPACK)):
         jobs.append(lambda name=name, base=base: recipe(name, base, setup([name])["files"], setup([name])["lines"],

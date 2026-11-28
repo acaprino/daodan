@@ -395,14 +395,14 @@ class ObserveTest(unittest.TestCase):
         self.observe(declared=("mirror.corp.example",))
         self.assertIn("mirror.corp.example", self.created()[1])  # after `own`: the proxy
 
-    def test_the_dependencies_arrive_in_the_preparation_and_the_tests_run_with_no_network(self):
+    def test_the_dependencies_arrive_in_the_preparation_and_the_tests_run_behind_the_same_proxy(self):
         self.play_run()
         self.observe()
         _owned, proxy, _tools, prepare, execute = self.created()  # `T3.A`: the copy given to 65532, the recipes as root
         for host in ("proxy.golang.org", "sum.golang.org"):
             self.assertIn(host, proxy)
         self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
-        self.assertEqual(execute[execute.index("--network") + 1], "none")
+        self.assertEqual(execute[execute.index("--network") + 1], prepare[prepare.index("--network") + 1])  # T1.F.3
         prepared, executed = self.script("prepare"), self.script("execute")
         self.assertIn("export GOPROXY=off", executed)  # nothing asks the network that is not there
         self.assertNotIn("GOPROXY=off", " ".join(prepare))

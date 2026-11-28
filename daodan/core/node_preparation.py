@@ -94,8 +94,8 @@ def analysis():
 
 
 def options(restored: dict, toolchains=(), hosts=()) -> tuple[list[str], dict]:
-    """The standalone restore, its packages' lifecycle scripts as `run_in_container`'s `generate` (with no network,
-    `preparation.rebuild`), or the instructions to build both once in the current analysis."""
+    """The standalone restore, its packages' lifecycle scripts as `run_in_container`'s `generate` (behind the
+    run's proxy, `preparation.rebuild`), or the instructions to build both once in the current analysis."""
     alone = {"generate": "\n".join(restored["generate"])} if restored.get("generate") else {}
     if not restored["lines"] or _session() is None:
         return restored["lines"], alone
@@ -220,18 +220,17 @@ def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, sh
         container.mask_file(row.get("log"), hide)
         container.append_record(out_dir / container.RECORD_NAME,
                                 {**container.mask_row(row, hide), "preparation": lock.name})
-        asked, denied = egress.collect(project, refusals())  # before the proxy goes
         began = row.get("log")
         if row.get("outcome") == "exited" and row.get("exit_code") == 0 and request.get("generate"):
-            # the packages' lifecycle scripts, with no network (`preparation.rebuild`, `T3.A.6d`)
-            row = container.phase(engine, "node-generate", image=image, network="none",
-                                  command=["sh", "-c", request["generate"]],
-                                  env={**preparation.ENV, **container.proxy_environment("")}, limits=limits,
+            # the packages' lifecycle scripts, behind the same proxy (`preparation.rebuild`, `T3.A.6d`)
+            row = container.phase(engine, "node-generate", image=image, network=network,
+                                  command=["sh", "-c", request["generate"]], env=env, limits=limits,
                                   timeout=timeout, copy=None, outputs=[], out_dir=out_dir, volumes=mounts,
                                   flags=container.RESTORE, log="node-restore")
             container.mask_file(row.get("log"), hide)
             container.append_record(out_dir / container.RECORD_NAME,
                                     {**container.mask_row(row, hide), "preparation": lock.name})
+        asked, denied = egress.collect(project, refusals())  # before the proxy goes
         if row.get("outcome") != "exited" or row.get("exit_code") != 0:  # the run says the gaps of its proxy
             raise container.Gap(row.get("cause") or "Node dependency preparation failed", "see node-restore.log",
                                 [*opened, *denied, *egress.approval_gap(asked)])

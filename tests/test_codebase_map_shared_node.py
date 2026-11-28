@@ -64,8 +64,9 @@ def engine(tmp_path, monkeypatch):
             assert opts["flags"] == container.RESTORE  # as 65532, with no capability
             assert "node.tar.gz" not in command[-1]  # Node installed before, as root
             work.add("node_modules/restored")
-        elif name == "node-generate":  # the lifecycle scripts, with no network, as 65532 (`T3.A.6d`)
-            assert network == "none" and copy is None and opts["flags"] == container.RESTORE
+        elif name == "node-generate":  # the lifecycle scripts, behind the restore's proxy, as 65532 (`T3.A.6d`, `T1.F.3`)
+            assert network.startswith("daodan-net-") and copy is None and opts["flags"] == container.RESTORE
+            assert opts["env"]["HTTPS_PROXY"] == f"http://proxy:{container.PROXY_PORT}"
             assert work == {"node_modules/restored"} and "npm rebuild" in command[-1]
         elif name == "clone-node":
             assert network == "none" and all(v.endswith(":ro") for v in volumes[2:])
@@ -78,7 +79,7 @@ def engine(tmp_path, monkeypatch):
             assert "daodan/state/in/node.tar.gz" in arrived.get(state, ())  # its own tools install from it
             work.add("consumer-write")
         elif name == "execute":
-            assert network == "none" and work == {"node_modules/restored", "consumer-write"}
+            assert network.startswith("daodan-net-") and work == {"node_modules/restored", "consumer-write"}
             if "/daodan/out/results" in opts.get("outputs", ()):
                 for number in ("0", "1"):
                     path = out_dir / "results" / number

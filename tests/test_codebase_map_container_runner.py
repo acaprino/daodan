@@ -652,20 +652,18 @@ def test_a_gradle_build_that_fails_runs_once_and_never_opens_the_repositories_it
     assert [row["host"] for row in egress.pending(str(project.resolve()))] == ["maven.example.dev"]
 
 
-def test_a_renovate_preset_on_a_host_is_asked_and_once_approved_the_extraction_runs_again_reaching_it(
+def test_a_renovate_preset_on_a_host_is_asked_and_once_approved_the_one_run_reaches_it_behind_the_proxy(
         tmp_path, no_download, monkeypatch):
-    """Renovate's extraction runs with no network, and a preset its config extends on GitHub ends the repository (the
-    answer recorded on Modal, `fixtures/premap/renovate/ended.json`): the host of the URL it asked at is a request,
-    with the `approval_required` gap beside the reader's `model_failed`. Once the user approved it, the extraction runs
-    once more in the preparation, behind the proxy that opens that host, and its answer stands. Refused, nothing is
-    asked and the extraction runs once: `host_denied`, and the reader's gap stays."""
+    """A preset Renovate's config extends on GitHub ends the repository when the host is closed (the answer recorded
+    on Modal, `fixtures/premap/renovate/ended.json`): the host of the URL it asked at is a request, with the
+    `approval_required` gap beside the reader's `model_failed`. Once the user approved it, the extraction, in the
+    execution behind the run's proxy that opens it (`container.start_proxy`, `T1.F.3`), runs once: no run again, even
+    when its answer still names the host, and no request. Refused, nothing is asked and the extraction runs once:
+    `host_denied`, and the reader's gap stays."""
     from premap import renovate
     monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("140.82.121.6", 0))])
     ended = json.loads((ROOT / "tests/fixtures/premap/renovate/ended.json").read_text(encoding="utf-8"))
     ended = ended["preset"]["answer"]
-    read = {"returncode": 0, "stdout": json.dumps({"repositories": {"local": {"packageFiles": {"pyenv": [
-        {"packageFile": ".python-version", "deps": [{"depName": "python", "currentValue": "3.12"}]}]}}}}),
-        "stderr": ""}
     project, manifest = manifest_of(tmp_path, {".python-version": "3.12\n", "renovate.json": "{}\n"})
     name = str(project.resolve())
     for reply in (None, "always", "no"):
@@ -677,20 +675,17 @@ def test_a_renovate_preset_on_a_host_is_asked_and_once_approved_the_extraction_r
         def run_commands(project, commands, **options):
             calls.append({"commands": commands, **options})
             return {"state": "done", "root": "/work", "results": [{"returncode": 0, "stdout": "", "stderr": ""},
-                                                                  ended if len(calls) == 1 else read]}
+                                                                  ended]}
         if reply:
             egress.respond("api.github.com", name, reply)
         with mock.patch.object(container, "run_commands", run_commands):
             [answer] = container_runner.runner(manifest)([command("renovate")])
         kinds = [gap["kind"] for gap in answer.get("gaps", [])]
-        if reply == "always":
-            assert len(calls) == 2 and calls[0]["commands"][1]["network"] == "none"
-            setup, again = calls[1]["commands"]
-            assert again["argv"] == ["renovate", "x"] and again["network"] == "registries"
-            assert setup["network"] == "registries" and "api.github.com" in calls[1]["registries"]
-            assert answer["stdout"] == read["stdout"] and kinds == [] and not egress.pending(name)
+        assert len(calls) == 1 and calls[0]["commands"][1]["network"] == "none"  # the execution, behind the proxy
+        if reply == "always":  # open in the run itself: nothing asked, nothing denied, no second run
+            assert answer["stdout"] == ended["stdout"] and kinds == [] and not egress.pending(name)
             continue
-        assert len(calls) == 1 and "api.github.com" not in calls[0]["registries"]
+        assert "api.github.com" not in calls[0]["registries"]
         assert answer["stdout"] == ended["stdout"] and renovate.asked(answer) == ["api.github.com"]
         if reply is None:  # nobody decided: a request of Renovate's, and the gap until the user answers
             [gap] = answer["gaps"]

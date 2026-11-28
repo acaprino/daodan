@@ -223,6 +223,10 @@ class FakeEngineTest(unittest.TestCase):
     def created(self) -> list[list[str]]:
         return [call for call in self.calls() if call[0] == "create"]
 
+    def ran(self) -> list[list[str]]:
+        """The containers of the run's own phases: not Daodan's proxy, nor its reader of the .env files."""
+        return [call for call in self.created() if container.PROXY_IMAGE not in call]
+
     def volumes(self) -> list[str]:
         """The volumes the runs created, in order."""
         return [call[2] for call in self.calls() if call[:2] == ["volume", "create"]]
@@ -386,7 +390,7 @@ class FakeEngineTest(unittest.TestCase):
         if not self.git:
             self.skipTest("git is needed to ask what Git ignores")
         self.run_operation(["exit", "0"])
-        name = self.created()[0][self.created()[0].index("--name") + 1]
+        name = self.ran()[0][self.ran()[0].index("--name") + 1]
         with tarfile.open(self.state / "containers" / name / "copy.tar") as bundle:
             names = sorted(member.name for member in bundle.getmembers() if member.isfile())
         self.assertEqual(names, ["work/.gitignore", "work/data/fixture.csv", "work/package.json", "work/src/app.js"])
@@ -400,7 +404,7 @@ class FakeEngineTest(unittest.TestCase):
             git = [self.git, "-C", str(self.project)]
             subprocess.run([*git, "add", "-f", *written], check=True, capture_output=True)
         self.run_operation(["exit", "0"])
-        name = self.created()[0][self.created()[0].index("--name") + 1]
+        name = self.ran()[0][self.ran()[0].index("--name") + 1]
         with tarfile.open(self.state / "containers" / name / "copy.tar") as bundle:
             names = [member.name for member in bundle.getmembers()]
         for secret in written:
@@ -458,7 +462,7 @@ class FakeEngineTest(unittest.TestCase):
             subprocess.run([*git, "update-index", "--add", "--cacheinfo", f"120000,{blob},{name}"], check=True)
         subprocess.run([*git, "add", "docs/advanced/coerce.py"], check=True)
         result = self.run_operation(["exit", "0"])
-        name = self.created()[0][self.created()[0].index("--name") + 1]
+        name = self.ran()[0][self.ran()[0].index("--name") + 1]
         with tarfile.open(self.state / "containers" / name / "copy.tar") as bundle:
             members = {member.name: member for member in bundle.getmembers()}
         copied = {name: member.linkname for name, member in members.items() if member.issym()}
@@ -507,7 +511,7 @@ class FakeEngineTest(unittest.TestCase):
         tool.write_bytes(b"the distribution")
         result = self.run_operation(["exit", "0"], inputs={"/daodan/tools/tool.zip": tool})
         self.assertEqual(result["state"], "done", result)
-        name = self.created()[0][self.created()[0].index("--name") + 1]
+        name = self.ran()[0][self.ran()[0].index("--name") + 1]
         self.assertEqual((self.state / "containers" / name / "fs" / "daodan/tools/tool.zip").read_bytes(),
                          b"the distribution")
 
@@ -563,8 +567,8 @@ class FakeEngineTest(unittest.TestCase):
                 # Kiri's API (1.47) and Podman's take the flags too: Daodan's proxy has no capability and is not root
                 self.assertEqual(proxy[3:9], list(container.UNPRIVILEGED))
 
-    # Guarantee 3: network closed during execution, open only to registries during preparation.
-    def test_execution_has_no_network_and_preparation_reaches_only_the_proxy(self):
+    # Guarantee 3: the preparation and the execution reach out only through the proxy (`T1.F.3`).
+    def test_the_preparation_and_the_execution_reach_only_the_proxy(self):
         result = self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=("registry.npmjs.org",))
         self.assertEqual(result["state"], "done", result)
         calls = self.calls()
@@ -583,12 +587,36 @@ class FakeEngineTest(unittest.TestCase):
         self.assertIn(["network", "connect", "--alias", "proxy", network, proxy[proxy.index("--name") + 1]], calls)
         self.assertEqual(prepare[prepare.index("--network") + 1], network)
         self.assertIn("HTTPS_PROXY=http://proxy:3128", prepare)
-        self.assertEqual(execute[execute.index("--network") + 1], "none")
-        self.assertIn("HTTPS_PROXY=", execute)
+        self.assertEqual(execute[execute.index("--network") + 1], network)  # the same network, the same proxy
+        self.assertIn("HTTPS_PROXY=http://proxy:3128", execute)
+        self.assertIn("NO_PROXY=localhost,127.0.0.1,::1", execute)  # the container itself, with no proxy
+        self.assertNotIn(["network", "disconnect"], [call[:2] for call in calls])
+        self.assertLess(calls.index(["rm", "-f", execute[execute.index("--name") + 1]]),
+                        calls.index(["rm", "-f", proxy[proxy.index("--name") + 1]]))  # the proxy outlives the run
         self.assertIn("fake/runtime:1", prepare)
         self.assertIn("fake/runtime:1", execute)
         self.assertEqual([call for call in calls if call[0] in ("commit", "rmi", "image")], [])
         self.assertEqual([call[:2] for call in calls if call[0] == "cp" and call[1] == "-"], [["cp", "-"]])
+        self.assertIn(["network", "rm", network], calls)
+
+    def test_a_run_without_a_preparation_is_behind_the_proxy_and_its_refusals_are_requests(self):
+        """The owner's decision of 28 November 2026: every run has network, behind Daodan's firewall. A run with no
+        preparation (an analyzer's, an observer's) makes the internal network and its proxy before its execution, and a
+        host the proxy refused there is a request as in a preparation."""
+        (self.state / "refused.log").write_text('@@daodan-refused {"host": "git.example.com", "port": "443"}\n',
+                                                encoding="utf-8")
+        result = self.run_operation(["exit", "0"])
+        self.assertEqual(result["state"], "done", result)
+        calls = self.calls()
+        [internal] = [call for call in calls if call[:2] == ["network", "create"]]
+        network = internal[-1]
+        proxy, execute = self.created()
+        self.assertIn(container.PROXY_IMAGE, proxy)
+        self.assertEqual(execute[execute.index("--network") + 1], network)
+        self.assertIn("HTTPS_PROXY=http://proxy:3128", execute)
+        self.assertLess(calls.index(proxy), calls.index(execute))
+        self.assertEqual([row["host"] for row in result["asked"]], ["git.example.com"])
+        self.assertEqual([row["host"] for row in egress.pending(str(self.project))], ["git.example.com"])
         self.assertIn(["network", "rm", network], calls)
 
     def test_the_preparation_hands_its_state_to_execution_in_two_named_volumes(self):
@@ -665,14 +693,16 @@ class FakeEngineTest(unittest.TestCase):
         self.assertIn("the tools did not install", result["cause"])
         self.assertEqual(len(self.created()), 2)  # the proxy and `own`: no restore, no execution
 
-    def test_the_lifecycle_scripts_run_after_the_preparation_with_no_network_as_its_user(self):
-        """`T3.A.6d`: `generate` (`preparation.rebuild`) runs in a phase of its own after the preparation, with no
-        network, its volumes and its user, its output in `prepare.log`; a preparation that fails has none."""
+    def test_the_lifecycle_scripts_run_after_the_preparation_behind_its_proxy_as_its_user(self):
+        """`T3.A.6d`: `generate` (`preparation.rebuild`) runs in a phase of its own after the preparation, behind the
+        same proxy (`T1.F.3`), with its volumes and its user, its output in `prepare.log`; a preparation that fails has
+        none."""
         result = self.run_operation(["exit", "0"], prepare=["exit", "0"], generate="npm rebuild")
         self.assertEqual(result["state"], "done", result)
         _proxy, prepare, made, execute = self.created()
-        self.assertEqual(made[made.index("--network") + 1], "none")
-        self.assertNotEqual(prepare[prepare.index("--network") + 1], "none")
+        self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
+        self.assertEqual(made[made.index("--network") + 1], prepare[prepare.index("--network") + 1])
+        self.assertIn("HTTPS_PROXY=http://proxy:3128", made)
         self.assertEqual(self.mounts(made), self.mounts(prepare))
         self.assertEqual(made[3:made.index("--network")], prepare[3:prepare.index("--network")])
         self.assertEqual(json.loads((self.state / "containers" / made[2] / "command.json").read_text()),
@@ -754,7 +784,7 @@ class FakeEngineTest(unittest.TestCase):
     def test_a_kept_root_hands_execution_everything_the_preparation_wrote_and_goes_by_name(self):
         """A Dockerfile's build stage installs into the image's own folders (`apk add` into /usr): with
         `keep_root`, execution starts from the preparation's container committed as `daodan-prepared-<token>`,
-        on record before it exists, with no network, and the image is removed by name at the end."""
+        on record before it exists, behind the same proxy, and the image is removed by name at the end."""
         seen, real = [], container.cli
 
         def spy(engine, *args, **options):
@@ -775,7 +805,7 @@ class FakeEngineTest(unittest.TestCase):
         _proxy, prepare, execute = self.created()
         self.assertEqual(commit[1], prepare[prepare.index("--name") + 1])
         self.assertIn(image, execute)
-        self.assertEqual(execute[execute.index("--network") + 1], "none")
+        self.assertEqual(execute[execute.index("--network") + 1], prepare[prepare.index("--network") + 1])
         self.assertLess(calls.index(commit), calls.index(["rm", "-f", commit[1]]))
         self.assertIn(["image", "rm", "-f", image], calls)
         self.assertFalse((self.state / "images" / image).exists())
@@ -876,7 +906,7 @@ class FakeEngineTest(unittest.TestCase):
         self.assertEqual((failed["state"], failed["refused"]), ("failed", wanted))
         (self.state / "refused.log").unlink()
         self.assertNotIn("refused", self.run_operation(["exit", "0"], prepare=["exit", "0"]))
-        self.assertNotIn("refused", self.run_operation(["exit", "0"]))  # no preparation, no proxy
+        self.assertNotIn("refused", self.run_operation(["exit", "0"]))  # no preparation: its proxy refused nothing
 
     def test_a_host_that_is_no_valid_name_is_a_request_and_the_proxy_and_its_network_still_go(self):
         """A label of 64 characters and an empty one make the real lookup raise ValueError, not OSError: the run
@@ -1061,7 +1091,7 @@ class FakeEngineTest(unittest.TestCase):
     def test_limits_are_passed_and_a_timed_out_container_is_removed(self):
         result = self.run_operation(["sleep", "30"], timeout=2, memory=512 * 2**20, pids=64, cpus=1.5)
         self.assertEqual(result["state"], "timeout")
-        execute = self.created()[0]
+        [execute] = self.ran()
         name = execute[execute.index("--name") + 1]
         self.assertEqual(execute[execute.index("--memory") + 1], str(512 * 2**20))
         self.assertEqual(execute[execute.index("--memory-swap") + 1], str(512 * 2**20))
@@ -1117,13 +1147,13 @@ class FakeEngineTest(unittest.TestCase):
         self.assertNotIn("go list", late)
         self.assertIn(f"{container.STATE}/results/0/stdout", early)  # kept for execution, which brings it out
         self.assertIn(f"cp -R {container.STATE}/results/. /daodan/out/results/", late)
-        self.assertEqual(execute[execute.index("--network") + 1], "none")
+        self.assertEqual(execute[execute.index("--network") + 1], prepare[prepare.index("--network") + 1])
 
     def test_without_a_registry_command_there_is_one_phase(self):
         with mock.patch.object(container, "free_memory", return_value=64 * 2**30):
             result = container.run_commands(self.project, [{"tool": "uv", "argv": ["uv", "tree", "--offline"]}],
                                             image="fake/runtime:1", out_dir=self.out, engine=self.engine)
-        self.assertEqual(len(self.created()), 1)
+        self.assertEqual(len(self.ran()), 1)  # beside the proxy, which every run has
         self.assertEqual(self.volumes(), [])
         self.assertEqual(result["results"], [{"returncode": None, "stdout": "", "stderr": ""}])
 
@@ -1619,7 +1649,7 @@ class RealEngineSmokeTest(unittest.TestCase):
         self.assertEqual((first["returncode"], first["stdout"], first["stderr"]), (3, "out\n", "err\n"))
         self.assertEqual(folder["stdout"].strip(), "/work/src")
         self.assertEqual((early["returncode"], early["stdout"].strip()), (0, "reached"))
-        self.assertNotEqual(late["returncode"], 0)
+        self.assertEqual((late["returncode"], late["stdout"].strip()), (0, "reached"))  # behind the same proxy
         self.assertEqual(container.cli(engine, "system", "df").stdout, held)
 
     @unittest.skipUnless(os.name == "nt", "Daodan brings its own engine only on Windows")
@@ -1690,7 +1720,7 @@ class RealEngineSmokeTest(unittest.TestCase):
         self.assertEqual(result["state"], "done", result)
         early, late = result["results"]
         self.assertEqual((early["returncode"], early["stdout"].strip()), (0, "reached"))
-        self.assertNotEqual(late["returncode"], 0)
+        self.assertEqual((late["returncode"], late["stdout"].strip()), (0, "reached"))  # behind the same proxy
         self.assertEqual(user_settings(), before_settings)
 
     @unittest.skipUnless(os.name == "nt", "Daodan brings its own engine only on Windows")

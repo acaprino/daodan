@@ -278,13 +278,13 @@ class RunTest(unittest.TestCase):
         self.assertEqual((carried / "scip-dotnet.patch").read_bytes(), csharp.PATCH.read_bytes())
         self.assertEqual((carried / "dotnet.tar.gz").read_bytes(), SDK)
 
-    def test_preparation_reaches_only_nuget_and_execution_no_network(self):
+    def test_preparation_and_execution_reach_only_nuget_through_the_proxy(self):
         self.play_success()
         self.index()
         proxy, prepare, execute = self.created()
         self.assertEqual(proxy[proxy.index(str(container.PROXY_PORT)) + 1:], ["api.nuget.org"])
         self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
-        self.assertEqual(execute[execute.index("--network") + 1], "none")
+        self.assertEqual(execute[execute.index("--network") + 1], prepare[prepare.index("--network") + 1])  # T1.F.3
         for call in (prepare, execute):
             self.assertIn(csharp.IMAGE, call)
             self.assertIn("EnableWindowsTargeting=true", call)  # as scip-dotnet's own restore passes it

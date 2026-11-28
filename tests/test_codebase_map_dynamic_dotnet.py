@@ -434,7 +434,7 @@ class ObserveTest(unittest.TestCase):
         self.assertTrue((agent / "rewrite/Rewrite.cs").is_file() and (agent / "nuget.config").is_file())
         self.assertIn("nuget.corp.example", self.created()[0])  # the proxy reaches the feeds the project declares
         execution = self.created()[2]
-        self.assertEqual(execution[execution.index("--network") + 1], "none")
+        self.assertTrue(execution[execution.index("--network") + 1].startswith("daodan-net-"))  # behind the proxy
 
     def test_a_rewriter_that_stops_is_a_gap_and_what_was_recorded_is_kept(self):
         result = self.observe(rewrite=1)
