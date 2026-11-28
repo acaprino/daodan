@@ -136,6 +136,36 @@ def test_list_files_leaves_out_what_linguist_and_gitattributes_say_and_runs_noth
     assert list(marks.iterdir()) == []
 
 
+def test_a_forbidden_file_is_named_in_excluded_by_its_path_and_nothing_opens_it(tmp_path, monkeypatch):
+    """The owner's decision (28 November 2026): a file whose name `file-formats.json` forbids (`*.p12`, as jhipster's
+    `keystore.p12`) is in `excluded` by its path, `forbidden`, and nothing opens it: not Daodan, and not `git grep`,
+    which is asked for the other files of its folder one by one, never for the folder."""
+    import builtins
+    import os
+    import subprocess
+    import file_inventory
+    project = tmp_path / "proj"
+    _checkout(project, {"app.py": "x = 1\n", "config/app.yml": "a: 1\n", "config/keystore.p12": "never read\n",
+                        "tls/server.pem": "never read\n"})
+    subprocess.run(["git", "init", "-q", str(project)], check=True)
+    secrets = {str((project / rel).absolute()) for rel in ("config/keystore.p12", "tls/server.pem")}
+
+    def refused(path):
+        if isinstance(path, (str, bytes, os.PathLike)) and str(Path(os.fsdecode(path)).absolute()) in secrets:
+            raise AssertionError(f"opened {path}")
+
+    for owner, name in ((builtins, "open"), (os, "open"), (Path, "open"), (Path, "read_bytes"), (Path, "read_text")):
+        real = getattr(owner, name)
+        monkeypatch.setattr(owner, name, lambda path, *a, _real=real, **k: refused(path) or _real(path, *a, **k))
+    run, asked = subprocess.run, []
+    monkeypatch.setattr(subprocess, "run", lambda args, *a, **k: asked.append(args) or run(args, *a, **k))
+    header = file_inventory.write(project, tmp_path / "inventory.sqlite")
+    assert header["excluded"] == [{"path": "config/keystore.p12", "why": "forbidden"},
+                                  {"path": "tls/", "why": "forbidden"}]  # a folder of forbidden files only: one entry
+    [grep] = [args[args.index("--") + 1:] for args in asked if "grep" in args]
+    assert grep == [".", "config/app.yml"]  # `config/` holds a forbidden file: its other files are asked one by one
+
+
 def test_without_a_work_tree_the_attributes_are_not_read_and_the_header_says_so(tmp_path):
     import file_inventory
     import source_files
