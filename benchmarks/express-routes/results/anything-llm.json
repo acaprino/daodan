@@ -5,10 +5,12 @@
   "repository": "Mintplex-Labs/anything-llm"
  },
  "compare": {
-  "common_routes": 19,
-  "express_bound": 261,
-  "express_gaps": {},
-  "express_rows": 261,
+  "common_routes": 20,
+  "express_bound": 336,
+  "express_gaps": {
+   "the handler is no function of the snapshot": 1
+  },
+  "express_rows": 344,
   "noir_bound": 354,
   "noir_gaps": 70,
   "noir_rows": 424,
@@ -47,11 +49,6 @@
    ],
    [
     "DELETE",
-    "/experimental/agent-plugins/{}",
-    "server/endpoints/experimental/imported-agent-plugins.js::function@52:4"
-   ],
-   [
-    "DELETE",
     "/utils/embedded-lemonade/download-model",
     "server/utils/AiProviders/embeddedLemonade/endpoints.js::function@103:4"
    ],
@@ -59,46 +56,6 @@
     "DELETE",
     "/utils/embedded-lemonade/remove-model",
     "server/utils/AiProviders/embeddedLemonade/endpoints.js::function@113:4"
-   ],
-   [
-    "DELETE",
-    "/v1/admin/invite/{}",
-    "server/endpoints/api/admin/index.js::function@382:4"
-   ],
-   [
-    "DELETE",
-    "/v1/admin/users/{}",
-    "server/endpoints/api/admin/index.js::function@223:4"
-   ],
-   [
-    "DELETE",
-    "/v1/document/remove-folder",
-    "server/endpoints/api/document/index.js::function@1051:4"
-   ],
-   [
-    "DELETE",
-    "/v1/embed/{}",
-    "server/endpoints/api/embed/index.js::function@360:4"
-   ],
-   [
-    "DELETE",
-    "/v1/system/remove-documents",
-    "server/endpoints/api/system/index.js::function@222:4"
-   ],
-   [
-    "DELETE",
-    "/v1/workspace/{}",
-    "server/endpoints/api/workspace/index.js::function@231:4"
-   ],
-   [
-    "DELETE",
-    "/v1/workspace/{}/thread/{}",
-    "server/endpoints/api/workspaceThread/index.js::function@199:4"
-   ],
-   [
-    "DELETE",
-    "/workspace/{}/delete-parsed-files",
-    "server/endpoints/workspacesParsedFiles.js::function@49:4"
    ],
    [
     "GET",
@@ -109,16 +66,6 @@
     "GET",
     "/*",
     "server/index.js::function@192:13"
-   ],
-   [
-    "GET",
-    "/api/docs",
-    "server/swagger/utils.js::function@41:25"
-   ],
-   [
-    "GET",
-    "/experimental/live-sync/queues",
-    "server/endpoints/experimental/liveSync.js::function@67:4"
    ],
    [
     "GET",
@@ -131,141 +78,6 @@
     "server/utils/AiProviders/embeddedLemonade/endpoints.js::function@29:4"
    ],
    [
-    "GET",
-    "/v1/admin/invites",
-    "server/endpoints/api/admin/index.js::function@275:46"
-   ],
-   [
-    "GET",
-    "/v1/admin/is-multi-user-mode",
-    "server/endpoints/api/admin/index.js::function@15:57"
-   ],
-   [
-    "GET",
-    "/v1/admin/users",
-    "server/endpoints/api/admin/index.js::function@41:44"
-   ],
-   [
-    "GET",
-    "/v1/admin/workspaces/{}/users",
-    "server/endpoints/api/admin/index.js::function@449:4"
-   ],
-   [
-    "GET",
-    "/v1/auth",
-    "server/endpoints/api/auth/index.js::function@6:37"
-   ],
-   [
-    "GET",
-    "/v1/document/accepted-file-types",
-    "server/endpoints/api/document/index.js::function@813:4"
-   ],
-   [
-    "GET",
-    "/v1/document/generated-files/{}",
-    "server/endpoints/api/document/index.js::function@1222:4"
-   ],
-   [
-    "GET",
-    "/v1/document/metadata-schema",
-    "server/endpoints/api/document/index.js::function@870:4"
-   ],
-   [
-    "GET",
-    "/v1/document/{}",
-    "server/endpoints/api/document/index.js::function@919:50"
-   ],
-   [
-    "GET",
-    "/v1/documents",
-    "server/endpoints/api/document/index.js::function@669:42"
-   ],
-   [
-    "GET",
-    "/v1/documents/folder/{}",
-    "server/endpoints/api/document/index.js::function@728:4"
-   ],
-   [
-    "GET",
-    "/v1/embed",
-    "server/endpoints/api/embed/index.js::function@10:38"
-   ],
-   [
-    "GET",
-    "/v1/embed/{}/chats",
-    "server/endpoints/api/embed/index.js::function@81:4"
-   ],
-   [
-    "GET",
-    "/v1/embed/{}/chats/{}",
-    "server/endpoints/api/embed/index.js::function@143:4"
-   ],
-   [
-    "GET",
-    "/v1/openai/models",
-    "server/endpoints/api/openai/index.js::function@19:46"
-   ],
-   [
-    "GET",
-    "/v1/openai/vector_stores",
-    "server/endpoints/api/openai/index.js::function@360:4"
-   ],
-   [
-    "GET",
-    "/v1/system",
-    "server/endpoints/api/system/index.js::function@39:39"
-   ],
-   [
-    "GET",
-    "/v1/system/env-dump",
-    "server/endpoints/api/system/index.js::function@18:33"
-   ],
-   [
-    "GET",
-    "/v1/system/export-chats",
-    "server/endpoints/api/system/index.js::function@160:4"
-   ],
-   [
-    "GET",
-    "/v1/system/vector-count",
-    "server/endpoints/api/system/index.js::function@76:52"
-   ],
-   [
-    "GET",
-    "/v1/users",
-    "server/endpoints/api/userManagement/index.js::function@12:38"
-   ],
-   [
-    "GET",
-    "/v1/users/{}/issue-auth-token",
-    "server/endpoints/api/userManagement/index.js::function@70:4"
-   ],
-   [
-    "GET",
-    "/v1/workspace/{}",
-    "server/endpoints/api/workspace/index.js::function@163:48"
-   ],
-   [
-    "GET",
-    "/v1/workspace/{}/chats",
-    "server/endpoints/api/workspace/index.js::function@363:4"
-   ],
-   [
-    "GET",
-    "/v1/workspace/{}/thread/{}/chats",
-    "server/endpoints/api/workspaceThread/index.js::function@248:4"
-   ],
-   [
-    "GET",
-    "/v1/workspaces",
-    "server/endpoints/api/workspace/index.js::function@109:43"
-   ],
-   [
-    "GET",
-    "/workspace/{}/parsed-files",
-    "server/endpoints/workspacesParsedFiles.js::function@21:4"
-   ],
-   [
     "HEAD",
     "/*",
     "collector/index.js::function@221:13"
@@ -304,21 +116,6 @@
     "POST",
     "/*",
     "server/index.js::function@192:13"
-   ],
-   [
-    "POST",
-    "/experimental/agent-plugins/{}/config",
-    "server/endpoints/experimental/imported-agent-plugins.js::function@33:4"
-   ],
-   [
-    "POST",
-    "/experimental/agent-plugins/{}/toggle",
-    "server/endpoints/experimental/imported-agent-plugins.js::function@15:4"
-   ],
-   [
-    "POST",
-    "/experimental/toggle-live-sync",
-    "server/endpoints/experimental/liveSync.js::function@23:4"
    ],
    [
     "POST",
@@ -341,176 +138,6 @@
     "server/endpoints/utils/lemonadeUtilsEndpoints.js::function@18:4"
    ],
    [
-    "POST",
-    "/v1/admin/invite/new",
-    "server/endpoints/api/admin/index.js::function@321:50"
-   ],
-   [
-    "POST",
-    "/v1/admin/preferences",
-    "server/endpoints/api/admin/index.js::function@742:4"
-   ],
-   [
-    "POST",
-    "/v1/admin/users/new",
-    "server/endpoints/api/admin/index.js::function@85:49"
-   ],
-   [
-    "POST",
-    "/v1/admin/users/{}",
-    "server/endpoints/api/admin/index.js::function@143:49"
-   ],
-   [
-    "POST",
-    "/v1/admin/workspace-chats",
-    "server/endpoints/api/admin/index.js::function@686:4"
-   ],
-   [
-    "POST",
-    "/v1/admin/workspaces/{}/manage-users",
-    "server/endpoints/api/admin/index.js::function@571:4"
-   ],
-   [
-    "POST",
-    "/v1/admin/workspaces/{}/update-users",
-    "server/endpoints/api/admin/index.js::function@504:4"
-   ],
-   [
-    "POST",
-    "/v1/document/create-folder",
-    "server/endpoints/api/document/index.js::function@977:4"
-   ],
-   [
-    "POST",
-    "/v1/document/move-files",
-    "server/endpoints/api/document/index.js::function@1110:4"
-   ],
-   [
-    "POST",
-    "/v1/document/raw-text",
-    "server/endpoints/api/document/index.js::function@523:4"
-   ],
-   [
-    "POST",
-    "/v1/document/upload",
-    "server/endpoints/api/document/index.js::function@55:4"
-   ],
-   [
-    "POST",
-    "/v1/document/upload-link",
-    "server/endpoints/api/document/index.js::function@341:4"
-   ],
-   [
-    "POST",
-    "/v1/document/upload/{}",
-    "server/endpoints/api/document/index.js::function@186:4"
-   ],
-   [
-    "POST",
-    "/v1/embed/new",
-    "server/endpoints/api/embed/index.js::function@201:43"
-   ],
-   [
-    "POST",
-    "/v1/embed/{}",
-    "server/endpoints/api/embed/index.js::function@287:50"
-   ],
-   [
-    "POST",
-    "/v1/openai/chat/completions",
-    "server/endpoints/api/openai/index.js::function@79:4"
-   ],
-   [
-    "POST",
-    "/v1/openai/embeddings",
-    "server/endpoints/api/openai/index.js::function@293:4"
-   ],
-   [
-    "POST",
-    "/v1/openai/images/generations",
-    "server/endpoints/api/openai/index.js::function@198:4"
-   ],
-   [
-    "POST",
-    "/v1/system/update-env",
-    "server/endpoints/api/system/index.js::function@111:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/new",
-    "server/endpoints/api/workspace/index.js::function@28:47"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/chat",
-    "server/endpoints/api/workspace/index.js::function@606:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/stream-chat",
-    "server/endpoints/api/workspace/index.js::function@740:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/thread/new",
-    "server/endpoints/api/workspaceThread/index.js::function@24:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/thread/{}/chat",
-    "server/endpoints/api/workspaceThread/index.js::function@332:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/thread/{}/stream-chat",
-    "server/endpoints/api/workspaceThread/index.js::function@495:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/thread/{}/update",
-    "server/endpoints/api/workspaceThread/index.js::function@114:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/update",
-    "server/endpoints/api/workspace/index.js::function@282:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/update-embeddings",
-    "server/endpoints/api/workspace/index.js::function@460:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/update-pin",
-    "server/endpoints/api/workspace/index.js::function@537:4"
-   ],
-   [
-    "POST",
-    "/v1/workspace/{}/vector-search",
-    "server/endpoints/api/workspace/index.js::function@902:4"
-   ],
-   [
-    "POST",
-    "/workspace/{}/embed-parsed-file/{}",
-    "server/endpoints/workspacesParsedFiles.js::function@78:4"
-   ],
-   [
-    "POST",
-    "/workspace/{}/move-parsed-files",
-    "server/endpoints/workspacesParsedFiles.js::function@128:4"
-   ],
-   [
-    "POST",
-    "/workspace/{}/parse",
-    "server/endpoints/workspacesParsedFiles.js::function@159:4"
-   ],
-   [
-    "POST",
-    "/workspace/{}/update-watch-status",
-    "server/endpoints/experimental/liveSync.js::function@93:4"
-   ],
-   [
     "PUT",
     "/*",
     "collector/index.js::function@221:13"
@@ -521,10 +148,10 @@
     "server/index.js::function@192:13"
    ]
   ],
-  "same_function_other_path": 236,
-  "same_route_and_function": 19
+  "same_function_other_path": 310,
+  "same_route_and_function": 20
  },
- "express_peak_mb": 1232.6,
+ "express_peak_mb": 1233.6,
  "express_rows": [
   {
    "function": "collector/extensions/index.js::function@126:4",
@@ -1342,6 +969,567 @@
    "symbol": "server/endpoints/agentSkillWhitelist.js::POST /api/agent-skills/whitelist/add"
   },
   {
+   "function": "server/endpoints/api/admin/index.js::function@143:49",
+   "method": "POST",
+   "path": "/api/v1/admin/users/:id",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:143",
+   "schema": "/api/v1/admin/users/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:143",
+   "span": [
+    143,
+    49,
+    218,
+    3
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::POST /api/v1/admin/users/:id"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@15:57",
+   "method": "GET",
+   "path": "/api/v1/admin/is-multi-user-mode",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:15",
+   "schema": "/api/v1/admin/is-multi-user-mode",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:15",
+   "span": [
+    15,
+    57,
+    39,
+    3
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::GET /api/v1/admin/is-multi-user-mode"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@223:4",
+   "method": "DELETE",
+   "path": "/api/v1/admin/users/:id",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:220",
+   "schema": "/api/v1/admin/users/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:223",
+   "span": [
+    223,
+    4,
+    272,
+    5
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::DELETE /api/v1/admin/users/:id"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@275:46",
+   "method": "GET",
+   "path": "/api/v1/admin/invites",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:275",
+   "schema": "/api/v1/admin/invites",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:275",
+   "span": [
+    275,
+    46,
+    319,
+    3
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::GET /api/v1/admin/invites"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@321:50",
+   "method": "POST",
+   "path": "/api/v1/admin/invite/new",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:321",
+   "schema": "/api/v1/admin/invite/new",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:321",
+   "span": [
+    321,
+    50,
+    377,
+    3
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::POST /api/v1/admin/invite/new"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@382:4",
+   "method": "DELETE",
+   "path": "/api/v1/admin/invite/:id",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:379",
+   "schema": "/api/v1/admin/invite/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:382",
+   "span": [
+    382,
+    4,
+    443,
+    5
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::DELETE /api/v1/admin/invite/:id"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@41:44",
+   "method": "GET",
+   "path": "/api/v1/admin/users",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:41",
+   "schema": "/api/v1/admin/users",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:41",
+   "span": [
+    41,
+    44,
+    83,
+    3
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::GET /api/v1/admin/users"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@449:4",
+   "method": "GET",
+   "path": "/api/v1/admin/workspaces/:workspaceId/users",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:446",
+   "schema": "/api/v1/admin/workspaces/{}/users",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:449",
+   "span": [
+    449,
+    4,
+    498,
+    5
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::GET /api/v1/admin/workspaces/:workspaceId/users"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@504:4",
+   "method": "POST",
+   "path": "/api/v1/admin/workspaces/:workspaceId/update-users",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:501",
+   "schema": "/api/v1/admin/workspaces/{}/update-users",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:504",
+   "span": [
+    504,
+    4,
+    565,
+    5
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::POST /api/v1/admin/workspaces/:workspaceId/update-users"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@571:4",
+   "method": "POST",
+   "path": "/api/v1/admin/workspaces/:workspaceSlug/manage-users",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:568",
+   "schema": "/api/v1/admin/workspaces/{}/manage-users",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:571",
+   "span": [
+    571,
+    4,
+    680,
+    5
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::POST /api/v1/admin/workspaces/:workspaceSlug/manage-users"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@686:4",
+   "method": "POST",
+   "path": "/api/v1/admin/workspace-chats",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:683",
+   "schema": "/api/v1/admin/workspace-chats",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:686",
+   "span": [
+    686,
+    4,
+    736,
+    5
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::POST /api/v1/admin/workspace-chats"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@742:4",
+   "method": "POST",
+   "path": "/api/v1/admin/preferences",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:739",
+   "schema": "/api/v1/admin/preferences",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:742",
+   "span": [
+    742,
+    4,
+    792,
+    5
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::POST /api/v1/admin/preferences"
+  },
+  {
+   "function": "server/endpoints/api/admin/index.js::function@85:49",
+   "method": "POST",
+   "path": "/api/v1/admin/users/new",
+   "reader": "express",
+   "registered": "server/endpoints/api/admin/index.js:85",
+   "schema": "/api/v1/admin/users/new",
+   "shape": "method",
+   "site": "server/endpoints/api/admin/index.js:85",
+   "span": [
+    85,
+    49,
+    141,
+    3
+   ],
+   "symbol": "server/endpoints/api/admin/index.js::POST /api/v1/admin/users/new"
+  },
+  {
+   "function": "server/endpoints/api/auth/index.js::function@6:37",
+   "method": "GET",
+   "path": "/api/v1/auth",
+   "reader": "express",
+   "registered": "server/endpoints/api/auth/index.js:6",
+   "schema": "/api/v1/auth",
+   "shape": "method",
+   "site": "server/endpoints/api/auth/index.js:6",
+   "span": [
+    6,
+    37,
+    30,
+    3
+   ],
+   "symbol": "server/endpoints/api/auth/index.js::GET /api/v1/auth"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@1051:4",
+   "method": "DELETE",
+   "path": "/api/v1/document/remove-folder",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:1048",
+   "schema": "/api/v1/document/remove-folder",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:1051",
+   "span": [
+    1051,
+    4,
+    1104,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::DELETE /api/v1/document/remove-folder"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@1110:4",
+   "method": "POST",
+   "path": "/api/v1/document/move-files",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:1107",
+   "schema": "/api/v1/document/move-files",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:1110",
+   "span": [
+    1110,
+    4,
+    1216,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::POST /api/v1/document/move-files"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@1222:4",
+   "method": "GET",
+   "path": "/api/v1/document/generated-files/:filename",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:1219",
+   "schema": "/api/v1/document/generated-files/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:1222",
+   "span": [
+    1222,
+    4,
+    1338,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::GET /api/v1/document/generated-files/:filename"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@186:4",
+   "method": "POST",
+   "path": "/api/v1/document/upload/:folderName",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:183",
+   "schema": "/api/v1/document/upload/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:186",
+   "span": [
+    186,
+    4,
+    335,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::POST /api/v1/document/upload/:folderName"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@341:4",
+   "method": "POST",
+   "path": "/api/v1/document/upload-link",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:338",
+   "schema": "/api/v1/document/upload-link",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:341",
+   "span": [
+    341,
+    4,
+    517,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::POST /api/v1/document/upload-link"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@523:4",
+   "method": "POST",
+   "path": "/api/v1/document/raw-text",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:520",
+   "schema": "/api/v1/document/raw-text",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:523",
+   "span": [
+    523,
+    4,
+    666,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::POST /api/v1/document/raw-text"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@55:4",
+   "method": "POST",
+   "path": "/api/v1/document/upload",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:52",
+   "schema": "/api/v1/document/upload",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:55",
+   "span": [
+    55,
+    4,
+    180,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::POST /api/v1/document/upload"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@669:42",
+   "method": "GET",
+   "path": "/api/v1/documents",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:669",
+   "schema": "/api/v1/documents",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:669",
+   "span": [
+    669,
+    42,
+    723,
+    3
+   ],
+   "symbol": "server/endpoints/api/document/index.js::GET /api/v1/documents"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@728:4",
+   "method": "GET",
+   "path": "/api/v1/documents/folder/:folderName",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:725",
+   "schema": "/api/v1/documents/folder/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:728",
+   "span": [
+    728,
+    4,
+    807,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::GET /api/v1/documents/folder/:folderName"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@813:4",
+   "method": "GET",
+   "path": "/api/v1/document/accepted-file-types",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:810",
+   "schema": "/api/v1/document/accepted-file-types",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:813",
+   "span": [
+    813,
+    4,
+    864,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::GET /api/v1/document/accepted-file-types"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@870:4",
+   "method": "GET",
+   "path": "/api/v1/document/metadata-schema",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:867",
+   "schema": "/api/v1/document/metadata-schema",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:870",
+   "span": [
+    870,
+    4,
+    914,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::GET /api/v1/document/metadata-schema"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@919:50",
+   "method": "GET",
+   "path": "/api/v1/document/:docName",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:919",
+   "schema": "/api/v1/document/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:919",
+   "span": [
+    919,
+    50,
+    972,
+    3
+   ],
+   "symbol": "server/endpoints/api/document/index.js::GET /api/v1/document/:docName"
+  },
+  {
+   "function": "server/endpoints/api/document/index.js::function@977:4",
+   "method": "POST",
+   "path": "/api/v1/document/create-folder",
+   "reader": "express",
+   "registered": "server/endpoints/api/document/index.js:974",
+   "schema": "/api/v1/document/create-folder",
+   "shape": "method",
+   "site": "server/endpoints/api/document/index.js:977",
+   "span": [
+    977,
+    4,
+    1045,
+    5
+   ],
+   "symbol": "server/endpoints/api/document/index.js::POST /api/v1/document/create-folder"
+  },
+  {
+   "function": "server/endpoints/api/embed/index.js::function@10:38",
+   "method": "GET",
+   "path": "/api/v1/embed",
+   "reader": "express",
+   "registered": "server/endpoints/api/embed/index.js:10",
+   "schema": "/api/v1/embed",
+   "shape": "method",
+   "site": "server/endpoints/api/embed/index.js:10",
+   "span": [
+    10,
+    38,
+    76,
+    3
+   ],
+   "symbol": "server/endpoints/api/embed/index.js::GET /api/v1/embed"
+  },
+  {
+   "function": "server/endpoints/api/embed/index.js::function@143:4",
+   "method": "GET",
+   "path": "/api/v1/embed/:embedUuid/chats/:sessionUuid",
+   "reader": "express",
+   "registered": "server/endpoints/api/embed/index.js:140",
+   "schema": "/api/v1/embed/{}/chats/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/embed/index.js:143",
+   "span": [
+    143,
+    4,
+    198,
+    5
+   ],
+   "symbol": "server/endpoints/api/embed/index.js::GET /api/v1/embed/:embedUuid/chats/:sessionUuid"
+  },
+  {
+   "function": "server/endpoints/api/embed/index.js::function@201:43",
+   "method": "POST",
+   "path": "/api/v1/embed/new",
+   "reader": "express",
+   "registered": "server/endpoints/api/embed/index.js:201",
+   "schema": "/api/v1/embed/new",
+   "shape": "method",
+   "site": "server/endpoints/api/embed/index.js:201",
+   "span": [
+    201,
+    43,
+    285,
+    3
+   ],
+   "symbol": "server/endpoints/api/embed/index.js::POST /api/v1/embed/new"
+  },
+  {
+   "function": "server/endpoints/api/embed/index.js::function@287:50",
+   "method": "POST",
+   "path": "/api/v1/embed/:embedUuid",
+   "reader": "express",
+   "registered": "server/endpoints/api/embed/index.js:287",
+   "schema": "/api/v1/embed/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/embed/index.js:287",
+   "span": [
+    287,
+    50,
+    355,
+    3
+   ],
+   "symbol": "server/endpoints/api/embed/index.js::POST /api/v1/embed/:embedUuid"
+  },
+  {
+   "function": "server/endpoints/api/embed/index.js::function@360:4",
+   "method": "DELETE",
+   "path": "/api/v1/embed/:embedUuid",
+   "reader": "express",
+   "registered": "server/endpoints/api/embed/index.js:357",
+   "schema": "/api/v1/embed/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/embed/index.js:360",
+   "span": [
+    360,
+    4,
+    405,
+    5
+   ],
+   "symbol": "server/endpoints/api/embed/index.js::DELETE /api/v1/embed/:embedUuid"
+  },
+  {
+   "function": "server/endpoints/api/embed/index.js::function@81:4",
+   "method": "GET",
+   "path": "/api/v1/embed/:embedUuid/chats",
+   "reader": "express",
+   "registered": "server/endpoints/api/embed/index.js:78",
+   "schema": "/api/v1/embed/{}/chats",
+   "shape": "method",
+   "site": "server/endpoints/api/embed/index.js:81",
+   "span": [
+    81,
+    4,
+    137,
+    5
+   ],
+   "symbol": "server/endpoints/api/embed/index.js::GET /api/v1/embed/:embedUuid/chats"
+  },
+  {
    "function": "server/endpoints/api/mcpServers/index.js::function@108:52",
    "method": "POST",
    "path": "/api/v1/mcp-servers/reload",
@@ -1357,6 +1545,40 @@
     3
    ],
    "symbol": "server/endpoints/api/mcpServers/index.js::POST /api/v1/mcp-servers/reload"
+  },
+  {
+   "function": "server/endpoints/api/mcpServers/index.js::function@108:52",
+   "method": "POST",
+   "path": "/api/v1/mcp-servers/reload",
+   "reader": "express",
+   "registered": "server/endpoints/api/mcpServers/index.js:108",
+   "schema": "/api/v1/mcp-servers/reload",
+   "shape": "method",
+   "site": "server/endpoints/api/mcpServers/index.js:108",
+   "span": [
+    108,
+    52,
+    136,
+    3
+   ],
+   "symbol": "server/endpoints/api/mcpServers/index.js::POST /api/v1/mcp-servers/reload"
+  },
+  {
+   "function": "server/endpoints/api/mcpServers/index.js::function@141:4",
+   "method": "POST",
+   "path": "/api/v1/mcp-servers/:name/update",
+   "reader": "express",
+   "registered": "server/endpoints/api/mcpServers/index.js:138",
+   "schema": "/api/v1/mcp-servers/{}/update",
+   "shape": "method",
+   "site": "server/endpoints/api/mcpServers/index.js:141",
+   "span": [
+    141,
+    4,
+    205,
+    5
+   ],
+   "symbol": "server/endpoints/api/mcpServers/index.js::POST /api/v1/mcp-servers/:name/update"
   },
   {
    "function": "server/endpoints/api/mcpServers/index.js::function@141:4",
@@ -1393,6 +1615,23 @@
    "symbol": "server/endpoints/api/mcpServers/index.js::POST /api/v1/mcp-servers/:name/toggle"
   },
   {
+   "function": "server/endpoints/api/mcpServers/index.js::function@211:4",
+   "method": "POST",
+   "path": "/api/v1/mcp-servers/:name/toggle",
+   "reader": "express",
+   "registered": "server/endpoints/api/mcpServers/index.js:208",
+   "schema": "/api/v1/mcp-servers/{}/toggle",
+   "shape": "method",
+   "site": "server/endpoints/api/mcpServers/index.js:211",
+   "span": [
+    211,
+    4,
+    248,
+    5
+   ],
+   "symbol": "server/endpoints/api/mcpServers/index.js::POST /api/v1/mcp-servers/:name/toggle"
+  },
+  {
    "function": "server/endpoints/api/mcpServers/index.js::function@254:4",
    "method": "POST",
    "path": "/api/v1/mcp-servers/:name/toggle-tool",
@@ -1408,6 +1647,40 @@
     5
    ],
    "symbol": "server/endpoints/api/mcpServers/index.js::POST /api/v1/mcp-servers/:name/toggle-tool"
+  },
+  {
+   "function": "server/endpoints/api/mcpServers/index.js::function@254:4",
+   "method": "POST",
+   "path": "/api/v1/mcp-servers/:name/toggle-tool",
+   "reader": "express",
+   "registered": "server/endpoints/api/mcpServers/index.js:251",
+   "schema": "/api/v1/mcp-servers/{}/toggle-tool",
+   "shape": "method",
+   "site": "server/endpoints/api/mcpServers/index.js:254",
+   "span": [
+    254,
+    4,
+    318,
+    5
+   ],
+   "symbol": "server/endpoints/api/mcpServers/index.js::POST /api/v1/mcp-servers/:name/toggle-tool"
+  },
+  {
+   "function": "server/endpoints/api/mcpServers/index.js::function@324:4",
+   "method": "DELETE",
+   "path": "/api/v1/mcp-servers/:name",
+   "reader": "express",
+   "registered": "server/endpoints/api/mcpServers/index.js:321",
+   "schema": "/api/v1/mcp-servers/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/mcpServers/index.js:324",
+   "span": [
+    324,
+    4,
+    361,
+    5
+   ],
+   "symbol": "server/endpoints/api/mcpServers/index.js::DELETE /api/v1/mcp-servers/:name"
   },
   {
    "function": "server/endpoints/api/mcpServers/index.js::function@324:4",
@@ -1444,6 +1717,23 @@
    "symbol": "server/endpoints/api/mcpServers/index.js::POST /api/v1/mcp-servers/new"
   },
   {
+   "function": "server/endpoints/api/mcpServers/index.js::function@48:49",
+   "method": "POST",
+   "path": "/api/v1/mcp-servers/new",
+   "reader": "express",
+   "registered": "server/endpoints/api/mcpServers/index.js:48",
+   "schema": "/api/v1/mcp-servers/new",
+   "shape": "method",
+   "site": "server/endpoints/api/mcpServers/index.js:48",
+   "span": [
+    48,
+    49,
+    106,
+    3
+   ],
+   "symbol": "server/endpoints/api/mcpServers/index.js::POST /api/v1/mcp-servers/new"
+  },
+  {
    "function": "server/endpoints/api/mcpServers/index.js::function@8:44",
    "method": "GET",
    "path": "/api/v1/mcp-servers",
@@ -1459,6 +1749,533 @@
     3
    ],
    "symbol": "server/endpoints/api/mcpServers/index.js::GET /api/v1/mcp-servers"
+  },
+  {
+   "function": "server/endpoints/api/mcpServers/index.js::function@8:44",
+   "method": "GET",
+   "path": "/api/v1/mcp-servers",
+   "reader": "express",
+   "registered": "server/endpoints/api/mcpServers/index.js:8",
+   "schema": "/api/v1/mcp-servers",
+   "shape": "method",
+   "site": "server/endpoints/api/mcpServers/index.js:8",
+   "span": [
+    8,
+    44,
+    46,
+    3
+   ],
+   "symbol": "server/endpoints/api/mcpServers/index.js::GET /api/v1/mcp-servers"
+  },
+  {
+   "function": "server/endpoints/api/openai/index.js::function@19:46",
+   "method": "GET",
+   "path": "/api/v1/openai/models",
+   "reader": "express",
+   "registered": "server/endpoints/api/openai/index.js:19",
+   "schema": "/api/v1/openai/models",
+   "shape": "method",
+   "site": "server/endpoints/api/openai/index.js:19",
+   "span": [
+    19,
+    46,
+    74,
+    3
+   ],
+   "symbol": "server/endpoints/api/openai/index.js::GET /api/v1/openai/models"
+  },
+  {
+   "function": "server/endpoints/api/openai/index.js::function@198:4",
+   "method": "POST",
+   "path": "/api/v1/openai/images/generations",
+   "reader": "express",
+   "registered": "server/endpoints/api/openai/index.js:195",
+   "schema": "/api/v1/openai/images/generations",
+   "shape": "method",
+   "site": "server/endpoints/api/openai/index.js:198",
+   "span": [
+    198,
+    4,
+    287,
+    5
+   ],
+   "symbol": "server/endpoints/api/openai/index.js::POST /api/v1/openai/images/generations"
+  },
+  {
+   "function": "server/endpoints/api/openai/index.js::function@293:4",
+   "method": "POST",
+   "path": "/api/v1/openai/embeddings",
+   "reader": "express",
+   "registered": "server/endpoints/api/openai/index.js:290",
+   "schema": "/api/v1/openai/embeddings",
+   "shape": "method",
+   "site": "server/endpoints/api/openai/index.js:293",
+   "span": [
+    293,
+    4,
+    354,
+    5
+   ],
+   "symbol": "server/endpoints/api/openai/index.js::POST /api/v1/openai/embeddings"
+  },
+  {
+   "function": "server/endpoints/api/openai/index.js::function@360:4",
+   "method": "GET",
+   "path": "/api/v1/openai/vector_stores",
+   "reader": "express",
+   "registered": "server/endpoints/api/openai/index.js:357",
+   "schema": "/api/v1/openai/vector_stores",
+   "shape": "method",
+   "site": "server/endpoints/api/openai/index.js:360",
+   "span": [
+    360,
+    4,
+    430,
+    5
+   ],
+   "symbol": "server/endpoints/api/openai/index.js::GET /api/v1/openai/vector_stores"
+  },
+  {
+   "function": "server/endpoints/api/openai/index.js::function@79:4",
+   "method": "POST",
+   "path": "/api/v1/openai/chat/completions",
+   "reader": "express",
+   "registered": "server/endpoints/api/openai/index.js:76",
+   "schema": "/api/v1/openai/chat/completions",
+   "shape": "method",
+   "site": "server/endpoints/api/openai/index.js:79",
+   "span": [
+    79,
+    4,
+    192,
+    5
+   ],
+   "symbol": "server/endpoints/api/openai/index.js::POST /api/v1/openai/chat/completions"
+  },
+  {
+   "function": "server/endpoints/api/system/index.js::function@111:4",
+   "method": "POST",
+   "path": "/api/v1/system/update-env",
+   "reader": "express",
+   "registered": "server/endpoints/api/system/index.js:108",
+   "schema": "/api/v1/system/update-env",
+   "shape": "method",
+   "site": "server/endpoints/api/system/index.js:111",
+   "span": [
+    111,
+    4,
+    154,
+    5
+   ],
+   "symbol": "server/endpoints/api/system/index.js::POST /api/v1/system/update-env"
+  },
+  {
+   "function": "server/endpoints/api/system/index.js::function@160:4",
+   "method": "GET",
+   "path": "/api/v1/system/export-chats",
+   "reader": "express",
+   "registered": "server/endpoints/api/system/index.js:157",
+   "schema": "/api/v1/system/export-chats",
+   "shape": "method",
+   "site": "server/endpoints/api/system/index.js:160",
+   "span": [
+    160,
+    4,
+    217,
+    5
+   ],
+   "symbol": "server/endpoints/api/system/index.js::GET /api/v1/system/export-chats"
+  },
+  {
+   "function": "server/endpoints/api/system/index.js::function@18:33",
+   "method": "GET",
+   "path": "/api/v1/system/env-dump",
+   "reader": "express",
+   "registered": "server/endpoints/api/system/index.js:18",
+   "schema": "/api/v1/system/env-dump",
+   "shape": "method",
+   "site": "server/endpoints/api/system/index.js:18",
+   "span": [
+    18,
+    33,
+    37,
+    3
+   ],
+   "symbol": "server/endpoints/api/system/index.js::GET /api/v1/system/env-dump"
+  },
+  {
+   "function": "server/endpoints/api/system/index.js::function@222:4",
+   "method": "DELETE",
+   "path": "/api/v1/system/remove-documents",
+   "reader": "express",
+   "registered": "server/endpoints/api/system/index.js:219",
+   "schema": "/api/v1/system/remove-documents",
+   "shape": "method",
+   "site": "server/endpoints/api/system/index.js:222",
+   "span": [
+    222,
+    4,
+    283,
+    5
+   ],
+   "symbol": "server/endpoints/api/system/index.js::DELETE /api/v1/system/remove-documents"
+  },
+  {
+   "function": "server/endpoints/api/system/index.js::function@39:39",
+   "method": "GET",
+   "path": "/api/v1/system",
+   "reader": "express",
+   "registered": "server/endpoints/api/system/index.js:39",
+   "schema": "/api/v1/system",
+   "shape": "method",
+   "site": "server/endpoints/api/system/index.js:39",
+   "span": [
+    39,
+    39,
+    74,
+    3
+   ],
+   "symbol": "server/endpoints/api/system/index.js::GET /api/v1/system"
+  },
+  {
+   "function": "server/endpoints/api/system/index.js::function@76:52",
+   "method": "GET",
+   "path": "/api/v1/system/vector-count",
+   "reader": "express",
+   "registered": "server/endpoints/api/system/index.js:76",
+   "schema": "/api/v1/system/vector-count",
+   "shape": "method",
+   "site": "server/endpoints/api/system/index.js:76",
+   "span": [
+    76,
+    52,
+    106,
+    3
+   ],
+   "symbol": "server/endpoints/api/system/index.js::GET /api/v1/system/vector-count"
+  },
+  {
+   "function": "server/endpoints/api/userManagement/index.js::function@12:38",
+   "method": "GET",
+   "path": "/api/v1/users",
+   "reader": "express",
+   "registered": "server/endpoints/api/userManagement/index.js:12",
+   "schema": "/api/v1/users",
+   "shape": "method",
+   "site": "server/endpoints/api/userManagement/index.js:12",
+   "span": [
+    12,
+    38,
+    65,
+    3
+   ],
+   "symbol": "server/endpoints/api/userManagement/index.js::GET /api/v1/users"
+  },
+  {
+   "function": "server/endpoints/api/userManagement/index.js::function@70:4",
+   "method": "GET",
+   "path": "/api/v1/users/:id/issue-auth-token",
+   "reader": "express",
+   "registered": "server/endpoints/api/userManagement/index.js:67",
+   "schema": "/api/v1/users/{}/issue-auth-token",
+   "shape": "method",
+   "site": "server/endpoints/api/userManagement/index.js:70",
+   "span": [
+    70,
+    4,
+    120,
+    5
+   ],
+   "symbol": "server/endpoints/api/userManagement/index.js::GET /api/v1/users/:id/issue-auth-token"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@109:43",
+   "method": "GET",
+   "path": "/api/v1/workspaces",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:109",
+   "schema": "/api/v1/workspaces",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:109",
+   "span": [
+    109,
+    43,
+    161,
+    3
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::GET /api/v1/workspaces"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@163:48",
+   "method": "GET",
+   "path": "/api/v1/workspace/:slug",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:163",
+   "schema": "/api/v1/workspace/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:163",
+   "span": [
+    163,
+    48,
+    226,
+    3
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::GET /api/v1/workspace/:slug"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@231:4",
+   "method": "DELETE",
+   "path": "/api/v1/workspace/:slug",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:228",
+   "schema": "/api/v1/workspace/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:231",
+   "span": [
+    231,
+    4,
+    276,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::DELETE /api/v1/workspace/:slug"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@28:47",
+   "method": "POST",
+   "path": "/api/v1/workspace/new",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:28",
+   "schema": "/api/v1/workspace/new",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:28",
+   "span": [
+    28,
+    47,
+    107,
+    3
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::POST /api/v1/workspace/new"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@282:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/update",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:279",
+   "schema": "/api/v1/workspace/{}/update",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:282",
+   "span": [
+    282,
+    4,
+    357,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::POST /api/v1/workspace/:slug/update"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@363:4",
+   "method": "GET",
+   "path": "/api/v1/workspace/:slug/chats",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:360",
+   "schema": "/api/v1/workspace/{}/chats",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:363",
+   "span": [
+    363,
+    4,
+    454,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::GET /api/v1/workspace/:slug/chats"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@460:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/update-embeddings",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:457",
+   "schema": "/api/v1/workspace/{}/update-embeddings",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:460",
+   "span": [
+    460,
+    4,
+    531,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::POST /api/v1/workspace/:slug/update-embeddings"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@537:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/update-pin",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:534",
+   "schema": "/api/v1/workspace/{}/update-pin",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:537",
+   "span": [
+    537,
+    4,
+    600,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::POST /api/v1/workspace/:slug/update-pin"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@606:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/chat",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:603",
+   "schema": "/api/v1/workspace/{}/chat",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:606",
+   "span": [
+    606,
+    4,
+    734,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::POST /api/v1/workspace/:slug/chat"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@740:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/stream-chat",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:737",
+   "schema": "/api/v1/workspace/{}/stream-chat",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:740",
+   "span": [
+    740,
+    4,
+    896,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::POST /api/v1/workspace/:slug/stream-chat"
+  },
+  {
+   "function": "server/endpoints/api/workspace/index.js::function@902:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/vector-search",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspace/index.js:899",
+   "schema": "/api/v1/workspace/{}/vector-search",
+   "shape": "method",
+   "site": "server/endpoints/api/workspace/index.js:902",
+   "span": [
+    902,
+    4,
+    1031,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspace/index.js::POST /api/v1/workspace/:slug/vector-search"
+  },
+  {
+   "function": "server/endpoints/api/workspaceThread/index.js::function@114:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/thread/:threadSlug/update",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspaceThread/index.js:111",
+   "schema": "/api/v1/workspace/{}/thread/{}/update",
+   "shape": "method",
+   "site": "server/endpoints/api/workspaceThread/index.js:114",
+   "span": [
+    114,
+    4,
+    193,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspaceThread/index.js::POST /api/v1/workspace/:slug/thread/:threadSlug/update"
+  },
+  {
+   "function": "server/endpoints/api/workspaceThread/index.js::function@199:4",
+   "method": "DELETE",
+   "path": "/api/v1/workspace/:slug/thread/:threadSlug",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspaceThread/index.js:196",
+   "schema": "/api/v1/workspace/{}/thread/{}",
+   "shape": "method",
+   "site": "server/endpoints/api/workspaceThread/index.js:199",
+   "span": [
+    199,
+    4,
+    242,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspaceThread/index.js::DELETE /api/v1/workspace/:slug/thread/:threadSlug"
+  },
+  {
+   "function": "server/endpoints/api/workspaceThread/index.js::function@24:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/thread/new",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspaceThread/index.js:21",
+   "schema": "/api/v1/workspace/{}/thread/new",
+   "shape": "method",
+   "site": "server/endpoints/api/workspaceThread/index.js:24",
+   "span": [
+    24,
+    4,
+    108,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspaceThread/index.js::POST /api/v1/workspace/:slug/thread/new"
+  },
+  {
+   "function": "server/endpoints/api/workspaceThread/index.js::function@248:4",
+   "method": "GET",
+   "path": "/api/v1/workspace/:slug/thread/:threadSlug/chats",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspaceThread/index.js:245",
+   "schema": "/api/v1/workspace/{}/thread/{}/chats",
+   "shape": "method",
+   "site": "server/endpoints/api/workspaceThread/index.js:248",
+   "span": [
+    248,
+    4,
+    326,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspaceThread/index.js::GET /api/v1/workspace/:slug/thread/:threadSlug/chats"
+  },
+  {
+   "function": "server/endpoints/api/workspaceThread/index.js::function@332:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/thread/:threadSlug/chat",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspaceThread/index.js:329",
+   "schema": "/api/v1/workspace/{}/thread/{}/chat",
+   "shape": "method",
+   "site": "server/endpoints/api/workspaceThread/index.js:332",
+   "span": [
+    332,
+    4,
+    489,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspaceThread/index.js::POST /api/v1/workspace/:slug/thread/:threadSlug/chat"
+  },
+  {
+   "function": "server/endpoints/api/workspaceThread/index.js::function@495:4",
+   "method": "POST",
+   "path": "/api/v1/workspace/:slug/thread/:threadSlug/stream-chat",
+   "reader": "express",
+   "registered": "server/endpoints/api/workspaceThread/index.js:492",
+   "schema": "/api/v1/workspace/{}/thread/{}/stream-chat",
+   "shape": "method",
+   "site": "server/endpoints/api/workspaceThread/index.js:495",
+   "span": [
+    495,
+    4,
+    694,
+    5
+   ],
+   "symbol": "server/endpoints/api/workspaceThread/index.js::POST /api/v1/workspace/:slug/thread/:threadSlug/stream-chat"
   },
   {
    "function": "server/endpoints/browserExtension.js::function@114:4",
@@ -2071,6 +2888,108 @@
     5
    ],
    "symbol": "server/endpoints/embedManagement.js::POST /api/embed/chats"
+  },
+  {
+   "function": "server/endpoints/experimental/imported-agent-plugins.js::function@15:4",
+   "method": "POST",
+   "path": "/api/experimental/agent-plugins/:hubId/toggle",
+   "reader": "express",
+   "registered": "server/endpoints/experimental/imported-agent-plugins.js:12",
+   "schema": "/api/experimental/agent-plugins/{}/toggle",
+   "shape": "method",
+   "site": "server/endpoints/experimental/imported-agent-plugins.js:15",
+   "span": [
+    15,
+    4,
+    27,
+    5
+   ],
+   "symbol": "server/endpoints/experimental/imported-agent-plugins.js::POST /api/experimental/agent-plugins/:hubId/toggle"
+  },
+  {
+   "function": "server/endpoints/experimental/imported-agent-plugins.js::function@33:4",
+   "method": "POST",
+   "path": "/api/experimental/agent-plugins/:hubId/config",
+   "reader": "express",
+   "registered": "server/endpoints/experimental/imported-agent-plugins.js:30",
+   "schema": "/api/experimental/agent-plugins/{}/config",
+   "shape": "method",
+   "site": "server/endpoints/experimental/imported-agent-plugins.js:33",
+   "span": [
+    33,
+    4,
+    46,
+    5
+   ],
+   "symbol": "server/endpoints/experimental/imported-agent-plugins.js::POST /api/experimental/agent-plugins/:hubId/config"
+  },
+  {
+   "function": "server/endpoints/experimental/imported-agent-plugins.js::function@52:4",
+   "method": "DELETE",
+   "path": "/api/experimental/agent-plugins/:hubId",
+   "reader": "express",
+   "registered": "server/endpoints/experimental/imported-agent-plugins.js:49",
+   "schema": "/api/experimental/agent-plugins/{}",
+   "shape": "method",
+   "site": "server/endpoints/experimental/imported-agent-plugins.js:52",
+   "span": [
+    52,
+    4,
+    61,
+    5
+   ],
+   "symbol": "server/endpoints/experimental/imported-agent-plugins.js::DELETE /api/experimental/agent-plugins/:hubId"
+  },
+  {
+   "function": "server/endpoints/experimental/liveSync.js::function@23:4",
+   "method": "POST",
+   "path": "/api/experimental/toggle-live-sync",
+   "reader": "express",
+   "registered": "server/endpoints/experimental/liveSync.js:20",
+   "schema": "/api/experimental/toggle-live-sync",
+   "shape": "method",
+   "site": "server/endpoints/experimental/liveSync.js:23",
+   "span": [
+    23,
+    4,
+    57,
+    5
+   ],
+   "symbol": "server/endpoints/experimental/liveSync.js::POST /api/experimental/toggle-live-sync"
+  },
+  {
+   "function": "server/endpoints/experimental/liveSync.js::function@67:4",
+   "method": "GET",
+   "path": "/api/experimental/live-sync/queues",
+   "reader": "express",
+   "registered": "server/endpoints/experimental/liveSync.js:60",
+   "schema": "/api/experimental/live-sync/queues",
+   "shape": "method",
+   "site": "server/endpoints/experimental/liveSync.js:67",
+   "span": [
+    67,
+    4,
+    81,
+    5
+   ],
+   "symbol": "server/endpoints/experimental/liveSync.js::GET /api/experimental/live-sync/queues"
+  },
+  {
+   "function": "server/endpoints/experimental/liveSync.js::function@93:4",
+   "method": "POST",
+   "path": "/api/workspace/:slug/update-watch-status",
+   "reader": "express",
+   "registered": "server/endpoints/experimental/liveSync.js:85",
+   "schema": "/api/workspace/{}/update-watch-status",
+   "shape": "method",
+   "site": "server/endpoints/experimental/liveSync.js:93",
+   "span": [
+    93,
+    4,
+    110,
+    5
+   ],
+   "symbol": "server/endpoints/experimental/liveSync.js::POST /api/workspace/:slug/update-watch-status"
   },
   {
    "function": "server/endpoints/extensions/index.js::function@112:4",
@@ -4861,6 +5780,91 @@
    "symbol": "server/endpoints/workspaces.js::DELETE /api/workspace/:slug/prompt-history/:id"
   },
   {
+   "function": "server/endpoints/workspacesParsedFiles.js::function@128:4",
+   "method": "POST",
+   "path": "/api/workspace/:slug/move-parsed-files",
+   "reader": "express",
+   "registered": "server/endpoints/workspacesParsedFiles.js:121",
+   "schema": "/api/workspace/{}/move-parsed-files",
+   "shape": "method",
+   "site": "server/endpoints/workspacesParsedFiles.js:128",
+   "span": [
+    128,
+    4,
+    148,
+    5
+   ],
+   "symbol": "server/endpoints/workspacesParsedFiles.js::POST /api/workspace/:slug/move-parsed-files"
+  },
+  {
+   "function": "server/endpoints/workspacesParsedFiles.js::function@159:4",
+   "method": "POST",
+   "path": "/api/workspace/:slug/parse",
+   "reader": "express",
+   "registered": "server/endpoints/workspacesParsedFiles.js:151",
+   "schema": "/api/workspace/{}/parse",
+   "shape": "method",
+   "site": "server/endpoints/workspacesParsedFiles.js:159",
+   "span": [
+    159,
+    4,
+    236,
+    5
+   ],
+   "symbol": "server/endpoints/workspacesParsedFiles.js::POST /api/workspace/:slug/parse"
+  },
+  {
+   "function": "server/endpoints/workspacesParsedFiles.js::function@21:4",
+   "method": "GET",
+   "path": "/api/workspace/:slug/parsed-files",
+   "reader": "express",
+   "registered": "server/endpoints/workspacesParsedFiles.js:18",
+   "schema": "/api/workspace/{}/parsed-files",
+   "shape": "method",
+   "site": "server/endpoints/workspacesParsedFiles.js:21",
+   "span": [
+    21,
+    4,
+    43,
+    5
+   ],
+   "symbol": "server/endpoints/workspacesParsedFiles.js::GET /api/workspace/:slug/parsed-files"
+  },
+  {
+   "function": "server/endpoints/workspacesParsedFiles.js::function@49:4",
+   "method": "DELETE",
+   "path": "/api/workspace/:slug/delete-parsed-files",
+   "reader": "express",
+   "registered": "server/endpoints/workspacesParsedFiles.js:46",
+   "schema": "/api/workspace/{}/delete-parsed-files",
+   "shape": "method",
+   "site": "server/endpoints/workspacesParsedFiles.js:49",
+   "span": [
+    49,
+    4,
+    67,
+    5
+   ],
+   "symbol": "server/endpoints/workspacesParsedFiles.js::DELETE /api/workspace/:slug/delete-parsed-files"
+  },
+  {
+   "function": "server/endpoints/workspacesParsedFiles.js::function@78:4",
+   "method": "POST",
+   "path": "/api/workspace/:slug/embed-parsed-file/:fileId",
+   "reader": "express",
+   "registered": "server/endpoints/workspacesParsedFiles.js:70",
+   "schema": "/api/workspace/{}/embed-parsed-file/{}",
+   "shape": "method",
+   "site": "server/endpoints/workspacesParsedFiles.js:78",
+   "span": [
+    78,
+    4,
+    118,
+    5
+   ],
+   "symbol": "server/endpoints/workspacesParsedFiles.js::POST /api/workspace/:slug/embed-parsed-file/:fileId"
+  },
+  {
    "function": "server/index.js::function@136:28",
    "method": "GET",
    "path": "/manifest.json",
@@ -4928,6 +5932,32 @@
    "symbol": "server/index.js::ANY *"
   },
   {
+   "gap": "express route GET /api/docs: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
+   "method": "GET",
+   "path": "/api/docs",
+   "reader": "express",
+   "shape": "method",
+   "site": "server/swagger/utils.js:30",
+   "symbol": "server/swagger/utils.js::<module>"
+  },
+  {
+   "function": "server/swagger/utils.js::function@41:25",
+   "method": "GET",
+   "path": "/api/docs",
+   "reader": "express",
+   "registered": "server/swagger/utils.js:41",
+   "schema": "/api/docs",
+   "shape": "method",
+   "site": "server/swagger/utils.js:41",
+   "span": [
+    41,
+    25,
+    52,
+    5
+   ],
+   "symbol": "server/swagger/utils.js::GET /api/docs"
+  },
+  {
    "function": "server/utils/agents/aibitat/example/websocket/websock-branding-collab.js::function@51:13",
    "path": "*",
    "reader": "express",
@@ -4960,7 +5990,7 @@
    "symbol": "server/utils/agents/aibitat/example/websocket/websock-multi-turn-chat.js::ANY *"
   }
  ],
- "express_seconds": 9.7,
+ "express_seconds": 10.8,
  "name": "anything-llm",
  "noir": {
   "argv": [
@@ -4972,7 +6002,7 @@
    "--no-log"
   ],
   "returncode": 0,
-  "seconds": 3.1,
+  "seconds": 3.2,
   "stderr_tail": ""
  },
  "noir_rows": [
@@ -9571,6 +10601,9 @@
    "symbol": "server/utils/AiProviders/embeddedLemonade/endpoints.js::DELETE /utils/embedded-lemonade/remove-model"
   }
  ],
+ "sections": [
+  "express"
+ ],
  "sites": {
   "collector/extensions/index.js::function@126:4": [
    "collector/extensions/index.js:126",
@@ -9986,6 +11019,303 @@
     5
    ]
   ],
+  "server/endpoints/api/admin/index.js::function@143:49": [
+   "server/endpoints/api/admin/index.js:143",
+   [
+    143,
+    49,
+    218,
+    3
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@15:57": [
+   "server/endpoints/api/admin/index.js:15",
+   [
+    15,
+    57,
+    39,
+    3
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@223:4": [
+   "server/endpoints/api/admin/index.js:223",
+   [
+    223,
+    4,
+    272,
+    5
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@275:46": [
+   "server/endpoints/api/admin/index.js:275",
+   [
+    275,
+    46,
+    319,
+    3
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@321:50": [
+   "server/endpoints/api/admin/index.js:321",
+   [
+    321,
+    50,
+    377,
+    3
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@382:4": [
+   "server/endpoints/api/admin/index.js:382",
+   [
+    382,
+    4,
+    443,
+    5
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@41:44": [
+   "server/endpoints/api/admin/index.js:41",
+   [
+    41,
+    44,
+    83,
+    3
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@449:4": [
+   "server/endpoints/api/admin/index.js:449",
+   [
+    449,
+    4,
+    498,
+    5
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@504:4": [
+   "server/endpoints/api/admin/index.js:504",
+   [
+    504,
+    4,
+    565,
+    5
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@571:4": [
+   "server/endpoints/api/admin/index.js:571",
+   [
+    571,
+    4,
+    680,
+    5
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@686:4": [
+   "server/endpoints/api/admin/index.js:686",
+   [
+    686,
+    4,
+    736,
+    5
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@742:4": [
+   "server/endpoints/api/admin/index.js:742",
+   [
+    742,
+    4,
+    792,
+    5
+   ]
+  ],
+  "server/endpoints/api/admin/index.js::function@85:49": [
+   "server/endpoints/api/admin/index.js:85",
+   [
+    85,
+    49,
+    141,
+    3
+   ]
+  ],
+  "server/endpoints/api/auth/index.js::function@6:37": [
+   "server/endpoints/api/auth/index.js:6",
+   [
+    6,
+    37,
+    30,
+    3
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@1051:4": [
+   "server/endpoints/api/document/index.js:1051",
+   [
+    1051,
+    4,
+    1104,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@1110:4": [
+   "server/endpoints/api/document/index.js:1110",
+   [
+    1110,
+    4,
+    1216,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@1222:4": [
+   "server/endpoints/api/document/index.js:1222",
+   [
+    1222,
+    4,
+    1338,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@186:4": [
+   "server/endpoints/api/document/index.js:186",
+   [
+    186,
+    4,
+    335,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@341:4": [
+   "server/endpoints/api/document/index.js:341",
+   [
+    341,
+    4,
+    517,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@523:4": [
+   "server/endpoints/api/document/index.js:523",
+   [
+    523,
+    4,
+    666,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@55:4": [
+   "server/endpoints/api/document/index.js:55",
+   [
+    55,
+    4,
+    180,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@669:42": [
+   "server/endpoints/api/document/index.js:669",
+   [
+    669,
+    42,
+    723,
+    3
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@728:4": [
+   "server/endpoints/api/document/index.js:728",
+   [
+    728,
+    4,
+    807,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@813:4": [
+   "server/endpoints/api/document/index.js:813",
+   [
+    813,
+    4,
+    864,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@870:4": [
+   "server/endpoints/api/document/index.js:870",
+   [
+    870,
+    4,
+    914,
+    5
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@919:50": [
+   "server/endpoints/api/document/index.js:919",
+   [
+    919,
+    50,
+    972,
+    3
+   ]
+  ],
+  "server/endpoints/api/document/index.js::function@977:4": [
+   "server/endpoints/api/document/index.js:977",
+   [
+    977,
+    4,
+    1045,
+    5
+   ]
+  ],
+  "server/endpoints/api/embed/index.js::function@10:38": [
+   "server/endpoints/api/embed/index.js:10",
+   [
+    10,
+    38,
+    76,
+    3
+   ]
+  ],
+  "server/endpoints/api/embed/index.js::function@143:4": [
+   "server/endpoints/api/embed/index.js:143",
+   [
+    143,
+    4,
+    198,
+    5
+   ]
+  ],
+  "server/endpoints/api/embed/index.js::function@201:43": [
+   "server/endpoints/api/embed/index.js:201",
+   [
+    201,
+    43,
+    285,
+    3
+   ]
+  ],
+  "server/endpoints/api/embed/index.js::function@287:50": [
+   "server/endpoints/api/embed/index.js:287",
+   [
+    287,
+    50,
+    355,
+    3
+   ]
+  ],
+  "server/endpoints/api/embed/index.js::function@360:4": [
+   "server/endpoints/api/embed/index.js:360",
+   [
+    360,
+    4,
+    405,
+    5
+   ]
+  ],
+  "server/endpoints/api/embed/index.js::function@81:4": [
+   "server/endpoints/api/embed/index.js:81",
+   [
+    81,
+    4,
+    137,
+    5
+   ]
+  ],
   "server/endpoints/api/mcpServers/index.js::function@108:52": [
    "server/endpoints/api/mcpServers/index.js:108",
    [
@@ -10047,6 +11377,276 @@
     44,
     46,
     3
+   ]
+  ],
+  "server/endpoints/api/openai/index.js::function@198:4": [
+   "server/endpoints/api/openai/index.js:198",
+   [
+    198,
+    4,
+    287,
+    5
+   ]
+  ],
+  "server/endpoints/api/openai/index.js::function@19:46": [
+   "server/endpoints/api/openai/index.js:19",
+   [
+    19,
+    46,
+    74,
+    3
+   ]
+  ],
+  "server/endpoints/api/openai/index.js::function@293:4": [
+   "server/endpoints/api/openai/index.js:293",
+   [
+    293,
+    4,
+    354,
+    5
+   ]
+  ],
+  "server/endpoints/api/openai/index.js::function@360:4": [
+   "server/endpoints/api/openai/index.js:360",
+   [
+    360,
+    4,
+    430,
+    5
+   ]
+  ],
+  "server/endpoints/api/openai/index.js::function@79:4": [
+   "server/endpoints/api/openai/index.js:79",
+   [
+    79,
+    4,
+    192,
+    5
+   ]
+  ],
+  "server/endpoints/api/system/index.js::function@111:4": [
+   "server/endpoints/api/system/index.js:111",
+   [
+    111,
+    4,
+    154,
+    5
+   ]
+  ],
+  "server/endpoints/api/system/index.js::function@160:4": [
+   "server/endpoints/api/system/index.js:160",
+   [
+    160,
+    4,
+    217,
+    5
+   ]
+  ],
+  "server/endpoints/api/system/index.js::function@18:33": [
+   "server/endpoints/api/system/index.js:18",
+   [
+    18,
+    33,
+    37,
+    3
+   ]
+  ],
+  "server/endpoints/api/system/index.js::function@222:4": [
+   "server/endpoints/api/system/index.js:222",
+   [
+    222,
+    4,
+    283,
+    5
+   ]
+  ],
+  "server/endpoints/api/system/index.js::function@39:39": [
+   "server/endpoints/api/system/index.js:39",
+   [
+    39,
+    39,
+    74,
+    3
+   ]
+  ],
+  "server/endpoints/api/system/index.js::function@76:52": [
+   "server/endpoints/api/system/index.js:76",
+   [
+    76,
+    52,
+    106,
+    3
+   ]
+  ],
+  "server/endpoints/api/userManagement/index.js::function@12:38": [
+   "server/endpoints/api/userManagement/index.js:12",
+   [
+    12,
+    38,
+    65,
+    3
+   ]
+  ],
+  "server/endpoints/api/userManagement/index.js::function@70:4": [
+   "server/endpoints/api/userManagement/index.js:70",
+   [
+    70,
+    4,
+    120,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@109:43": [
+   "server/endpoints/api/workspace/index.js:109",
+   [
+    109,
+    43,
+    161,
+    3
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@163:48": [
+   "server/endpoints/api/workspace/index.js:163",
+   [
+    163,
+    48,
+    226,
+    3
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@231:4": [
+   "server/endpoints/api/workspace/index.js:231",
+   [
+    231,
+    4,
+    276,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@282:4": [
+   "server/endpoints/api/workspace/index.js:282",
+   [
+    282,
+    4,
+    357,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@28:47": [
+   "server/endpoints/api/workspace/index.js:28",
+   [
+    28,
+    47,
+    107,
+    3
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@363:4": [
+   "server/endpoints/api/workspace/index.js:363",
+   [
+    363,
+    4,
+    454,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@460:4": [
+   "server/endpoints/api/workspace/index.js:460",
+   [
+    460,
+    4,
+    531,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@537:4": [
+   "server/endpoints/api/workspace/index.js:537",
+   [
+    537,
+    4,
+    600,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@606:4": [
+   "server/endpoints/api/workspace/index.js:606",
+   [
+    606,
+    4,
+    734,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@740:4": [
+   "server/endpoints/api/workspace/index.js:740",
+   [
+    740,
+    4,
+    896,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspace/index.js::function@902:4": [
+   "server/endpoints/api/workspace/index.js:902",
+   [
+    902,
+    4,
+    1031,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspaceThread/index.js::function@114:4": [
+   "server/endpoints/api/workspaceThread/index.js:114",
+   [
+    114,
+    4,
+    193,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspaceThread/index.js::function@199:4": [
+   "server/endpoints/api/workspaceThread/index.js:199",
+   [
+    199,
+    4,
+    242,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspaceThread/index.js::function@248:4": [
+   "server/endpoints/api/workspaceThread/index.js:248",
+   [
+    248,
+    4,
+    326,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspaceThread/index.js::function@24:4": [
+   "server/endpoints/api/workspaceThread/index.js:24",
+   [
+    24,
+    4,
+    108,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspaceThread/index.js::function@332:4": [
+   "server/endpoints/api/workspaceThread/index.js:332",
+   [
+    332,
+    4,
+    489,
+    5
+   ]
+  ],
+  "server/endpoints/api/workspaceThread/index.js::function@495:4": [
+   "server/endpoints/api/workspaceThread/index.js:495",
+   [
+    495,
+    4,
+    694,
+    5
    ]
   ],
   "server/endpoints/browserExtension.js::function@114:4": [
@@ -10370,6 +11970,60 @@
     96,
     4,
     114,
+    5
+   ]
+  ],
+  "server/endpoints/experimental/imported-agent-plugins.js::function@15:4": [
+   "server/endpoints/experimental/imported-agent-plugins.js:15",
+   [
+    15,
+    4,
+    27,
+    5
+   ]
+  ],
+  "server/endpoints/experimental/imported-agent-plugins.js::function@33:4": [
+   "server/endpoints/experimental/imported-agent-plugins.js:33",
+   [
+    33,
+    4,
+    46,
+    5
+   ]
+  ],
+  "server/endpoints/experimental/imported-agent-plugins.js::function@52:4": [
+   "server/endpoints/experimental/imported-agent-plugins.js:52",
+   [
+    52,
+    4,
+    61,
+    5
+   ]
+  ],
+  "server/endpoints/experimental/liveSync.js::function@23:4": [
+   "server/endpoints/experimental/liveSync.js:23",
+   [
+    23,
+    4,
+    57,
+    5
+   ]
+  ],
+  "server/endpoints/experimental/liveSync.js::function@67:4": [
+   "server/endpoints/experimental/liveSync.js:67",
+   [
+    67,
+    4,
+    81,
+    5
+   ]
+  ],
+  "server/endpoints/experimental/liveSync.js::function@93:4": [
+   "server/endpoints/experimental/liveSync.js:93",
+   [
+    93,
+    4,
+    110,
     5
    ]
   ],
@@ -11849,6 +13503,51 @@
     5
    ]
   ],
+  "server/endpoints/workspacesParsedFiles.js::function@128:4": [
+   "server/endpoints/workspacesParsedFiles.js:128",
+   [
+    128,
+    4,
+    148,
+    5
+   ]
+  ],
+  "server/endpoints/workspacesParsedFiles.js::function@159:4": [
+   "server/endpoints/workspacesParsedFiles.js:159",
+   [
+    159,
+    4,
+    236,
+    5
+   ]
+  ],
+  "server/endpoints/workspacesParsedFiles.js::function@21:4": [
+   "server/endpoints/workspacesParsedFiles.js:21",
+   [
+    21,
+    4,
+    43,
+    5
+   ]
+  ],
+  "server/endpoints/workspacesParsedFiles.js::function@49:4": [
+   "server/endpoints/workspacesParsedFiles.js:49",
+   [
+    49,
+    4,
+    67,
+    5
+   ]
+  ],
+  "server/endpoints/workspacesParsedFiles.js::function@78:4": [
+   "server/endpoints/workspacesParsedFiles.js:78",
+   [
+    78,
+    4,
+    118,
+    5
+   ]
+  ],
   "server/index.js::function@136:28": [
    "server/index.js:136",
    [
@@ -11885,6 +13584,15 @@
     1
    ]
   ],
+  "server/swagger/utils.js::function@41:25": [
+   "server/swagger/utils.js:41",
+   [
+    41,
+    25,
+    52,
+    5
+   ]
+  ],
   "server/utils/agents/aibitat/example/websocket/websock-branding-collab.js::function@51:13": [
    "server/utils/agents/aibitat/example/websocket/websock-branding-collab.js:51",
    [
@@ -11904,5 +13612,5 @@
    ]
   ]
  },
- "snapshot_seconds": 79.7
+ "snapshot_seconds": 83.0
 }

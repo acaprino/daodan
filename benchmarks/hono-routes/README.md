@@ -98,3 +98,7 @@ Le cause:
 - **`all` contro i metodi uno per uno:** Noir scrive `app.all('/mcp', ...)` come sette righe (una per metodo), il modulo come una sola rotta di ogni metodo; il conteggio per terne dà a Noir 7 rotte dove il modulo ne ha 1 (`ramen-api`, e le tre `zapier` di Documenso). Anche contando `all` una volta, `ramen-api` resta 12 contro 13: la rotta di `test/mockApp.ts` ha un percorso scritto con un template (lacuna «the path is no literal»).
 
 Il modulo per Hono resta nel codice, provato dalla fixture (`tests/test_codebase_map_entry_points_hono.py`), fuori dallo step come quello di Express (`T1.C.9`).
+
+### Dopo `T1.C.13` (Modal, 28 novembre 2026, app `ap-4b0RnrGU7M2P28XWlZ4nTu`)
+
+Gestori metodo di un oggetto, chiamata e router passato (`benchmarks/express-routes/README.md`, «Gestori metodo, chiamata e router passato»): sulle tre applicazioni di Hono nulla cambia (Documenso 35 contro 84, `ramen-api` 12 contro 19, `hono-open-api-starter` 0 e 0; la sola rotta solo del modulo è ancora `ALL /mcp`, già letta nel campione). Le cause sono quelle sopra, e `openapi()` e `on()` restano fuori dalla sezione. **Non collegato** per `honojs`.

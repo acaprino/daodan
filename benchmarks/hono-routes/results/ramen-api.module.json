@@ -61,7 +61,7 @@
   "same_function_other_path": 0,
   "same_route_and_function": 11
  },
- "express_peak_mb": 111.5,
+ "express_peak_mb": 112.7,
  "express_rows": [
   {
    "function": "src/index.ts::function@101:2",
@@ -615,5 +615,5 @@
    ]
   ]
  },
- "snapshot_seconds": 2.5
+ "snapshot_seconds": 3.1
 }

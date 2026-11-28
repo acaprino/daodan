@@ -8,7 +8,8 @@
   "common_routes": 0,
   "express_bound": 0,
   "express_gaps": {
-   "the handler is no function of the snapshot": 15
+   "a router no app mounts": 13,
+   "the handler is no function of the snapshot": 2
   },
   "express_rows": 15,
   "noir_bound": 13,
@@ -85,10 +86,10 @@
   "same_function_other_path": 0,
   "same_route_and_function": 0
  },
- "express_peak_mb": 114.3,
+ "express_peak_mb": 113.5,
  "express_rows": [
   {
-   "gap": "express route OPTIONS *: the handler is no function of the snapshot: a external",
+   "gap": "express route OPTIONS *: the handler is no function of the snapshot: a call that passes no function and returns none the reader follows",
    "method": "OPTIONS",
    "path": "*",
    "reader": "express",
@@ -97,7 +98,7 @@
    "symbol": "src/app.js::<module>"
   },
   {
-   "gap": "express route POST /login: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /login: a router no app mounts",
    "method": "POST",
    "path": "/login",
    "reader": "express",
@@ -106,7 +107,7 @@
    "symbol": "src/routes/v1/auth.route.js::<module>"
   },
   {
-   "gap": "express route POST /logout: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /logout: a router no app mounts",
    "method": "POST",
    "path": "/logout",
    "reader": "express",
@@ -115,7 +116,7 @@
    "symbol": "src/routes/v1/auth.route.js::<module>"
   },
   {
-   "gap": "express route POST /refresh-tokens: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /refresh-tokens: a router no app mounts",
    "method": "POST",
    "path": "/refresh-tokens",
    "reader": "express",
@@ -124,7 +125,7 @@
    "symbol": "src/routes/v1/auth.route.js::<module>"
   },
   {
-   "gap": "express route POST /forgot-password: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /forgot-password: a router no app mounts",
    "method": "POST",
    "path": "/forgot-password",
    "reader": "express",
@@ -133,7 +134,7 @@
    "symbol": "src/routes/v1/auth.route.js::<module>"
   },
   {
-   "gap": "express route POST /reset-password: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /reset-password: a router no app mounts",
    "method": "POST",
    "path": "/reset-password",
    "reader": "express",
@@ -142,7 +143,7 @@
    "symbol": "src/routes/v1/auth.route.js::<module>"
   },
   {
-   "gap": "express route POST /send-verification-email: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /send-verification-email: a router no app mounts",
    "method": "POST",
    "path": "/send-verification-email",
    "reader": "express",
@@ -151,7 +152,7 @@
    "symbol": "src/routes/v1/auth.route.js::<module>"
   },
   {
-   "gap": "express route POST /verify-email: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /verify-email: a router no app mounts",
    "method": "POST",
    "path": "/verify-email",
    "reader": "express",
@@ -160,7 +161,7 @@
    "symbol": "src/routes/v1/auth.route.js::<module>"
   },
   {
-   "gap": "express route POST /register: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /register: a router no app mounts",
    "method": "POST",
    "path": "/register",
    "reader": "express",
@@ -169,7 +170,7 @@
    "symbol": "src/routes/v1/auth.route.js::<module>"
   },
   {
-   "gap": "express route GET /: the handler is no function of the snapshot: a external",
+   "gap": "express route GET /: the handler is no function of the snapshot: a call that passes a call the reader does not follow",
    "method": "GET",
    "path": "/",
    "reader": "express",
@@ -178,7 +179,7 @@
    "symbol": "src/routes/v1/docs.route.js::<module>"
   },
   {
-   "gap": "express route DELETE /:userId: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route DELETE /:userId: a router no app mounts",
    "method": "DELETE",
    "path": "/:userId",
    "reader": "express",
@@ -187,7 +188,7 @@
    "symbol": "src/routes/v1/user.route.js::<module>"
   },
   {
-   "gap": "express route GET /:userId: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /:userId: a router no app mounts",
    "method": "GET",
    "path": "/:userId",
    "reader": "express",
@@ -196,7 +197,7 @@
    "symbol": "src/routes/v1/user.route.js::<module>"
   },
   {
-   "gap": "express route PATCH /:userId: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route PATCH /:userId: a router no app mounts",
    "method": "PATCH",
    "path": "/:userId",
    "reader": "express",
@@ -205,7 +206,7 @@
    "symbol": "src/routes/v1/user.route.js::<module>"
   },
   {
-   "gap": "express route GET /: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route GET /: a router no app mounts",
    "method": "GET",
    "path": "/",
    "reader": "express",
@@ -214,7 +215,7 @@
    "symbol": "src/routes/v1/user.route.js::<module>"
   },
   {
-   "gap": "express route POST /: the handler is no function of the snapshot: the value a function returns",
+   "gap": "express route POST /: a router no app mounts",
    "method": "POST",
    "path": "/",
    "reader": "express",
@@ -223,7 +224,7 @@
    "symbol": "src/routes/v1/user.route.js::<module>"
   }
  ],
- "express_seconds": 0.1,
+ "express_seconds": 0.2,
  "name": "node-express-boilerplate",
  "noir": {
   "argv": [
@@ -235,7 +236,7 @@
    "--no-log"
   ],
   "returncode": 0,
-  "seconds": 0.9,
+  "seconds": 1.0,
   "stderr_tail": ""
  },
  "noir_rows": [
@@ -403,6 +404,9 @@
    "symbol": "src/controllers/user.controller.js::DELETE /v1/users/:userId"
   }
  ],
+ "sections": [
+  "express"
+ ],
  "sites": {},
- "snapshot_seconds": 1.5
+ "snapshot_seconds": 1.6
 }
