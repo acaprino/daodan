@@ -89,8 +89,6 @@
 
 - **Genere dei simboli C (`T2.B.20`):** scip-clang 0.4.1 scrive `SymbolInformation.kind` 0, quindi un tipo C è un valore dal descrittore di tipo `#` di SCIP più la lingua del file; pulito: il `kind` dell'indicizzatore quando scip-clang lo scrive. Un `typedef` C++ usato in un cast resta chiamabile.
 
-- **Gruppo 14 di `--shards 32` (28 novembre 2026):** fallisce sempre nello stesso gruppo (riscrittore dei commenti, C#, `honest_state`: «tree-sitter unavailable: download failed»), i test passano da soli e con `--shards 33`; una prova inquina le altre (grammatiche o variabili d'ambiente). Da trovare e correggere, non da aggirare.
-
 - **CSS e markup «lessicali» nello snapshot (Cancello T1, 28 novembre 2026):** su Bank of Anthos i file CSS (8) e di markup (9) hanno lo stato `lexical` nello snapshot e il piano dà `read_code:css` e `read_code:markup` `failed` (`engine_pass.unparsed`: nessun file `ast` o `partial`), con il rimedio «install the snapshot's parser packages». Succede in ogni giro di `modal_pipeline.py` dal 16 novembre (`results/pipeline/2026-11-16-*.json`). Non è il download delle grammatiche: il lettore dei fogli di stile non usa tree-sitter (`languages/stylesheet.py`). Causa da trovare: o lo snapshot non dà `ast` a lingue che un lettore legge, o il piano tratta da fallimento uno stato voluto.
 
 - **Percorso verticale in una colonna (`T1.E`):** provvisorio finché Sigrid non sistema lo `Steps` orizzontale stretto ([acaprino/sigrid#76](https://github.com/acaprino/sigrid/issues/76)); poi l'App torna alla riga orizzontale.
