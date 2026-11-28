@@ -14,6 +14,10 @@ GENERIC_SCOPE_REASON = "generic function type parameter scope is unresolved"
 # What only wraps an expression: parentheses keep a reference as it is and TypeScript erases the rest, so the value is the
 # inner one's, and `(eval)(x)` is a direct eval as `eval(x)` is.
 ERASED = ("parenthesized_expression", "as_expression", "satisfies_expression", "non_null_expression", "type_assertion")
+# Python's builtins that run code or hand out a namespace as a mapping, and the scopes whose names they write unseen:
+# `exec` and `eval` (an assignment expression) the ones they are given, by default this one and the module's (`lexical`);
+# `globals()` the module's; `locals()`, and `vars()` with no argument, which is `locals()`, this one (`scope`).
+PY_NAMESPACE_WRITERS = {"exec": "lexical", "eval": "lexical", "globals": "module", "locals": "scope", "vars": "scope"}
 
 
 def _erased(node):
@@ -291,12 +295,19 @@ class _PythonEvidence(ast.NodeVisitor, _Evidence):
             attribute = node.args[1]
             name = attribute.value if isinstance(attribute, ast.Constant) and isinstance(attribute.value, str) else None
             self.instance_write(node.args[0].id, name)
-        if parts == ["exec"]:
+        written = PY_NAMESPACE_WRITERS.get(parts[0]) if len(parts) == 1 else None
+        if written == "lexical":
+            reason = f"{parts[0]} may introduce or mutate lexical bindings"
             scope = self.scope
             while scope is not None:
-                self.scope_by_id[scope].update(unresolved=True, reason="exec may introduce or mutate lexical bindings")
+                self.scope_by_id[scope].update(unresolved=True, reason=reason)
                 scope = self.scope_by_id[scope]["parent"]
-            self.note("exec may introduce or mutate lexical bindings")
+            self.note(reason)
+        elif written and not node.args and not node.keywords:
+            reason = f"{parts[0]}() is a mapping that may introduce or mutate " + (
+                "module bindings" if written == "module" else "the bindings of its scope")
+            self.scope_by_id["module" if written == "module" else self.scope].update(unresolved=True, reason=reason)
+            self.note(reason)
         if parts:
             self.reference(parts, "call", _py_span(node.func))
         else:

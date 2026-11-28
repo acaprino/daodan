@@ -8,13 +8,16 @@ a `project-value` of kind `parameter`, the reader being the function itself): th
 are gaps with their cause. Nothing here is a name, a depth or an expression.
 
 The proof runs on a snapshot of `fixtures/http-wrapper` (a TypeScript project) with the index scip-typescript 0.6.2 wrote
-for it, wherever the tree-sitter grammars of the snapshot load:
+for it, and on one of `fixtures/http-wrapper-python` (a Python project that calls `requests`) with the index Daodan's
+Python adapter wrote for it (scip-python, `requests` installed from its `requirements.txt`), wherever the tree-sitter
+grammars of the snapshot load:
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_flows_http_wrapper.py
 
-Record the index again after any change to the fixture's sources (`fixtures/http-wrapper/record_index.py`, on Modal):
-the index states positions. Its `fetch` is TypeScript's own (`lib.dom.d.ts`); the one of `@types/node` is in the index
-of `fixtures/code-graph/ts`, which the table test reads.
+Record an index again after any change to its fixture's sources (`record_index.py` in each, on Modal): the index states
+positions. The TypeScript one's `fetch` is TypeScript's own (`lib.dom.d.ts`); the one of `@types/node` is in the index
+of `fixtures/code-graph/ts`, which the table test reads. The Python one calls each function of `requests.api` the table
+names.
 """
 from __future__ import annotations
 
@@ -38,12 +41,16 @@ import http_wrappers  # noqa: E402
 import resolve_edges  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot  # noqa: E402
-from indexers import typescript  # noqa: E402
+from indexers import python, typescript  # noqa: E402
 from languages import semantic  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
 from test_codebase_map_flows import read_project  # noqa: E402
 
 FIXTURE = TESTS / "fixtures/http-wrapper"
+PY_FIXTURE = TESTS / "fixtures/http-wrapper-python"
+PY_INDEX = PY_FIXTURE / "scip-python-0.scip"  # beside it what the run told scip-python and the checker's lines
+REQUESTS = {"request": (1, "arg0"), **{name: (0, name.upper()) for name in (  # `requests.api`, version 2.32.3
+    "get", "options", "head", "post", "put", "patch", "delete")}}
 DOM = "scip-typescript npm typescript 6.0.3 lib/`lib.dom.d.ts`/fetch()."
 WINDOW = "scip-typescript npm typescript 6.0.3 lib/`lib.dom.d.ts`/WindowOrWorkerGlobalScope#fetch()."
 NODE = "scip-typescript npm @types/node 22.19.8 web-globals/`fetch.d.ts`/global/fetch()."
@@ -52,7 +59,7 @@ OTHER = "scip-typescript npm node-fetch 3.3.2 `index.d.ts`/fetch()."
 
 class TableTests(unittest.TestCase):
     def test_the_table_holds_the_three_fetch_symbols_and_the_parser_reads_each(self):
-        clients = http_wrappers.CLIENTS
+        clients = [entry for entry in http_wrappers.CLIENTS if entry["manager"] == "npm"]
         self.assertEqual(sorted((c["manager"], c["package"], c["descriptors"]) for c in clients),
                          sorted([("npm", "typescript", "lib/`lib.dom.d.ts`/fetch()."),
                                  ("npm", "typescript", "lib/`lib.dom.d.ts`/WindowOrWorkerGlobalScope#fetch()."),
@@ -78,6 +85,30 @@ class TableTests(unittest.TestCase):
         found = {occurrence.key for occurrences in index.documents.values() for occurrence in occurrences
                  if occurrence.key.endswith("/fetch().")}
         self.assertEqual(len(found), 2, found)  # TypeScript's DOM `fetch`, and Node's
+        self.assertTrue(all(http_wrappers.client(symbol) for symbol in found), found)
+
+    def test_the_requests_rows_are_the_functions_of_requests_api_read_from_their_signatures(self):
+        """`request(method, url, **kwargs)` reads its method from argument 0; `get(url, params=None, **kwargs)` and the
+        others take the URL first and send their own method."""
+        rows = [entry for entry in http_wrappers.CLIENTS if entry["manager"] == "python"]
+        self.assertEqual(sorted((entry["package"], entry["descriptors"]) for entry in rows),
+                         sorted(("requests", f"`requests.api`/{name}().") for name in REQUESTS))
+        for entry in rows:
+            with self.subTest(entry["descriptors"]):
+                name, kind = code_graph.descriptors(entry["descriptors"])[-1]
+                self.assertEqual((kind, (entry["url"], entry["method"])), ("method", REQUESTS[name]))
+
+    def test_the_symbols_the_recorded_engine_wrote_for_requests_are_the_tables_rows(self):
+        """The fixture calls every function of `requests.api` the table names, and the engine names each one with the
+        package `requests` itself, never the project's: each row is a symbol the engine wrote, and each such symbol a row."""
+        index = code_graph.Index(PY_FIXTURE)
+        index.load(PY_INDEX)
+        found = {occurrence.key for occurrences in index.documents.values() for occurrence in occurrences
+                 if (parts := code_graph.split_symbol(occurrence.key)) and parts[4].startswith("`requests.api`/")
+                 and code_graph.descriptors(parts[4])[-1][1] == "method"}
+        self.assertEqual({code_graph.split_symbol(symbol)[1:3] for symbol in found}, {("python", "requests")})
+        self.assertEqual({code_graph.split_symbol(symbol)[4] for symbol in found},
+                         {entry["descriptors"] for entry in http_wrappers.CLIENTS if entry["manager"] == "python"})
         self.assertTrue(all(http_wrappers.client(symbol) for symbol in found), found)
 
 
@@ -543,6 +574,138 @@ class WrapperTests(unittest.TestCase):
         self.assertEqual((report["candidates"], report["gaps"], report["coverage"]), ([], [], "rejected_store"))
         self.assertTrue(any("edge store" in reason for reason in report["why"]), report["why"])
         self.assertNotIn("why", self.report)  # an engine that answered has nothing to explain
+
+
+PY_PROVED = {  # every proof the Python fixture gives: an unexpected one fails
+    "app/client.py::load": {(0, "GET")}, "app/client.py::create": {(0, "POST")}, "app/client.py::second": {(1, "PUT")},
+    "app/client.py::typed": {(0, "PATCH")}, "app/client.py::defaulted": {(0, "HEAD")},  # a type and a default take nothing
+    "app/client.py::positional": {(0, "DELETE")}, "app/client.py::probe": {(0, "OPTIONS")},
+    "app/client.py::generic": {(0, "POST")},  # `request("POST", url)`: the method from argument 0
+    "app/client.py::Api.fetch": {(0, "GET")},  # the instance takes the method's first parameter, and no place
+    "app/refused.py::through_globals": {(0, "GET")}}  # `globals()` writes the module's names, never a parameter
+PY_CAUSES = {
+    "again": "declared or assigned again inside the function", "unresolved": "holds a scope the reader cannot close",
+    "keyword": "takes its argument by name", "method": "method arg0: not a literal", "named": "by name, and a rule reads",
+    "template": "built from the parameter path by string", "decorated": "is decorated",
+    "no-declaration": "declares no parameter"}
+PY_REFUSED = {  # function -> its cause: one call of the client each
+    "app/refused.py::reassigned": "again", "app/refused.py::imported": "again",  # an import binds as an assignment does
+    "app/refused.py::executed": "unresolved", "app/refused.py::through_locals": "unresolved",
+    "app/refused.py::keyword_only": "keyword", "app/refused.py::method_parameter": "method",
+    "app/refused.py::by_name": "named", "app/refused.py::templated": "template", "app/refused.py::Holder.fetch": "decorated",
+    "app/refused.py::outer.inner": "no-declaration"}
+PY_HAND = [{"callee": callee, "link": "rotta", "route": {"service": "api", "method": method, "path": f"arg{index}"}}
+           for callee, [(index, method)] in sorted(PY_PROVED.items())]
+
+
+def py_sources() -> dict:
+    """The Python fixture's sources: its manifest and `app/`, never its recorder, its index or what lies beside it."""
+    paths = [PY_FIXTURE / "requirements.txt", *sorted((PY_FIXTURE / "app").rglob("*.py"))]
+    return {path.relative_to(PY_FIXTURE).as_posix(): path.read_text(encoding="utf-8") for path in paths}
+
+
+class PythonWrapperTests(unittest.TestCase):
+    """The proof on the snapshot of the Python fixture, with the engine's own index, built as the engine pass builds it."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.work = Path(tempfile.mkdtemp(prefix="http-wrapper-python-")).resolve()
+        cls.manifest = read_project(cls.work, py_sources())
+        with code_graph.Snapshot(cls.manifest) as snap:
+            index = code_graph.Index(snap.root)
+            index.load(PY_INDEX)
+            hops, traversal, _ = code_graph.adapter_traversal(python, index, snap)
+            built = {"python": code_graph.build(index, snap, "python", hops,
+                                                {"name": "scip-python", "version": python.VERSION}, None, traversal,
+                                                python.static(index))}
+            code_graph.write_store(snap, resolve_edges.default_edge_store(cls.manifest), built, f"scip-python@{python.VERSION}")
+        cls.stack = contextlib.ExitStack()
+        store = cls.stack.enter_context(open_snapshot(cls.manifest))
+        db = cls.stack.enter_context(semantic_store.semantic_reader(store))
+        cls.view = edge_view.load_edge_view(store)
+        cls.facts = flows.Facts(store, db, cls.view)
+        cls.report = http_wrappers.report(cls.facts, cls.view, RULES)
+        cls.proofs, _ = http_wrappers.prove(cls.facts, cls.view)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.stack.close()
+        shutil.rmtree(cls.work, True)
+
+    def test_the_view_names_the_function_of_requests_the_engine_resolved_each_call_into(self):
+        calls = {(ref["file"], ref["span"][0]): ref for ref in self.view["references"] if ref["parts"][:1] == ["requests"]}
+        self.assertEqual(calls["app/client.py", 6]["external_symbols"], ["scip-python python requests 2.32.3 `requests.api`/get()."])
+        self.assertEqual({http_wrappers.client(symbol)["descriptors"] for ref in calls.values()
+                          for symbol in ref.get("external_symbols") or ()},
+                         {f"`requests.api`/{name}()." for name in REQUESTS})
+
+    def test_a_python_wrapper_of_requests_is_proved_with_the_place_of_its_url_and_its_method(self):
+        proved = {}
+        for proof in self.proofs:
+            proved.setdefault(proof["callee"], set()).add((proof["index"], proof["method"]))
+        self.assertEqual(proved, PY_PROVED)  # no other proof: a false one fails here
+        load = next(candidate for candidate in self.report["candidates"] if candidate["callee"] == "app/client.py::load")
+        self.assertEqual((load["rule"], load["proof"], load["calls"], load["literal"]),
+                         ({"callee": "app/client.py::load", "link": "rotta",
+                           "route": {"service": "api", "method": "GET", "path": "arg0"}}, "app/client.py:6", 1, 1))
+        self.assertEqual(sorted((candidate["rule"] for candidate in self.report["candidates"]),
+                                key=lambda rule: rule["callee"]), PY_HAND)
+
+    def test_each_python_refusal_is_a_gap_with_its_own_cause_and_no_candidate(self):
+        for callee, cause in PY_REFUSED.items():
+            with self.subTest(callee):
+                [gap] = [gap for gap in self.report["gaps"] if gap["symbol"] == callee]
+                self.assertIn(PY_CAUSES[cause], gap["reason"])
+                self.assertEqual([other for other, text in PY_CAUSES.items() if other != cause and text in gap["reason"]],
+                                 [], gap)
+        self.assertEqual(sorted({gap["symbol"] for gap in self.report["gaps"]}), sorted(PY_REFUSED))
+        self.assertFalse({candidate["callee"] for candidate in self.report["candidates"]} & set(PY_REFUSED))
+
+    def test_a_lambda_and_a_literal_url_are_no_wrapper_and_no_gap(self):
+        lines = py_sources()["app/refused.py"].split("\n")
+        silent = {f"app/refused.py:{number}" for number, text in enumerate(lines, 1)
+                  if text.startswith("fetcher = lambda") or "api/status" in text}
+        self.assertEqual(len(silent), 2)
+        self.assertFalse(silent & {item["site"] for item in [*self.proofs, *self.report["gaps"]]})
+
+    def test_the_calls_through_the_wrappers_ask_the_routes_the_project_offers(self):
+        """`link_facts` applies the proposed rules with no model: the URL each caller writes meets the route it names."""
+        before = flows.link_facts(self.manifest, flows.validate_rules(RULES))
+        after = flows.link_facts(self.manifest, flows.validate_rules([*RULES, *PY_HAND]))
+        linked = [(edge["from"], edge["to"], edge["site"], edge["route"]) for edge in before["edges"] if edge.get("route")]
+        self.assertEqual(linked, [(edge["from"], edge["to"], edge["site"], edge["route"])
+                                  for edge in after["edges"] if edge.get("route")])  # writing them changes nothing
+        self.assertEqual({(source, target) for source, target, _, _ in linked},
+                         {("app/callers.py::use_all", f"app/server.py::{name}")
+                          for name in ("list_users", "create_order", "replace_order")})
+        self.assertEqual(before["routes"]["linked"], 5)  # load, create, second, generic and Api().fetch
+
+
+class PythonPlaceTests(unittest.TestCase):
+    """The place of a Python parameter among a call's arguments, from the grammar alone: no engine is asked."""
+
+    SOURCE = ("class A:\n    if True:\n        def under(self, token, url): pass\n    def own(url, other): pass\n"
+              "def rest(first, *url): pass\ndef keywords(first, **url): pass\ndef after(*args, url): pass\n")
+
+    def test_the_place_is_the_one_a_call_passes_the_parameter_at_or_none_and_why(self):
+        work = Path(tempfile.mkdtemp(prefix="http-wrapper-place-")).resolve()
+        self.addCleanup(shutil.rmtree, work, True)
+        manifest = read_project(work, {"app/shapes.py": self.SOURCE})
+        with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
+            facts = flows.Facts(store, db)
+            tree = facts.tree("app/shapes.py")
+            declarations = [d for d in facts.declarations.values() if d["file"] == "app/shapes.py"]
+            places = {}
+            for owner in (d for d in declarations if d["kind"] == "function"):
+                [parameter] = [d for d in declarations if d["kind"] == "parameter" and d["name"] == "url"
+                               and http_wrappers._inside(owner, d["line"], d["column"])]
+                places[owner["name"]] = http_wrappers._place(owner, tree, parameter, "url")
+        self.assertEqual(places["under"], (1, ""))  # a method under an `if` is a method: `self` takes no place
+        self.assertEqual({name: why for name, (index, why) in places.items() if name != "under"}, {
+            "own": "the parameter url is the instance the method is called on",
+            "rest": "the parameter url is a rest parameter: it holds every argument from its place on",
+            "keywords": "the parameter url takes its argument by name: a call passes it at no place",
+            "after": "the parameter url takes its argument by name: a call passes it at no place"})
 
 
 if __name__ == "__main__":
