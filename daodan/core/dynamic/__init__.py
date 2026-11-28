@@ -46,12 +46,14 @@ of an observer, with the variables its jobs give the tests (`services()`, `conta
 code of its own for them; a service that did not start, or a run that started none of them, is a gap naming the
 service and its image (`service_unavailable`). The steps a CI job runs before the tests an observer runs (the
 pre-map's `ci_steps`, `ci_steps()`) run at the end of each of its preparations, the services beside them; one that
-fails is a `ci_step_failed` gap, one that cannot run a `ci_step_not_run` one.
+fails is a `ci_step_failed` gap, one that cannot run a `ci_step_not_run` one. The exploration's run gets the same for
+the tests of its apps' folders (`app.plan`'s `beside`).
 
 After the observers the step starts the app the pre-map declares (`starts`) in the container and explores it in a headless
 browser (`app.explore`, plan task 11): the controls it pressed are kept in `observed-controls.json` beside the manifest, for
 the entry candidates (`observed_entries`) and the links (`flows._observed_entries`). It has its own record in `RUNS/app` and
-is reused on the same snapshot; the step's result says it as `app`: `{state, apps, kept}`. A project that declares no app,
+is reused on the same snapshot; the step's result says it as `app`: `{state, apps, kept}`. Its run asks for hosts under
+the name `APP` (`egress.asking`), as an observer's under its own. A project that declares no app,
 no container engine, an app that did not start and an exploration that failed are gaps (`no_start_command`,
 `explore_failed`, `build_failed`, `app_not_started`, ...), never silence.
 
@@ -419,12 +421,22 @@ def _unanswered(gap: dict, facts: list[dict]) -> dict:
                              f"{', '.join(unanswered)} ({said})"}
 
 
-def _service_gaps(started: list[dict], planned: list[dict], paths: dict, entry: str) -> list[dict]:
-    """The gaps of the services of an observer that ran: one that did not start in one of its container runs
-    (`started`, `container.Said.services`), once per cause; every one when its runs started none."""
+def _service_paths(record: dict) -> dict[str, str]:
+    """Where the project's CI declares each service of the pre-map's `services` first, by its name."""
+    paths: dict[str, str] = {}
+    for item in sorted(record.get("services") or [], key=lambda item: item["declared_in"]):
+        paths.setdefault(item["name"], item["declared_in"])
+    return paths
+
+
+def _service_gaps(started: list[dict], planned: list[dict], paths: dict, entry: str, ran: str = "the tests") \
+        -> list[dict]:
+    """The gaps of the services of an observer that ran (or of the exploration, `ran` the app): one that did not start
+    in one of its container runs (`started`, `container.Said.services`), once per cause; every one when its runs
+    started none."""
     def gap(name: str, image: str, said: str) -> dict:
         return {"kind": "service_unavailable", "name": name, "image": image, "path": paths.get(name),
-                "detail": f"{name} ({image}), {paths.get(name)}: {said}; the tests ran without it"}
+                "detail": f"{name} ({image}), {paths.get(name)}: {said}; {ran} ran without it"}
 
     if not started:
         return [gap(service["name"], service["image"], f"{entry} starts no service") for service in planned]
@@ -481,9 +493,10 @@ def ci_steps(record: dict, runs: list[dict]) -> dict:
     return {"steps": steps, "gaps": gaps, "env": env}
 
 
-def _step_gaps(stepped: list[dict]) -> list[dict]:
-    """The gaps of the CI's steps an observer's container runs ran (`container.Said.ci_steps`), once per cause:
-    `ci_step_failed` for one that did not end with code 0, `ci_step_not_run` for one that started in none of them."""
+def _step_gaps(stepped: list[dict], ran: str = "the tests") -> list[dict]:
+    """The gaps of the CI's steps an observer's container runs ran (`container.Said.ci_steps`; or the exploration's,
+    `ran` the app), once per cause: `ci_step_failed` for one that did not end with code 0, `ci_step_not_run` for one
+    that started in none of them."""
     found: dict = {}
     started = {row["declared_in"] for row in stepped if row.get("outcome") != "not_run"}
     for row in stepped:
@@ -495,7 +508,7 @@ def _step_gaps(stepped: list[dict]) -> list[dict]:
         found.setdefault((kind, row["declared_in"], row.get("cause")), {
             "kind": kind, "path": row["declared_in"],
             **({"exit_code": row["exit_code"]} if row.get("exit_code") is not None else {}),
-            "detail": f"{row['declared_in']}{name}: {row.get('cause')}; the tests ran "
+            "detail": f"{row['declared_in']}{name}: {row.get('cause')}; {ran} ran "
                       + ("without it" if kind == "ci_step_not_run" else "after it")})
     return list(found.values())
 
@@ -612,8 +625,7 @@ def run(manifest: Path, bus) -> dict:
                 declared = services(record)
                 for gap in declared["gaps"]:
                     say(gap["detail"], gap)
-                for item in sorted(record.get("services") or [], key=lambda item: item["declared_in"]):
-                    paths.setdefault(item["name"], item["declared_in"])
+                paths = _service_paths(record)
             stepped = ci_steps(record, planned["runs"])  # the CI's steps before the tests it runs
             for gap in stepped["gaps"]:
                 say(gap["detail"], gap, entry)
@@ -724,22 +736,26 @@ def run(manifest: Path, bus) -> dict:
             told = ", ".join(f"{language}: {_told(outcomes[language])}" for language in wanted)
             bus.emit("analyzer.finished", f"{entry}: {told}", step=STEP, analyzer=entry, languages=wanted)
         bus.progress(STEP, len(waiting), len(waiting))
-        explored = _app(manifest, snapshot, bus, say)
+        explored = _app(manifest, snapshot, bus, say, declared["gaps"] if declared else ())
     return {"languages": outcomes, "app": explored, **({"ui_controls": ui_controls} if ui_controls else {}),
             **({"ui_gaps": ui_gaps} if ui_gaps else {})}
 
 
-def _app(manifest: Path, snapshot, bus, say) -> dict:
-    """The app the project declares, started and explored in the container (`app.explore`): the controls it showed
-    are kept beside the manifest for the entries. What did not run is a gap with its cause, never silence; a failure
-    of the exploration stops no other part of the step. `{state, apps, kept}`, with `cause` and `remedy` where it did
-    not run, and `reused` where the run of the same snapshot was kept."""
+def _app(manifest: Path, snapshot, bus, say, told=()) -> dict:
+    """The app the project declares, started and explored in the container (`app.explore`), with what the CI gives the
+    tests of its folder (`app.plan`'s `beside`): the controls it showed are kept beside the manifest for the entries.
+    What did not run is a gap with its cause, never silence, but the gaps of the CI's services the observers' runs
+    already said (`told`) are not said again; a failure of the exploration stops no other part of the step.
+    `{state, apps, kept}`, with `cause` and `remedy` where it did not run, and `reused` where the run of the same
+    snapshot was kept."""
     import commands
+    import egress
     import entry_points
     import premap
     from snapshot_store import logical_digest
     from . import app
-    record = commands.merged(premap.ensure(manifest), str(Path(snapshot.store["root"]).resolve()))
+    project = str(Path(snapshot.store["root"]).resolve())  # the name `egress` asks under (`egress.project_of`)
+    record = commands.merged(premap.ensure(manifest), project)
     try:  # the pages the frameworks declare, which the exploration opens too: none without the record of the entry points
         pages = entry_points.read_record(manifest).get("framework_entries", [])
     except (OSError, KeyError, TypeError, ValueError):
@@ -747,14 +763,16 @@ def _app(manifest: Path, snapshot, bus, say) -> dict:
     if record.get("starts"):
         bus.emit("analyzer.started", f"{APP}: the app started and explored", step=STEP, analyzer=APP)
     try:
-        seen = app.explore(manifest, snapshot.root, record, logical_digest(snapshot.store), manifest.parent / RUNS / APP,
-                           pages=pages)
+        with egress.asking(APP), egress.within(project):  # its hosts are asked about together, as an observer's
+            seen = app.explore(manifest, snapshot.root, record, logical_digest(snapshot.store),
+                               manifest.parent / RUNS / APP, pages=pages)
     except Exception as error:  # noqa: BLE001 - the exploration is one part of the step: the others stay
         cause = f"{type(error).__name__}: {error}"
         seen = {"state": "failed", "cause": cause, "remedy": "explore again", "apps": [], "kept": 0,
                 "gaps": [{"kind": "explore_failed", "detail": f"the app could not be explored: {cause}"}]}
     for gap in seen["gaps"]:
-        say(gap["detail"], gap, APP)
+        if gap not in told:
+            say(gap["detail"], gap, APP)
     if seen["state"] != "ran":
         bus.emit(*(("analyzer.finished", f"{APP} failed") if seen["state"] == "failed" else
                    ("analyzer.unavailable", f"{APP} cannot run here")), step=STEP, analyzer=APP,

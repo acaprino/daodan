@@ -645,6 +645,12 @@ Un host che la preparazione chiede fuori dall'elenco canonico (`egress`) è la d
 
 Il controllo `explore-fixtures/vite-react` con npm, sul codice di `5b75651` (`ap-JcBh9OtYJroPBNfGvwAB1t`), chiede anch'esso `storage.googleapis.com`: il browser di Playwright viene da un host generico che l'elenco canonico lascia fuori di proposito, come GitHub (`container.REGISTRIES`, dal 27 novembre 2026, `T0.C`), e `engine.json` è del 22 novembre, di prima. Una corsa che ha chiesto un host non si tiene per il riuso (`app.explore`): dopo la risposta l'analisi la rifà. Le dipendenze di `js-bun` le ripristina npm: `bun.lock` non è fra i lockfile dei ripristini (`preparation.RESTORES`).
 
+L'app riceve ciò che la CI dà ai test della sua cartella (`T3.B.12`, 28 novembre 2026; codice `592ecd1`): il `beside` del piano (`dynamic.app.plan`), cioè i servizi, le variabili dei job e dei passi di test e i passi prima dei test, dentro `container.beside` come per gli osservatori. Il driver stampa il `beside` (le variabili solo per nome), i fatti della pre-mappa da cui viene e, in `said`, le righe del record del container per servizi e passi. `explore-fixtures/node-postgres` è un server Node che elenca come collegamenti i libri di una tabella: la sua CI avvia `postgres:16-alpine` come servizio, dà `DATABASE_URL` al job e scrive i dati di prova con `node db/seed.js` prima di `npm test`; il server non ha nessun titolo (stanno nel seed e nel suo test).
+
+| Fixture | Risultato | Corsa | Esito |
+| --- | --- | --- | --- |
+| `explore-fixtures/node-postgres` | `results/explore/engine-postgres.json` | `ap-aJe1dqzRMaOsfz3jV3sjDe` | piano: il servizio `postgres`, `DATABASE_URL`, i passi `npm install` e `node db/seed.js` (`ci.yml#jobs.test.steps.2` e `.3`) per i test `package.json#scripts.test`. Prima corsa: `storage.googleapis.com` da approvare (`approval_required`, `explore_failed`). Dopo il sì: postgres `ready`, i due passi escono con 0 («seeded 2 books»), l'app `ready` su 3000; 3 pagine, 4 controlli premuti: `Dune` e `Solaris`, le righe del seed lette dal database, e due `Back`; nessuna lacuna, 105,9 s |
+
 ## Eventi fra la pagina e il guscio Tauri
 
 Task 11b del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-flussi.md). Un `emit` da una parte e un `listen` dall'altra, dello stesso nome, sono un legame con le due posizioni (`resolver` `tauri-event`, il nome come `event`), come `invoke` lo è con il comando Rust (`flows.link_facts`; lettura in `languages/semantic.py`; prova: `tests/test_codebase_map_tauri_events.py`, 7 test).

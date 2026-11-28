@@ -443,6 +443,39 @@ def test_a_request_of_gradle_waits_for_its_model_action_alone_and_a_no_makes_it_
     assert refused["cause"] and refused["remedy"]
 
 
+def test_a_request_of_the_exploration_waits_for_its_explore_action_alone(tmp_path, shared):
+    """The exploration's run asks under its own name (`dynamic.APP`, as an observer's under its own, `egress.asking`): a
+    host the proxy refused it and nobody answered puts the `explore` action of the app in `awaiting_approval`, with the
+    hosts, and no other action; the answer takes it out."""
+    import egress
+    import premap
+    from dynamic import app
+    planning = _planning()
+    root = _project(tmp_path / "project", {"package.json": '{"scripts": {"start": "node server.js"}}\n',
+                                           "server.js": "require('http').createServer().listen(3000);\n"})
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.read_project(root, manifest)
+    premap.write(manifest)  # no runner: the readers' facts, the `starts` among them; no command runs
+    project = egress.project_of(manifest)
+
+    def observe(folder, planned, out_dir, engine=None):  # the run's end, as `container.run_in_container` collects it
+        asked, _ = egress.collect(egress.name(folder), [{"host": "storage.googleapis.com", "port": "443"}])
+        return {"state": "ran", "apps": [{"state": "ready"}], "gaps": egress.approval_gap(asked, "ran")}
+    looked = lambda rows, *args, **kwargs: [{**row, "address": None, "network": False} for row in rows]  # noqa: E731
+    with mock.patch.object(app, "observe", observe), mock.patch.object(egress, "resolve", side_effect=looked), \
+            mock.patch.object(resolve_edges, "read_edge_store", return_value=([], {"languages": {}}, None)):
+        dynamic.run(manifest, events.Bus())  # no static graph: no observer runs, the app is explored
+    assert [group["tool"] for group in egress.groups([project])] == [dynamic.APP]
+    actions = {action["id"]: action for action in planning.current(manifest)["actions"]}
+    waiting = actions[f"run_and_observe:{dynamic.APP}:."]
+    assert (waiting["state"], waiting["hosts"], waiting["target"]["root"]) == (
+        "awaiting_approval", ["storage.googleapis.com"], ".")
+    assert [key for key, action in actions.items() if action["state"] == "awaiting_approval"] == [waiting["id"]]
+    egress.reply(project, ["storage.googleapis.com"], "once")
+    answered = {action["id"]: action for action in planning.current(manifest)["actions"]}[waiting["id"]]
+    assert answered["state"] != "awaiting_approval" and "hosts" not in answered
+
+
 def test_the_command_line_prints_the_plan_the_app_and_mcp_show(tmp_path, shared, capsys):
     """`daodan snapshot plan MANIFEST` prints `plan.current` as JSON: one plan for app, MCP and command line."""
     import json

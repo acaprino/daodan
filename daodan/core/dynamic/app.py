@@ -4,7 +4,10 @@
 assistant, `commands`): per module the `start` script, else the `dev` one; the module's `build` first where the start
 reads compiled output (`needs_build`). The command is the declared one, its words (`argv`, `<runner> run <script>` for
 a script), never changed; its environment is the container's, plus the variables of the example `.env` files the
-project publishes and Git tracks in the app's folder (`_examples`): the test values the app asks for. Its runner, the
+project publishes and Git tracks in the app's folder (`_examples`): the test values the app asks for. Beside it run
+what the project's CI gives the tests of the app's folder, as every observer's tests get it (`_beside`,
+`container.beside`): the services the CI starts, the variables its jobs and test steps give, the steps its jobs run
+before those tests (migrations, test data); no other data or credential. Its runner, the
 command's program, has its preparation (`_unprepared`): Node's own programs come with Daodan's Node, pnpm and Yarn
 with corepack as the restores run them (`preparation.RESTORES`' `before`), its shims on the path and the manager the
 folder names fetched while the preparation has the network, and Bun with mise at the version the pre-map states
@@ -24,7 +27,9 @@ registries (Daodan's Node, the project's restore), then the execution with no ne
 address the app prints (never a scan), and stops it (SIGTERM, then SIGKILL after 10 s). What did not happen is a gap
 with its cause and the last lines of the log: `build_failed`, `app_not_started` (it exited first), `not_ready` (its
 port or printed address never answered within `READY` s), `port_not_declared` (no port, nothing printed),
-`app_not_stopped` (a process of its group, or its port, outlived the stop).
+`app_not_stopped` (a process of its group, or its port, outlived the stop); and, as for an observer, a service that did
+not start (`service_unavailable`) and a step of the CI that failed or did not run (`ci_step_failed`,
+`ci_step_not_run`).
 
 With `explore` the driver is `explore.cjs` (plan task 11.3): headless Chromium from Playwright, installed in the
 preparation as `playwright-core` with its browser (`PLAYWRIGHT`, kept for the run: `keep_root`), opens the app,
@@ -91,8 +96,9 @@ def _unprepared(entry: dict, toolchains: list[dict]) -> str | None:
 
 def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = (), pages: list[dict] = (),
          units: list[dict] = ()) -> dict:
-    """`{apps, gaps, roots, toolchains, explore, seeds}` from the pre-map `record`: see the module's docstring. An app
-    is the `starts` entry chosen for a module (`chosen`), with its `build` entry where it needs one; `seeds` are routes
+    """`{apps, gaps, roots, toolchains, explore, seeds, beside}` from the pre-map `record`: see the module's docstring. An
+    app is the `starts` entry chosen for a module (`chosen`), with its `build` entry where it needs one; `beside`, what
+    the CI gives the tests of the apps' folders (`_beside`), its gaps among the plan's; `seeds` are routes
     (paths) the exploration opens besides the app's root; `pages`, the framework rows of the entry points
     (`entry_points`), give each app the pages it opens too; `units`, the physical modules of the stack record
     (`technologies.derive`), the technologies whose surface may not be run yet."""
@@ -130,9 +136,28 @@ def plan(record: dict, explore: bool = False, seeds: tuple[str, ...] = (), pages
     started = {posixpath.normpath(root or ".") for root, entry in starts.items()
                if (entry.get("surface") or WEB) in ACTIVE}
     gaps += _deferred(units, started)
-    return {"apps": apps, "gaps": gaps,
+    beside = _beside(record, apps)
+    return {"apps": apps, "gaps": [*gaps, *beside.pop("gaps")],
             "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
-            "toolchains": toolchains, "explore": explore, "seeds": list(seeds)}
+            "toolchains": toolchains, "explore": explore, "seeds": list(seeds), "beside": beside}
+
+
+def _beside(record: dict, apps: list[dict]) -> dict:
+    """What the project's CI gives the tests of the folder of an app of `apps`, which the app's run gets too, as an
+    observer's (`container.beside`): `services` (`dynamic.services`), `env`, the variables of the jobs that declare
+    them and of the test steps of those tests, and `steps`, those the jobs run before them (`dynamic.ci_steps`, for
+    the pre-map's `tests` of the app's folder that a job of the CI runs: a `ci_steps` fact names them); `paths`, where
+    each service is declared; `gaps`, what of it does not run as declared. Nothing without an app."""
+    from dynamic import _service_paths, ci_steps, services
+    if not apps:
+        return {"services": [], "env": {}, "steps": [], "paths": {}, "gaps": []}
+    folders = {posixpath.normpath(one["root"] or ".") for one in apps}
+    ran = {item.get("tests") for item in record.get("ci_steps") or ()}
+    declared = services(record)
+    stepped = ci_steps(record, [test for test in record.get("tests") or () if test.get("declared_in") in ran
+                                and posixpath.normpath(test.get("root") or ".") in folders])
+    return {"services": declared["services"], "env": {**declared["env"], **stepped["env"]}, "steps": stepped["steps"],
+            "paths": _service_paths(record), "gaps": [*declared["gaps"], *stepped["gaps"]]}
 
 
 def _surfaces() -> dict[str, str]:
@@ -322,11 +347,13 @@ def _examples(project: Path, apps: list[dict]) -> list[tuple[str, str]]:
 def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     """The planned apps in one container run over a copy of `project`, read back from `out_dir`:
     `{state, apps, gaps}`, `state` `ran`, `gap` (no container: `cause`, `remedy`) or `failed` (the preparation or the
-    engine failed: `cause`, `remedy`). A host the proxy refused that the user has yet to answer (the browser's, mise's
-    downloads: `egress`) is the `approval_required` gap, whatever the run's end."""
+    engine failed: `cause`, `remedy`). The run starts within `container.beside` with the plan's `beside`; a host the
+    proxy refused that the user has yet to answer (the browser's, mise's downloads: `egress`) is the
+    `approval_required` gap, whatever the run's end."""
     import container
     import node_preparation
     import shutil
+    from dynamic import APP, _service_gaps, _step_gaps
     project, out_dir = Path(project).resolve(), Path(out_dir)
     shutil.rmtree(out_dir / Path(OUT).name, ignore_errors=True)  # a former run's outputs are not this one's
     for phase in ("prepare", "execute"):
@@ -346,15 +373,18 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
                 **{f"{IN}/{name}": preparation.fetched(url, digest, name)
                    for url, digest, name in (preparation.NODE, *chains["files"])}}
 
-    result = container.run_in_container(
-        project, ["sh", "-c", execute], image=typescript.IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare],
-        outputs=[OUT], env={**preparation.ENV, "TERM": "dumb", "CI": "true"},
-        timeout=len(planned["apps"]) * (BUILD + READY + (EXPLORE if explore else 0) + 300), prepare_timeout=3600,
-        memory=MEMORY, engine=engine, inputs=inputs, keep_root=explore, dotenv_env=dotenv_env, **shared,
-        registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *(javascript.BROWSER_HOSTS if explore else ()),
-                                        *restored["hosts"], *chains["hosts"],
-                                        *(host for _, manager in _managers(planned)
-                                          for host in preparation.RESTORES[manager]["hosts"])])))
+    beside = planned.get("beside") or {}
+    with container.beside(beside.get("services") or [], beside.get("env") or {}, beside.get("steps") or []) as said:
+        result = container.run_in_container(
+            project, ["sh", "-c", execute], image=typescript.IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare],
+            outputs=[OUT], env={**preparation.ENV, "TERM": "dumb", "CI": "true"},
+            timeout=len(planned["apps"]) * (BUILD + READY + (EXPLORE if explore else 0) + 300), prepare_timeout=3600,
+            memory=MEMORY, engine=engine, inputs=inputs, keep_root=explore, dotenv_env=dotenv_env, **shared,
+            registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES,
+                                            *(javascript.BROWSER_HOSTS if explore else ()),
+                                            *restored["hosts"], *chains["hosts"],
+                                            *(host for _, manager in _managers(planned)
+                                              for host in preparation.RESTORES[manager]["hosts"])])))
     if result["state"] == "gap":
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "apps": [], "gaps": unrun}
     prepared = _text(out_dir / "prepare.log")
@@ -366,6 +396,9 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     if result["state"] == "failed":
         return {"state": "failed", "cause": result.get("cause") or "the container run failed",
                 "remedy": f"see prepare.log and execute.log in {out_dir}", "apps": [], "gaps": gaps}
+    if beside.get("services"):  # what the run said of the CI's services and steps, as an observer's run does
+        gaps += _service_gaps(said.services, beside["services"], beside.get("paths") or {}, APP, "the app")
+    gaps += _step_gaps(said.ci_steps, "the app")
     marks = _marks(_text(out_dir / "execute.log"))
     back, apps = out_dir / Path(OUT).name, []
     for number, one in enumerate(planned["apps"]):
@@ -398,7 +431,8 @@ def record(manifest: Path, planned: dict, out_dir: Path) -> int:
 def explore(manifest: Path, project: Path, record_: dict, digest: str, folder: Path, engine=None, pages: list[dict] = ()) -> dict:
     """The exploration as the step runs it: plan from the pre-map `record_` and the framework rows `pages`, explore in the container, keep the pages
     beside `manifest`. `{state, apps, gaps, kept}` as `observe` has them (`cause` and `remedy` where it did not run), and
-    `reused` where the run of the same snapshot (`digest`, the store's), plan and driver is in `folder`: its gaps come
+    `reused` where the run of the same snapshot (`digest`, the store's), plan (with what the CI gives it, `beside`) and
+    driver is in `folder`: its gaps come
     back, nothing runs. Only a run that ended `ran` is kept for reuse, and not one that asked for hosts the user has yet
     to answer (`approval_required`): after the answer, the next analysis runs again."""
     import hashlib
