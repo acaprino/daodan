@@ -18,7 +18,7 @@ HELD = ("daodan/__main__.py", "daodan/core/mcp_server.py", "daodan/core/app.py",
         "daodan/core/premap/dockerfile_stages.go", "daodan/core/dynamic/jvm_record/Agent.java",
         "daodan/data/registry-additions.json", "daodan/data/service-registry.json",
         "daodan/data/package-managers.json", "daodan/assets/app/index.html", "daodan/assets/viewer/index.html",
-        "daodan/references/system-map.md", "daodan/core/composition.py", "daodan/review/catalog.toml",
+        "daodan/references/system-map.md", "daodan/core/composition.py", "daodan/core/project_schema.sql", "daodan/review/catalog.toml",
         "daodan/review/roles/premise-auditor.md", "daodan/review/contracts/reviewer-binding.toml",
         "daodan/review/reviewer-common.md")
 
