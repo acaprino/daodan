@@ -271,6 +271,17 @@ def test_the_preparation_reaches_the_hosts_of_the_manager_corepack_fetches(tmp_p
     assert set(preparation.RESTORES["yarn"]["hosts"]) <= set(played.given["registries"])
 
 
+def test_a_host_the_proxy_refused_and_nobody_answered_is_the_approval_gap_of_a_run_that_went_on(tmp_path):
+    """The browser's or mise's download outside the canonical hosts asks (`egress`): the run goes on without it, and the
+    gap names the host to answer in the app, not only the browser that is missing."""
+    asked = [{"host": "storage.googleapis.com", "port": "443", "declared_in": []}]
+    played = Played({"app-0.json": result()}, {"execute.log": "DAODAN-APP 0 exit 0 4\n"},
+                    {"state": "done", "exit_code": 0, "outputs": [], "asked": asked})
+    seen = observe(tmp_path, played)
+    [gap] = [gap for gap in seen["gaps"] if gap["kind"] == "approval_required"]
+    assert gap["hosts"] == ["storage.googleapis.com"] and "storage.googleapis.com:443" in gap["detail"]
+
+
 def test_a_driver_that_wrote_nothing_is_a_gap_not_a_silence(tmp_path):
     seen = observe(tmp_path, Played({}, {"execute.log": ""}))
     assert [gap["kind"] for gap in seen["gaps"]] == ["app_not_started"]

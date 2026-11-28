@@ -322,7 +322,8 @@ def _examples(project: Path, apps: list[dict]) -> list[tuple[str, str]]:
 def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     """The planned apps in one container run over a copy of `project`, read back from `out_dir`:
     `{state, apps, gaps}`, `state` `ran`, `gap` (no container: `cause`, `remedy`) or `failed` (the preparation or the
-    engine failed: `cause`, `remedy`)."""
+    engine failed: `cause`, `remedy`). A host the proxy refused that the user has yet to answer (the browser's, mise's
+    downloads: `egress`) is the `approval_required` gap, whatever the run's end."""
     import container
     import node_preparation
     import shutil
@@ -359,6 +360,9 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     prepared = _text(out_dir / "prepare.log")
     gaps = [*unrun, *chains["gaps"], *preparation.missing(prepared), *preparation.restore_gaps(prepared),
             *(result.get("gaps") or ())]
+    if result.get("asked") and not any(gap.get("kind") == "approval_required" for gap in gaps):
+        import egress  # a preparation that went on past a refusal: the hosts the user has yet to answer are the cause
+        gaps += egress.approval_gap(result["asked"], "ran")
     if result["state"] == "failed":
         return {"state": "failed", "cause": result.get("cause") or "the container run failed",
                 "remedy": f"see prepare.log and execute.log in {out_dir}", "apps": [], "gaps": gaps}
