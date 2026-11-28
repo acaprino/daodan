@@ -502,7 +502,7 @@ try {
     assert.match(await actions.innerText(), /Chiamate: go[\s\S]*Nel container[\s\S]*Fatta[\s\S]*Chiamate: python/);
     await fold('Come leggere l’avanzamento');
     await says(run, /run demo sul commit 1{12}, sull’intero progetto/);
-    await fold('Eventi e feedback');
+    await fold('Eventi');  // the step's own events
     await says(run, 'Nessun evento ancora.');
     await forward('Continua').waitFor();
     // A run under way: the progress of a step, the cause of one that failed, the percent, the events to read and copy.
@@ -520,18 +520,25 @@ try {
     await says(run, 'Che cosa manca');  // what the step cannot do, a fact of it
     await forward('Continua').and(page.locator(':enabled')).waitFor();  // a step goes on to the next one, under way or not
     const log = run.getByRole('list', { name: 'Ultimi eventi', exact: true }).getByRole('listitem');
-    assert.equal(await log.count(), 5);
-    assert.match(await log.first().innerText(), /Chiamate · avviato[\s\S]*Legge: modules\.json/);  // the newest first
-    assert.match(await log.filter({ hasText: 'Ingressi · nota' }).innerText(), /Errore/);
+    assert.equal(await log.count(), 1);  // the events of the step alone: the journal is its chronicle, the plan says how it is
+    assert.match(await log.first().innerText(), /Chiamate · avviato[\s\S]*Legge: modules\.json/);
     assert.ok(await selectable(log.first().getByText('Legge: modules.json', { exact: true })));
-    await send(Array.from({ length: 5 }, (_, n) => ({ kind: 'log', step: 'link_calls', level: 'info', message: `nota ${n}`, at })));
+    await send(Array.from({ length: 9 }, (_, n) => ({ kind: 'log', step: 'link_calls', level: 'info', message: `nota ${n}`, at })));
     await says(run, '10 eventi');
     assert.equal(await log.count(), 8);
-    assert.match(await log.first().innerText(), /nota 4/);
+    assert.match(await log.first().innerText(), /nota 8/);  // the newest first
     await button(run, 'Altri 2 eventi').click();
     const others = run.getByRole('list', { name: 'Altri 2 eventi', exact: true }).getByRole('listitem');
     await others.first().waitFor();
-    assert.deepEqual((await others.allInnerTexts()).map(text => linesOf(text)[0]), ['Tecnologie · completato', 'Tecnologie · avviato']);
+    assert.deepEqual((await others.allInnerTexts()).map(text => linesOf(text)[0]), ['Chiamate · nota', 'Chiamate · avviato']);
+    // Each step has its own: what was noted of the entry points is under theirs, with the title of the step.
+    await stage('Punti di ingresso').click();
+    const entries = stepPanel('Punti di ingresso');
+    await entries.waitFor();
+    await fold('Eventi');
+    assert.match(await entries.getByRole('list', { name: 'Ultimi eventi', exact: true }).getByRole('listitem').filter({ hasText: 'Punti di ingresso · nota' }).innerText(), /Errore/);
+    await stage('Chiamate').click();
+    await run.waitFor();
     // The run is over with a step that failed; a pass that could not go says why, and one that failed is tried again.
     await send([{ kind: 'step.finished', step: 'link_calls', message: '', at }]);
     await serve({ run: { pass: { state: 'unavailable', reason: 'nessun container' } } });

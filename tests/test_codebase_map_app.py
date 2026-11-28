@@ -53,6 +53,12 @@ def _modelled(plan: dict) -> bool:
     return {step["id"]: step["state"] for step in plan["steps"]}["find_modules"] in ("done", "skipped")
 
 
+def _scanned(plan: dict) -> bool:
+    """The steps of the plan up to `find_entry_points` are done, or up to date."""
+    states = {step["id"]: step["state"] for step in plan["steps"]}
+    return all(states[step] in ("done", "skipped") for step in ("recognize_stack", "find_modules", "find_entry_points"))
+
+
 def git(folder: Path, *arguments: str) -> str:
     return subprocess.run(["git", *arguments], cwd=folder, env={**os.environ, **CLEAN}, check=True,
                           capture_output=True, text=True).stdout.strip()
@@ -987,10 +993,11 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         status, state = request(port, "/api/app/select", {"url": found["url"], "branch": "main"})
         assert status == 200 and state["job"]["state"] in ("preparing", "ready")
         deadline = time.monotonic() + 120
-        # Selection prepares the run; the detached pass then attempts the scan's container commands.
+        # Selection prepares the run; the detached pass then attempts the scan's container commands, and runs the steps
+        # again: while it runs, a step up to the entry points may be under way in the plan.
         while time.monotonic() < deadline and (state["job"]["state"] == "preparing" or
-                (state["job"]["state"] == "ready" and _modelling(state["run"]["plan"])
-                 and state["run"]["pass"]["state"] == "running")):
+                (state["job"]["state"] == "ready" and state["run"]["pass"]["state"] == "running"
+                 and (_modelling(state["run"]["plan"]) or not _scanned(state["run"]["plan"])))):
             time.sleep(0.2)
             state = request(port, "/api/app/state")[1]
         assert state["job"] == {"state": "ready", "step": None, "detail": ""}

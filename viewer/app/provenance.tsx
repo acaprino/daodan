@@ -6,7 +6,7 @@ import type { Detail } from './frame.tsx';
 import { levelLabel } from './graph.ts';
 import { short } from './repository.ts';
 import { planGaps } from './plan.ts';
-import { passWord } from './run.ts';
+import { passWord } from './notices.ts';
 import { ctx, slug } from './snapshot.ts';
 import { useModel } from './use-model.ts';
 

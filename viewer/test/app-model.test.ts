@@ -551,7 +551,7 @@ test('from another screen a node is shown with what is next to it, and the whole
   assert.deepEqual([keptNow().graphKind, keptNow().graphRoot], ['all', 'b']);
 });
 
-test('a graph that fails is said and asked again; new links, and a step that ends, are a new graph', async () => {
+test('a graph that fails is said and asked again; new links, and a step of the plan that ends, are a new graph', async () => {
   let answer: unknown = fails(500, 'grafo non letto');
   const { model, sources, now, asked } = setup({ '/api/app/graph': () => answer }, { ...DEFAULTS, screen: 'graph', runId: 'r1' });
   const times = () => asked('/api/app/graph').length;
@@ -569,9 +569,14 @@ test('a graph that fails is said and asked again; new links, and a step that end
   sources[0].send('app', { ...ready, links: { state: 'done' } });
   await turn();
   assert.equal(times(), 3);
-  sources[0].send('update', events('r1', [{ kind: 'step.finished', step: 'assemble_graph' }]));
+  sources[0].send('update', events('r1', [{ kind: 'step.finished', step: 'assemble_graph' }]));  // an event is the chronicle alone
   await turn();
-  sources[0].send('update', events('r1', [{ kind: 'progress', step: 'assemble_graph' }]));
+  assert.equal(times(), 3);
+  const assembling = { ...DONE, steps: DONE.steps.map((step: { id: string }) => (step.id === 'assemble_graph' ? { ...step, state: 'running' } : step)) };
+  sources[0].send('app', { ...ready, links: { state: 'done' }, run: { ...ready.run, plan: assembling } });
+  await turn();
+  assert.equal(times(), 3);
+  sources[0].send('app', { ...ready, links: { state: 'done' } });  // the plan says the step is done
   await turn();
   assert.equal(times(), 4);
 });

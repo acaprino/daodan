@@ -1,4 +1,4 @@
-// What the page draws from: one object, a new one at each change. `repository.ts`, `plan.ts`, `path.ts`, `run.ts` and `graph.ts` read it.
+// What the page draws from: one object, a new one at each change. `repository.ts`, `plan.ts`, `path.ts`, `notices.ts` and `graph.ts` read it.
 import type { Reply } from './egress.ts';
 import type { Graph } from './graph.ts';
 import type { AppState, Checked, Context, Engine, Pass, RunEvent } from './server.ts';

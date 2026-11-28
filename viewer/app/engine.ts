@@ -1,6 +1,6 @@
 // The engine and the questions, in words: the engines to choose from, the key, how a question goes, the tools its answer took.
-import { askReason, isAsking } from './run.ts';
 import type { AppState, Engine } from './server.ts';
+import { ctx } from './snapshot.ts';
 import type { Snapshot } from './snapshot.ts';
 
 export const NO_ENGINE = 'none';  // the choice of no engine: a select takes an empty value as no choice at all
@@ -20,6 +20,11 @@ const ASKED: Record<string, string> = {
 };
 export const askedWord = (state: string) => ASKED[state] ?? state;
 export const askFailed = (state: string | undefined) => state !== undefined && state !== 'running' && state !== 'done';
+
+// Why a question cannot be asked now; empty when it can.
+export const askReason = (s: Pick<Snapshot, 'server'>) =>
+  (!ctx(s) ? 'Seleziona prima una repository.' : s.server?.engine?.engine ? '' : 'Scegli e salva prima un motore.');
+export const isAsking = (s: Pick<Snapshot, 'server' | 'asked'>) => s.asked?.state === 'running' || s.server?.asked?.state === 'running';
 
 // What is said beside the button: that the engine is at work, or why it cannot be asked.
 export const askNote = (s: Pick<Snapshot, 'server' | 'asked'>) => (isAsking(s) ? 'Il motore sta rispondendo.' : askReason(s));

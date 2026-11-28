@@ -5,7 +5,7 @@ import type { BadgeTone } from '@acaprino/sigrid/primitives';
 import { STEPS } from '../pipeline/data.ts';
 import { number, plural } from '../src/words.ts';
 import { isPreparing, preparation } from './repository.ts';
-import { passAlert, passWord } from './run.ts';
+import { passAlert, passWord } from './notices.ts';
 import type { Plan, PlanAction, PlanStep, Policy } from './server.ts';
 import { complete, ctx, pass } from './snapshot.ts';
 import type { Snapshot } from './snapshot.ts';

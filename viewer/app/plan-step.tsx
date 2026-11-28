@@ -1,22 +1,65 @@
 // A step of the plan on the screen: how it is, what it does, its actions with their state and where they run, the one under way, what
-// it cannot do, and what it wrote. Which result is under which step is a table by id; the order and the presence of the steps are
-// the plan's.
+// it cannot do, what it wrote, and its events. Which result is under which step is a table by id; the order and the presence of the
+// steps are the plan's.
 import type { ComponentType } from 'react';
-import { Badge, Button, Column, Icon, Progress, Section, Text } from '@acaprino/sigrid/primitives';
+import { Badge, Button, Cluster, Column, Icon, Progress, Section, Text } from '@acaprino/sigrid/primitives';
 import { DescriptionList, ItemList, ItemRow, Note } from '@acaprino/sigrid/components';
+import { Fold } from '../src/listed.tsx';
+import { Activity } from './activity.tsx';
 import { useFrame } from './frame.tsx';
+import { linksNote, passAlert } from './notices.ts';
 import { actionsOf, currentAction, planSteps } from './plan.ts';
 import type { ActionRow } from './plan.ts';
 import { FilesResult, ModulesResult, TechnologiesResult } from './premap-screen.tsx';
-import { PassResult } from './run-screen.tsx';
+import { short } from './repository.ts';
+import { ContextFold } from './repository-screen.tsx';
+import { ctx } from './snapshot.ts';
+import { MapNote } from './states.tsx';
 import { Step } from './step.tsx';
 import { SynthesisResult } from './synthesis-screen.tsx';
 import { model, useModel } from './use-model.ts';
 
+// Why the links cannot be looked for now is in the note's text.
+const WHY = 'links-why';
+// The buttons are beside the note, not in it: a note whose tone changes is drawn anew, and would take the focus with it.
+function Links() {
+  const s = useModel();
+  const { go } = useFrame();
+  const { tone, title, message, running, reason } = linksNote(s);
+  return <Column>
+    <Note tone={tone} title={title}><Text pre id={WHY} data-selectable="">{message}</Text></Note>
+    <Cluster>
+      <Button variant="outline" loading={running} disabled={!running && reason !== ''} aria-describedby={WHY} onClick={() => { model.findLinks(); }}>
+        <Icon name="play" />Trova i legami</Button>
+      {reason && <Button variant="ghost" onClick={() => go(model.chooseEngine)}><Icon name="ai" />Scegli il motore</Button>}
+    </Cluster>
+  </Column>;
+}
+
+// Under the step of the calls: why the pass that refines their graph did not go, with «Riprova» where it failed (`app.retry`, on
+// `run.pass.state === 'failed'`), the map of the system and the links between the modules.
+function CallsResult() {
+  const s = useModel();
+  const c = ctx(s), alert = passAlert(s);
+  return c && <>
+    {alert && <Note tone={alert.tone} title={alert.title}
+      actions={alert.retry && <Button variant="outline" onClick={() => { model.retryPass(); }}><Icon name="refresh" />Riprova</Button>}>
+      <Text pre data-selectable="">{alert.message}</Text></Note>}
+    <MapNote />
+    <Links />
+    <Column gap="xs">
+      <ContextFold />
+      <Fold label="Come leggere l’avanzamento">
+        <Text as="p" variant="soft" data-selectable="">Avanzamento ed eventi sono quelli del run {c.run_id} sul commit {short(c.commit)}, sull’intero progetto. Il grafo cresce solo quando la pipeline scrive un artefatto.</Text>
+      </Fold>
+    </Column>
+  </>;
+}
+
 // What a step wrote, under it; a step with no result of its own (`read_code`, `find_entry_points`, `run_and_observe`) shows its actions:
 // the rows of the entry points are in the paths of `assemble_graph`, which ask for the links.
 const RESULT: Record<string, ComponentType> = {
-  list_files: FilesResult, recognize_stack: TechnologiesResult, find_modules: ModulesResult, link_calls: PassResult, assemble_graph: SynthesisResult,
+  list_files: FilesResult, recognize_stack: TechnologiesResult, find_modules: ModulesResult, link_calls: CallsResult, assemble_graph: SynthesisResult,
 };
 
 const TONE = { error: 'danger', running: 'info', done: 'success', skipped: 'success', todo: undefined } as const;
@@ -66,5 +109,6 @@ export function PlanStepScreen() {
     {missing.length > 0 && <Note tone="warning" announce={false} title="Che cosa manca"
       items={missing.map(action => `${action.title}: ${action.note}`)} />}
     {Result && <Result />}
+    <Activity events={s.events.filter(event => !event.run && event.step === id)} />
   </Step>;
 }

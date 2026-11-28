@@ -8,7 +8,7 @@ import { useFrame } from './frame.tsx';
 import { buildCounts, levelLabel, levelsName } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { groupDetail, groupOf } from './group-details.tsx';
-import { buildStatus } from './run.ts';
+import { buildStatus } from './notices.ts';
 import { sceneOf } from './scene.ts';
 import { GraphFailed, NoGroups } from './states.tsx';
 import { model, useModel } from './use-model.ts';

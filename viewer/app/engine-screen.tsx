@@ -3,9 +3,8 @@ import { Badge, Button, Column, Grid, Icon, Progress, Section, Spacer, Text, Tex
 import { DescriptionList, Empty, FormField } from '@acaprino/sigrid/components';
 import { Failed, Loading } from '../src/states.tsx';
 import { EngineForm } from './engine-form.tsx';
-import { askedWord, askFailed, askNote, lastQuestion, mcpFacts, toolUse } from './engine.ts';
+import { askedWord, askFailed, askNote, askReason, isAsking, lastQuestion, mcpFacts, toolUse } from './engine.ts';
 import { ScreenPanel, useFrame } from './frame.tsx';
-import { askReason, isAsking } from './run.ts';
 import { ctx, slug } from './snapshot.ts';
 import { model, useModel } from './use-model.ts';
 

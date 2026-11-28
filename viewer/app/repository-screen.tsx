@@ -3,6 +3,7 @@ import { Button, Cluster, Column, Icon, Input, Progress, Section, Select, Text }
 import { DescriptionList, FormField, Note } from '@acaprino/sigrid/components';
 import { Fold } from '../src/listed.tsx';
 import { Failed } from '../src/states.tsx';
+import { Activity } from './activity.tsx';
 import { planOf, policyFacts } from './plan.ts';
 import { accessFeedback, accessible, isPreparing, preparation, repositoryContext, repositorySlug, RESTART, sameChoice, short } from './repository.ts';
 import { ctx, slug } from './snapshot.ts';
@@ -73,6 +74,7 @@ export function RepositoryScreen() {
     {c && <Policy />}
     <Column gap="xs">
       <ContextFold />
+      {c && <Activity events={s.events.filter(event => event.run)} />}
       <Fold label="Accesso GitHub" summary="Non connesso">
         <Text as="p" variant="soft">Login non disponibile. In questa versione Daodan legge solo repository pubbliche, senza account. Un accesso negato non dimostra che la repository sia privata: può non esistere o mancare un permesso.</Text>
       </Fold>

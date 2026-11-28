@@ -6,11 +6,11 @@ import { markAddress } from '../src/marks.ts';
 import { FAILURE } from '../src/words.ts';
 import { groupKey, pendingGroup, repliedWords, replyBody } from './egress.ts';
 import type { Reply } from './egress.ts';
+import { isAsking } from './engine.ts';
 import { endName, graphKey, openWithout, rootOf, shownOpen } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { firstStep, onPath, REPOSITORY, SHOWS_PREMAP } from './path.ts';
 import { accessible, preferredBranch, repositorySlug, urlError } from './repository.ts';
-import { isAsking } from './run.ts';
 import { createServer } from './server.ts';
 import type { AppState, Checked, Cursors, Engine, EventsFrame, Host, RunEvent } from './server.ts';
 import { ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
@@ -77,6 +77,10 @@ export function createModel(host: Host) {
     const before = now.server, c = ctx({ server: found });
     const linked = before !== null && before.links?.state !== 'done' && found.links?.state === 'done';  // new links: a new graph
     const mappingChanged = before !== null && found.mapped?.state !== 'running' && JSON.stringify(before.mapped) !== JSON.stringify(found.mapped);
+    // A step of the plan of the same run is done, or up to date, now: what it wrote is read again.
+    const was = new Map((before?.run?.plan?.steps ?? []).map(step => [step.id, step.state] as const));
+    const grown = before !== null && c !== null && ctx({ server: before })?.run_id === c.run_id && (found.run?.plan?.steps ?? []).some(step =>
+      (step.state === 'done' || step.state === 'skipped') && was.get(step.id) !== step.state);
     const patch: { -readonly [K in keyof Snapshot]?: Snapshot[K] } = { server: found, serverError: '' };
     let kept = now.kept, ready = false;
     if (now.engineDraft === null) patch.engineDraft = { ...found.engine, api_key: '' };
@@ -94,11 +98,11 @@ export function createModel(host: Host) {
         if (now.checked && first) kept = { ...kept, analysisStage: first };  // not while another address is being written
       }
     }
-    if (linked || mappingChanged || now.pathPage?.run !== c?.run_id) patch.pathPage = null;
+    if (linked || grown || mappingChanged || now.pathPage?.run !== c?.run_id) patch.pathPage = null;
     if (kept !== now.kept) patch.kept = kept;
     set(patch);
     if (ready && c) say(`Contesto pronto: ${slug(c)} · ${c.branch}`);
-    if (linked && c) loadGraph();
+    if (c && (linked || (grown && drawsGraph()))) loadGraph();
     loadViews();
     settle();
   }
@@ -108,12 +112,8 @@ export function createModel(host: Host) {
     const past: readonly RunEvent[] = eventsRun === run.run_id ? now.events : [];
     eventsRun = run.run_id;
     cursors = { after: run.next_cursor, pipeline_after: run.pipeline.next_cursor, pulse_after: found.pulse.next_cursor };
-    const grown = run.pipeline.events.some(e => e.kind === 'step.finished' || e.kind === 'graph.ready') && ctx(now)?.run_id === run.run_id;
-    set({ events: [...past, ...run.events.map(e => ({ ...e, run: true })), ...run.pipeline.events], ...(grown && { pathPage: null }) });
-    if (grown) {
-      loadViews();
-      if (drawsGraph()) loadGraph();
-    }
+    // The events are the run's chronicle: the views are read again when the plan says a step is done, not on an event.
+    set({ events: [...past, ...run.events.map(e => ({ ...e, run: true })), ...run.pipeline.events] });
     settle();
   }
 
