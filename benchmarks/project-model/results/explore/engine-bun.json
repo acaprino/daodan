@@ -1,0 +1,148 @@
+{
+ "fixture": "benchmarks/project-model/fixtures/js-bun",
+ "engine": "docker",
+ "plan": {
+  "apps": [
+   {
+    "root": ".",
+    "runner": "bun",
+    "argv": [
+     "bun",
+     "run",
+     "start"
+    ],
+    "surface": "web",
+    "declared_in": "package.json#scripts.start"
+   }
+  ],
+  "toolchains": [
+   {
+    "declared_in": ".bun-version",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "bun",
+    "version": "1.2.2"
+   }
+  ],
+  "gaps": [],
+  "premap_gaps": []
+ },
+ "state": "ran",
+ "apps": [
+  {
+   "root": ".",
+   "mode": "start",
+   "declared_in": "package.json#scripts.start",
+   "state": "not_started"
+  }
+ ],
+ "gaps": [
+  {
+   "kind": "app_not_started",
+   "path": "package.json#scripts.start",
+   "detail": "bun run start in . exited with code 0 before its port answered: $ bun run src/index.ts | { | name: \"1.2.2\", | }"
+  }
+ ],
+ "cause": null,
+ "remedy": null,
+ "rounds": [
+  {
+   "asked": [
+    {
+     "address": "140.82.112.3",
+     "declared_in": [],
+     "host": "github.com",
+     "network": false,
+     "port": "443",
+     "tool": ""
+    },
+    {
+     "address": "142.251.179.207",
+     "declared_in": [],
+     "host": "storage.googleapis.com",
+     "network": false,
+     "port": "443",
+     "tool": ""
+    }
+   ],
+   "apps": [
+    {
+     "root": ".",
+     "mode": "start",
+     "declared_in": "package.json#scripts.start",
+     "state": "not_started"
+    }
+   ],
+   "gaps": [
+    {
+     "kind": "toolchain_unavailable",
+     "tool": "bun",
+     "version": "1.2.2",
+     "detail": "bun 1.2.2: the preparation could not install it (its output is in the run's log)"
+    },
+    {
+     "kind": "approval_required",
+     "hosts": [
+      "github.com",
+      "storage.googleapis.com"
+     ],
+     "detail": "the step ran without hosts the user has not approved: github.com:443, storage.googleapis.com:443; answer in the app, then analyze again"
+    },
+    {
+     "kind": "app_not_started",
+     "path": "package.json#scripts.start",
+     "detail": "bun run start in . exited with code 127 before its port answered: sh: 1: bun: not found"
+    }
+   ]
+  },
+  {
+   "asked": [
+    {
+     "address": "185.199.109.133",
+     "declared_in": [],
+     "host": "release-assets.githubusercontent.com",
+     "network": false,
+     "port": "443",
+     "tool": ""
+    }
+   ],
+   "apps": [
+    {
+     "root": ".",
+     "mode": "start",
+     "declared_in": "package.json#scripts.start",
+     "state": "not_started"
+    }
+   ],
+   "gaps": [
+    {
+     "kind": "toolchain_unavailable",
+     "tool": "bun",
+     "version": "1.2.2",
+     "detail": "bun 1.2.2: the preparation could not install it (its output is in the run's log)"
+    },
+    {
+     "kind": "approval_required",
+     "hosts": [
+      "release-assets.githubusercontent.com"
+     ],
+     "detail": "the step ran without hosts the user has not approved: release-assets.githubusercontent.com:443; answer in the app, then analyze again"
+    },
+    {
+     "kind": "app_not_started",
+     "path": "package.json#scripts.start",
+     "detail": "bun run start in . exited with code 127 before its port answered: sh: 1: bun: not found"
+    }
+   ]
+  }
+ ],
+ "asked": [],
+ "totals": [],
+ "controls": [],
+ "logs": {
+  "prepare.log": "f 120 MiB\nChrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /daodan/state/home/.cache/ms-playwright/chromium_headless_shell-1248\nDownloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip\n|                                                                                |   0% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                                        |  10% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                                |  20% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                        |  30% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                |  40% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                        |  50% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                |  60% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                        |  70% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                |  80% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0        |  90% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0| 100% of 2.2 MiB\nFFmpeg (playwright ffmpeg v1013) downloaded to /daodan/state/home/.cache/ms-playwright/ffmpeg-1013\n",
+  "execute.log": "DAODAN-APP 0 exit 0 1\n"
+ },
+ "seconds": 102.0
+}

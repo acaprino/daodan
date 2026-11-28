@@ -1,0 +1,118 @@
+{
+ "fixture": "benchmarks/project-model/fixtures/js-vue-pnpm",
+ "engine": "docker",
+ "plan": {
+  "apps": [
+   {
+    "root": ".",
+    "runner": "pnpm",
+    "argv": [
+     "pnpm",
+     "run",
+     "dev"
+    ],
+    "surface": "web",
+    "declared_in": "package.json#scripts.dev"
+   }
+  ],
+  "toolchains": [],
+  "gaps": [],
+  "premap_gaps": []
+ },
+ "state": "ran",
+ "apps": [
+  {
+   "root": ".",
+   "mode": "dev",
+   "declared_in": "package.json#scripts.dev",
+   "state": "ready",
+   "address": "http://localhost:5173/",
+   "port": 5173,
+   "seconds": 5,
+   "stopped": "term",
+   "explored": {
+    "pages": 1,
+    "controls": 1,
+    "pressed": 1,
+    "skipped": 0,
+    "failed": 0
+   }
+  }
+ ],
+ "gaps": [],
+ "cause": null,
+ "remedy": null,
+ "rounds": [
+  {
+   "asked": [
+    {
+     "address": "34.144.171.27",
+     "declared_in": [],
+     "host": "storage.googleapis.com",
+     "network": false,
+     "port": "443",
+     "tool": ""
+    }
+   ],
+   "apps": [
+    {
+     "root": ".",
+     "mode": "dev",
+     "declared_in": "package.json#scripts.dev",
+     "state": "ready",
+     "address": "http://localhost:5173/",
+     "port": 5173,
+     "seconds": 0,
+     "stopped": "term"
+    }
+   ],
+   "gaps": [
+    {
+     "kind": "approval_required",
+     "hosts": [
+      "storage.googleapis.com"
+     ],
+     "detail": "the step ran without hosts the user has not approved: storage.googleapis.com:443; answer in the app, then analyze again"
+    },
+    {
+     "kind": "explore_failed",
+     "path": "package.json#scripts.dev",
+     "detail": "pnpm run dev in . is up and the exploration wrote nothing: browserType.launch: Executable doesn't exist at /daodan/state/home/.cache/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551 Looks like Playwright was just installed or updated.       \u2551\n\u2551 Please run the following command to download new browsers: \u2551\n\u2551                                                            \u2551\n\u2551     npx playwright install                                 \u2551\n\u2551                                                            \u2551\n\u2551 <3 Playwright Team                                         \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n    at explore (/daodan/state/in/explore.cjs:191:34)\n    at /daodan/state/in/explore.cjs:370:51\n    at Object.run (/daodan/stat"
+    }
+   ]
+  }
+ ],
+ "asked": [],
+ "totals": [
+  {
+   "pages": 1,
+   "controls": 1,
+   "pressed": 1,
+   "skipped": 0,
+   "failed": 0
+  }
+ ],
+ "controls": [
+  {
+   "name": "1",
+   "state": "pressed",
+   "calls": [
+    [
+     "/src/components/Counter.vue",
+     5,
+     "_sfc_render"
+    ],
+    [
+     "/src/components/Counter.vue",
+     9,
+     "_createElementBlock.onClick._cache.<computed>._cache.<computed>"
+    ]
+   ]
+  }
+ ],
+ "logs": {
+  "prepare.log": "56.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /daodan/state/home/.cache/ms-playwright/chromium_headless_shell-1248\nDownloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip\n|                                                                                |   0% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                                        |  10% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                                |  20% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                        |  30% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                                |  40% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                        |  50% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                                |  60% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                        |  70% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0                |  80% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0        |  90% of 2.2 MiB\n|\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0\u25a0| 100% of 2.2 MiB\nFFmpeg (playwright ffmpeg v1013) downloaded to /daodan/state/home/.cache/ms-playwright/ffmpeg-1013\n\nadded 1 package in 183ms\n9.12.2\n",
+  "execute.log": "DAODAN-APP 0 exit 0 5\n"
+ },
+ "seconds": 80.7
+}

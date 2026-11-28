@@ -1,0 +1,31 @@
+{
+ "fixture": "benchmarks/project-model/fixtures/js-yarn-berry",
+ "engine": "docker",
+ "plan": {
+  "apps": [],
+  "toolchains": [],
+  "gaps": [
+   {
+    "kind": "no_start_command",
+    "detail": "no package.json of the project declares a start or dev script that starts an app: nothing is explored"
+   }
+  ],
+  "premap_gaps": []
+ },
+ "state": "ran",
+ "apps": [],
+ "gaps": [
+  {
+   "kind": "no_start_command",
+   "detail": "no package.json of the project declares a start or dev script that starts an app: nothing is explored"
+  }
+ ],
+ "cause": null,
+ "remedy": null,
+ "rounds": [],
+ "asked": [],
+ "totals": [],
+ "controls": [],
+ "logs": {},
+ "seconds": 29.0
+}
