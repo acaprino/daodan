@@ -1067,7 +1067,7 @@ def approved(states, project: str) -> tuple[dict[str, list[str]], list[dict]]:
     (`clang_run.hosts`: git's scp form among them) is not run again, the URL in its cause."""
     import egress
     from indexers import clang_run
-    state, answers = egress.load(), egress.session(project)
+    state, answers = egress.load(project), egress.session(project)
     again, ask, deny = {}, [], []
     for unit in states:
         if unit.get("kind") != clang_run.OUTSIDE:

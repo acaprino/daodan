@@ -271,7 +271,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
             result standing) or `host_denied` (`egress.collect`)."""
             name = str(project.resolve())
             found = {n: named(answers[n]) for n in range(1, len(answers))}
-            state, answered = egress.load(), egress.session(name)
+            state, answered = egress.load(name), egress.session(name)
             closed = {n for n in found if ran[n].get("network", "none") == "none"}
             opened = tuple(dict.fromkeys(host for n in sorted(closed) for host in found[n]
                                          if egress.decide(host, name, state, answered) == "allow"))

@@ -1,15 +1,21 @@
 """Which hosts a container run may reach: canonical, approved by the user, blocked, or still to ask.
 
 Without asking, a run reaches only the canonical hosts (`container.REGISTRIES`, from `package-managers.json`) and
-the hosts the user approved. A host in neither list asks; a host the user blocked is refused with no question.
-The user's answers live in `egress.json` in the per-user shared folder (`embedding_worker.shared_cache_dir`), never in
-the project: `{"whitelist": {<project>: [<host>]}, "blacklist": [<host>]}`. A project is named by the caller, one
-string for one project. The four answers: "always" (this project), "once" (this analysis: the `session`), "no"
-(this analysis) and "block" (every project, always).
+the hosts the user approved for the project. A host in neither list asks; a host the user blocked for the project is
+refused with no question. A project is named by the caller, one string for one project (`project_of`). The four
+answers: "always" and "block" (this project, kept), "once" and "no" (this analysis: the `session`).
+
+The project's lists (`load`) are in its project file, the `.daodan` the app keeps beside a checkout of its own
+(`repository.project_path`), never in the analysed project: one row a host with its answer, its author and its instant
+(`project_file.answers`), written by the app's answer alone (`reply`). Only the rows of the person who runs Daodan
+(`person`) apply; those of a file received from someone wait until that person confirms them in the app
+(`project_file.adopt`), and MCP and the command line apply none of them. A folder that is no checkout of the app has no
+project file: no lists, and "always" and "block" are refused for it.
 
 The requests still to answer and the answers that last for an analysis are shared between processes, which differ:
-the child that is refused, the app that answers, the analysis that reads the answer. They are two files beside
-`egress.json` (`PENDING_FILE`, `SESSION_FILE`), written whole with a temporary file and `os.replace`, under an OS lock
+the child that is refused, the app that answers, the analysis that reads the answer. They are two files in the
+per-user shared folder (`embedding_worker.shared_cache_dir`; `PENDING_FILE`, `SESSION_FILE`), written whole with a
+temporary file and `os.replace`, under an OS lock
 (`locked`); a missing or corrupt file is an empty one. `begin` empties a project's requests when its analysis starts and
 `end` its answers when it ends (`analysis`), so "once" lasts for the analysis the answer is used by. `PENDING` is this
 process's copy of the requests; the answers are read from their file each time, so one that an analysis ended
@@ -21,10 +27,12 @@ import argparse
 import concurrent.futures
 import contextlib
 import contextvars
+import getpass
 import ipaddress
 import json
 import os
 import socket
+import sqlite3
 import sys
 import tempfile
 import time
@@ -37,7 +45,6 @@ if str(SCRIPT_DIR) not in sys.path:
 from embedding_worker import shared_cache_dir  # noqa: E402
 from run_store import _try_lock  # noqa: E402  the OS byte-range lock the store takes for its registry
 
-FILE = "egress.json"
 PENDING_FILE, SESSION_FILE, LOCK = "egress-pending.json", "egress-session.json", "egress.lock"
 LOCK_SECONDS = 5  # past it the file is read and written without the lock: a stuck holder must not stop an analysis
 PENDING: dict[str, dict] = {}  # project -> its requests still to answer, by (host, port): the analysis's register
@@ -46,6 +53,7 @@ MARK = "@@daodan-refused "  # the line `container.PROXY_SCRIPT` prints for each 
 LOOKUPS = 16  # the names one analysis looks up at most, counted in its row of `SESSION_FILE` ("looked")
 LOOKUP_SECONDS = 5  # how long the names of one run's refusals are looked up, all together
 REPLIES = ("always", "once", "no", "block")
+EMPTY = {"always": [], "block": []}  # the lists of a project with none (`load`): "always" and "block" are kept
 ASKER = contextvars.ContextVar("egress_asker", default="")  # the tool whose runs ask now (`asking`); "" none named
 PROJECT = contextvars.ContextVar("egress_project", default="")  # the analysed project's name (`within`); "" none
 
@@ -178,11 +186,12 @@ def session(project: str) -> dict:
 
 
 def respond(host: str, project: str, reply: str) -> None:
-    """The user's `reply` about `host`, kept: "always" and "block" in `egress.json`, "once" and "no" in the analysis's
-    answers, shared; the request is no longer pending. Called by whoever answers, in any process."""
+    """The user's `reply` about `host`, kept: "always" and "block" in the project file (`keep`), "once" and "no" in
+    the analysis's answers, shared; the request is no longer pending. Called by whoever answers, in any process."""
     with locked():
-        state, answers = answer(load(strict=True), session(project), host, project, reply)
-        save(state)
+        _, answers = answer(EMPTY, session(project), host, project, reply)
+        if reply in ("always", "block"):
+            keep(project, host, reply)
         shared = _read(SESSION_FILE)
         shared[project] = {**_row(shared, project), **answers}
         _write(SESSION_FILE, shared)
@@ -209,65 +218,87 @@ def end(project: str) -> None:
         _write(SESSION_FILE, shared)
 
 
-def load(strict: bool = False) -> dict:
-    """The saved answers; an absent or unreadable file is an empty state, and only well-formed entries are kept. With
-    `strict`, for whoever saves what it loaded, a file that is there and cannot be read is a ValueError: an answer is
-    never saved over the blacklist and whitelists it could not read."""
-    path = shared_cache_dir() / FILE
+def person() -> str:
+    """Who runs Daodan, the author of what the app writes in a project file (`getpass.getuser`); "" when the system
+    names nobody, whose lists are then none."""
     try:
-        held = json.loads(path.read_text(encoding="utf-8"))
-        whitelist, blacklist = held["whitelist"], held["blacklist"]
-        if not isinstance(whitelist, dict) or not isinstance(blacklist, list):
-            raise TypeError("whitelist is no object or blacklist no list")
-    except FileNotFoundError:
-        return {"whitelist": {}, "blacklist": []}
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        if strict:
-            raise ValueError(f"{path} cannot be read ({type(error).__name__}: {error}): no answer is saved over it; "
-                             "repair or remove the file, then answer again") from error
-        return {"whitelist": {}, "blacklist": []}
-    return {"whitelist": {project: sorted({h for h in hosts if isinstance(h, str)})
-                          for project, hosts in whitelist.items() if isinstance(hosts, list)},
-            "blacklist": sorted({h for h in blacklist if isinstance(h, str)})}
+        return getpass.getuser()
+    except (OSError, KeyError):
+        return ""
 
 
-def save(state: dict) -> None:
-    _replace(shared_cache_dir() / FILE, state)
+def project_file_of(project: str | None) -> Path | None:
+    """The project file of the project, where its lists are: the `.daodan` of the app's checkout (`repository`), which
+    may not exist yet; None for any other folder."""
+    import repository
+    if not project or Path(project).name != repository.CHECKOUT:
+        return None
+    return repository.project_path(project)
+
+
+def load(project: str | None) -> dict:
+    """The project's lists, `{"always": [<host>], "block": [<host>]}`: the rows of its project file that are `person`'s
+    (`project_file.answers`). A project with no file, or one that cannot be read, has none: a run asks again."""
+    import project_file
+    path = project_file_of(project)
+    if path is None or not path.exists():
+        return {key: [] for key in EMPTY}
+    try:
+        with contextlib.closing(project_file.open_project(path)) as db:
+            own, _ = project_file.answers(db, person())
+    except (sqlite3.Error, ValueError, OSError):  # `ProjectError` is a ValueError
+        return {key: [] for key in EMPTY}
+    return {key: [row["host"] for row in own if row["answer"] == key] for key in EMPTY}
+
+
+def keep(project: str, host: str, reply: str) -> None:
+    """`person`'s `reply` ("always" or "block") about `host`, in the project file (`project_file.keep_answer`): a file
+    with the schema alone where there is none yet, which the first analysis fills (`project_file.create`)."""
+    import project_file
+    path = project_file_of(project)
+    if path is None:
+        raise ValueError(f"{project} is no checkout of the app, so it has no project file to keep the answer in: "
+                         "answer for this analysis")
+    if not path.exists():
+        with contextlib.suppress(project_file.ProjectError):  # another writer made it meanwhile
+            project_file.create(path)
+    with contextlib.closing(project_file.open_project(path, write=True)) as db:
+        project_file.keep_answer(db, host, reply, person())
 
 
 def decide(host: str, project: str, state: dict, session: dict | None = None) -> str:
-    """"deny" for a blocked host or one refused in this analysis, "allow" for a canonical, an approved or a once-allowed
-    host, "ask" for any other."""
+    """"deny" for a host the project blocked or one refused in this analysis, "allow" for a canonical, an approved or
+    a once-allowed host, "ask" for any other. `state` is the project's lists (`load(project)`)."""
     from container import REGISTRIES  # here, not above: `container` will use this module to filter its proxy's hosts
     host, session = host.lower(), session or new_session()
     bare = host.removeprefix("http://")  # an apt archive is approved as its host is
-    if bare in state["blacklist"] or bare in session["deny"]:
+    if bare in state["block"] or bare in session["deny"]:
         return "deny"
-    if host in REGISTRIES or bare in state["whitelist"].get(project, ()) or bare in session["allow"]:
+    if host in REGISTRIES or bare in state["always"] or bare in session["allow"]:
         return "allow"
     return "ask"
 
 
 def answer(state: dict, session: dict, host: str, project: str, reply: str) -> tuple[dict, dict]:
-    """The state and session after the user's `reply` about `host`, as new values; the arguments are not changed."""
+    """The project's lists and the analysis's answers after the user's `reply` about `host`, as new values; the
+    arguments are not changed. A host is in one list at most: the latest answer stands."""
     if reply not in REPLIES:
         raise ValueError(f"reply must be one of {REPLIES}: {reply!r}")
     host = host.lower()
-    whitelist = {name: list(hosts) for name, hosts in state["whitelist"].items()}
-    blacklist, allow, deny = list(state["blacklist"]), list(session["allow"]), list(session["deny"])
+    always, block, allow, deny = (list(state["always"]), list(state["block"]), list(session["allow"]),
+                                  list(session["deny"]))
     if reply in ("always", "once"):  # the latest answer of the analysis stands
         deny = [name for name in deny if name != host]
     if reply == "always":
-        whitelist[project] = sorted({*whitelist.get(project, ()), host})
+        always, block = sorted({*always, host}), [name for name in block if name != host]
     elif reply == "once":
         allow = sorted({*allow, host})
     elif reply == "no":
         allow, deny = [name for name in allow if name != host], sorted({*deny, host})
     else:  # blocked: out of every list that would open it
-        blacklist = sorted({*blacklist, host})
-        whitelist = {name: [h for h in hosts if h != host] for name, hosts in whitelist.items()}
+        block, always = sorted({*block, host}), [name for name in always if name != host]
         allow = [name for name in allow if name != host]
-    return {"whitelist": whitelist, "blacklist": blacklist}, {"allow": allow, "deny": deny}
+    return {"always": always, "block": block}, {"allow": allow, "deny": deny}
 
 
 def refused(log: str) -> list[dict]:
@@ -357,7 +388,7 @@ def collect(project: str, refused: list[dict], where: dict | None = None) -> tup
     process and in the shared file, and come back with the `host_denied` gaps, `(asked, gaps)`. A request already
     pending is not looked up again, and one analysis looks up `LOOKUPS` names in all (`_looked`)."""
     known = {(row["host"], row["port"]): row for row in pending(project)}
-    state, answers, budget = load(), session(project), max(LOOKUPS - _looked(project), 0)
+    state, answers, budget = load(project), session(project), max(LOOKUPS - _looked(project), 0)
     asks, gaps = requests(refused, project, state, answers, WHERE.get(project) if where is None else where, budget,
                           known)
     asks = [{**row, "tool": (known.get((row["host"], row["port"])) or {}).get("tool", ASKER.get())} for row in asks]
@@ -390,8 +421,8 @@ def preflight(project: str, hosts: tuple[str, ...]) -> tuple[list[dict], list[di
     """The hosts a run is about to open that the user has not decided, before it starts: `(asked, gaps)`, the requests
     (now pending) and the `approval_required` gap of the step that does not start. A host that is allowed, or that the
     user refused, does not stop it: the proxy refuses the latter and says `host_denied` if the run reaches it."""
-    state, answers = load(), session(project)
-    ask = [{"host": host.removeprefix("http://"), "port": "80" if host.startswith("http://") else "443"}
+    state, answers = load(project), session(project)
+    ask =[{"host": host.removeprefix("http://"), "port": "80" if host.startswith("http://") else "443"}
            for host in dict.fromkeys(name.lower() for name in hosts) if decide(host, project, state, answers) == "ask"]
     asked, _ = collect(project, ask)
     return asked, approval_gap(asked, "before")

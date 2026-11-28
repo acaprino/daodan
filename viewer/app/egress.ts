@@ -7,7 +7,7 @@ export type Reply = 'always' | 'once' | 'no' | 'block';
 // The four answers, in the order the window shows them, the word of their button and what is said once the server has them.
 export const REPLIES: readonly { reply: Reply; label: string; said: string }[] = [
   { reply: 'no', label: 'No', said: 'Host rifiutati per questa analisi' },
-  { reply: 'block', label: 'Blocca sempre', said: 'Host bloccati per sempre' },
+  { reply: 'block', label: 'Blocca sempre', said: 'Host bloccati per questo progetto' },
   { reply: 'always', label: 'Sempre per questo progetto', said: 'Host approvati per questo progetto' },
   { reply: 'once', label: 'Solo per questa analisi', said: 'Host approvati per questa analisi' },
 ];

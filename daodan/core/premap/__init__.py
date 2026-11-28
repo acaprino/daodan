@@ -637,7 +637,7 @@ def _asked(record: dict) -> bool:
         return False
     import egress
     project = str(Path(record["binding"]["root"]).resolve())  # `egress.project_of`: the store's root
-    state, answers = egress.load(), egress.session(project)
+    state, answers = egress.load(project), egress.session(project)
     decided = [(gap, egress.decide(gap["host"], project, state, answers)) for gap in told if gap.get("host")]
     return any(now == "ask" or now == "allow" and gap.get("port", "443") == "443" for gap, now in decided)
 

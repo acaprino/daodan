@@ -584,9 +584,10 @@ def test_the_hosts_fetchcontent_needs_ask_and_the_configure_downloads_after_the_
     assert [run["step"] for run in result["runs"]] == ["configure", "configure"]
 
 
-def test_a_refused_host_is_denied_and_a_url_the_proxy_cannot_open_stays_the_cause(tmp_path):
+def test_a_refused_host_is_denied_and_a_url_the_proxy_cannot_open_stays_the_cause(tmp_path, monkeypatch):
     project = str((tmp_path / "project").resolve())
-    egress.save({"whitelist": {}, "blacklist": ["github.com"]})
+    monkeypatch.setattr(egress, "project_file_of", lambda name: tmp_path / "project.daodan")  # the project's lists
+    egress.respond("github.com", project, "block")
     result, seen = _index_again(tmp_path, [FETCHING])
     assert len(seen) == 1 and not egress.pending(project)
     assert [(gap["kind"], gap["host"]) for gap in result["gaps"]] == [("host_denied", "github.com")]
@@ -598,8 +599,9 @@ def test_a_refused_host_is_denied_and_a_url_the_proxy_cannot_open_stays_the_caus
         "scp form (user@host:path) names no URL")
 
 
-def test_a_second_run_that_brings_back_no_unit_leaves_it_with_that_runs_cause(tmp_path):
-    egress.save({"whitelist": {str((tmp_path / "project").resolve()): ["github.com"]}, "blacklist": []})
+def test_a_second_run_that_brings_back_no_unit_leaves_it_with_that_runs_cause(tmp_path, monkeypatch):
+    monkeypatch.setattr(egress, "project_file_of", lambda name: tmp_path / "project.daodan")  # the project's lists
+    egress.respond("github.com", str((tmp_path / "project").resolve()), "always")
     result, seen = _index_again(tmp_path, [FETCHING, None])
     assert len(seen) == 2 and result["state"] == "unavailable" and result["units"][0]["state"] == "unavailable"
     assert result["units"][0]["cause"].endswith("; the configure with its downloads gave no state: scip-clang wrote "

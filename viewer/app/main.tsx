@@ -21,7 +21,7 @@ import { FrameContext } from './frame.tsx';
 import type { Detail, Frame } from './frame.tsx';
 import { graphActions, GraphScreen } from './graph-screen.tsx';
 import { HostsDialog } from './hosts-dialog.tsx';
-import { ProjectFileCommands } from './project-screen.tsx';
+import { NetworkAnswersDialog, ProjectFileCommands } from './project-screen.tsx';
 import { short } from './repository.ts';
 import { serviceLine } from './notices.ts';
 import { statusOf } from './plan.ts';
@@ -125,6 +125,7 @@ function App() {
       <HostsDialog />
       <CommandDialog />
       <ProjectFileCommands />
+      <NetworkAnswersDialog />
     </AppWindow>
   </FrameContext>;
 }

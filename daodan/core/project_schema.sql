@@ -197,4 +197,14 @@ CREATE TABLE conflict_evidence (
     evidence_id INTEGER NOT NULL REFERENCES evidence,
     PRIMARY KEY (conflict_id, evidence_id)
 ) STRICT;
+
+-- The network's answers that last, of this project (`egress`): one a host, by who gave it and when. Outside the
+-- revisions: a row holds before the first analysis too. One whose author is not the person who opens the file waits
+-- for that person's confirmation.
+CREATE TABLE network_answers (
+    host TEXT PRIMARY KEY CHECK (host <> '' AND host = lower(host)),
+    answer TEXT NOT NULL CHECK (answer IN ('always','block')),
+    author TEXT NOT NULL CHECK (author <> ''),
+    answered_at TEXT NOT NULL
+) STRICT;
 COMMIT;

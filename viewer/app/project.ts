@@ -1,5 +1,7 @@
 // The repository's project file (`.daodan`) as the App reads it: its revisions, the choices made by hand and their conflicts,
-// in the words the screens show. It draws nothing and asks nothing: the model asks the server (`/api/app/project/*`).
+// and the network answers someone else gave that wait for the person, in the words the screens show. It draws nothing and asks
+// nothing: the model asks the server (`/api/app/project/*`).
+import { REPLIES } from './egress.ts';
 
 // A field's value as the file keeps it: absent is not the same as empty.
 export type Value = { present: boolean; value?: unknown };
@@ -14,7 +16,9 @@ export type Conflict = {
   conflict_id: number; detected_rev: number; resolved_rev: number | null; open: boolean; incoming: Value; provenance: Provenance;
   edit_id: number; object_id: string; key: string | null; field_path: string; base: Value; value: Value;
 };
-export type Project = { head: number; revisions: Revision[]; conflicts: Conflict[] };
+// A network answer the file keeps for a host (`network_answers`) that someone else gave: it applies once the person confirms it.
+export type NetworkAnswer = { host: string; answer: 'always' | 'block'; author: string; answered_at: string };
+export type Project = { head: number; revisions: Revision[]; conflicts: Conflict[]; answers: NetworkAnswer[] };
 export type Field = 'name' | 'description';
 export type Keep = 'manual' | 'incoming' | 'analysis';
 
@@ -29,6 +33,7 @@ export const KEEPS: readonly { keep: Keep; label: string }[] = [
 ];
 
 export const fieldLabel = (path: string) => Object.values(FIELDS).find(field => field.path === path)?.label ?? path;
+const dateText = (instant: string) => instant.replace('T', ' ').replace('+00:00', ' UTC');
 export const valueText = (value: Value) =>
   !value.present ? '(assente)' : typeof value.value === 'string' ? value.value || '(vuoto)' : JSON.stringify(value.value);
 
@@ -44,7 +49,7 @@ export function revisionRow(revision: Revision): { name: string; about: string }
     + ` (da R${edit.base_rev})`);
   return {
     name: `R${revision.rev} · ${KIND[revision.kind] ?? revision.kind} · ${revision.author}`,
-    about: [revision.created_at.replace('T', ' ').replace('+00:00', ' UTC'), revision.summary, ...changed].join(' · '),
+    about: [dateText(revision.created_at), revision.summary, ...changed].join(' · '),
   };
 }
 
@@ -61,6 +66,17 @@ export const editBody = (project: Project | null, ref: string, field: Field, val
 
 // A path typed for «Apri» or «Salva una copia»: the file is on this computer, where the local server runs.
 export const pathError = (path: string) => (path.trim() ? '' : 'Scrivi il percorso del file .daodan.');
+
+// The network answers of a file received from someone, as the window lists them: the host, then the answer, who gave it and when.
+export const answerRow = (item: NetworkAnswer) => ({
+  name: item.host, about: [REPLIES.find(({ reply }) => reply === item.answer)!.label, item.author, dateText(item.answered_at)].join(' · '),
+});
+// Confirmed all, or none: the server keeps the hosts it is given and drops the others, which ask again.
+export const confirmAnswersBody = (answers: readonly NetworkAnswer[], all: boolean) => ({ hosts: all ? answers.map(item => item.host) : [] });
+export const confirmedAnswersWords = (all: boolean) =>
+  all ? 'Risposte di rete confermate: valgono come tue.' : 'Risposte di rete non confermate: quegli host chiederanno di nuovo.';
+// The answers waiting, the same while their hosts and authors are: a window closed without a choice does not open again for them.
+export const answersKey = (answers: readonly NetworkAnswer[]) => JSON.stringify(answers.map(item => [item.host, item.answer, item.author]));
 
 // What the file says of itself in the state: written, or why not.
 export function recordedText(state: { state: string; rev?: number | null; cause?: string | null } | undefined): string {

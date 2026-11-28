@@ -1,8 +1,13 @@
-"""The criterion of egress: canonical hosts, the user's four answers and the file they are kept in."""
+"""The criterion of egress: canonical hosts, the user's four answers and where they are kept: the project's lists in
+its project file, the analysis's answers in the shared folder.
+
+    modal run tests/modal_pytest.py --args "tests/test_codebase_map_egress.py -q"
+"""
 from __future__ import annotations
 
 import json
 import sys
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -13,8 +18,11 @@ if str(SCRIPTS) not in sys.path:
 
 import container  # noqa: E402
 import egress  # noqa: E402
+import project_file  # noqa: E402
+import repository  # noqa: E402
 
-PROJECT = "/work/app"
+PROJECT = "/work/app"  # no checkout of the app: the answers of an analysis only
+EMPTY = {"always": [], "block": []}
 
 
 @pytest.fixture(autouse=True)
@@ -24,8 +32,25 @@ def shared(tmp_path, monkeypatch):
     return tmp_path / "shared"
 
 
+def _checkout(tmp_path: Path, name: str = "app") -> str:
+    """A project laid out as the app's checkout (`repository.checkout`), whose project file keeps its lists."""
+    folder = tmp_path / "repositories" / "owner" / name / "commit" / repository.CHECKOUT
+    folder.mkdir(parents=True)
+    return str(folder.resolve())
+
+
+@pytest.fixture
+def checkout(tmp_path) -> str:
+    return _checkout(tmp_path)
+
+
+def _rows(project: str) -> tuple[list[dict], list[dict]]:
+    with closing(project_file.open_project(egress.project_file_of(project))) as db:
+        return project_file.answers(db, egress.person())
+
+
 def test_the_canonical_hosts_pass_and_every_other_host_asks():
-    state, session = egress.load(), egress.new_session()
+    state, session = egress.load(PROJECT), egress.new_session()
     assert all(egress.decide(host, PROJECT, state, session) == "allow" for host in container.REGISTRIES)
     assert egress.decide("NodeJS.org", PROJECT, state, session) == "allow"  # a host has no case
     for host in ("example.com", "github.com", "codeload.github.com", "objects.githubusercontent.com",
@@ -35,28 +60,65 @@ def test_the_canonical_hosts_pass_and_every_other_host_asks():
         assert egress.decide(host, PROJECT, state, session) == "ask", host
 
 
-def test_always_is_for_one_project_and_outlives_the_analysis(shared):
-    state, session = egress.answer(egress.load(), egress.new_session(), "Git.Example.com", PROJECT, "always")
-    egress.save(state)
-    assert egress.decide("git.example.com", PROJECT, egress.load(), egress.new_session()) == "allow"
-    assert egress.decide("git.example.com", "/work/other", egress.load(), egress.new_session()) == "ask"
-    assert json.loads((shared / "egress.json").read_text(encoding="utf-8")) == {
-        "whitelist": {PROJECT: ["git.example.com"]}, "blacklist": []}
+def test_always_is_for_one_project_kept_in_its_project_file_with_author_and_instant(tmp_path, checkout):
+    other = _checkout(tmp_path, "other")
+    egress.respond("Git.Example.com", checkout, "always")
+    assert egress.decide("git.example.com", checkout, egress.load(checkout), egress.new_session()) == "allow"
+    assert egress.decide("git.example.com", other, egress.load(other), egress.new_session()) == "ask"
+    path = egress.project_file_of(checkout)
+    assert path == repository.project_path(checkout) == tmp_path / "repositories/owner/app/project.daodan"
+    [row], others = _rows(checkout)
+    assert others == []
+    assert (row["host"], row["answer"], row["author"]) == ("git.example.com", "always", egress.person())
+    assert row["answered_at"].endswith("+00:00")
+    assert not project_file.started(path)  # the schema and the answer: the first analysis writes the project into it
+    egress.end(checkout)  # it outlives the analysis
+    assert egress.load(checkout) == {"always": ["git.example.com"], "block": []}
 
 
-def test_once_and_no_last_for_the_analysis_only(shared):
-    state, session = egress.answer(egress.load(), egress.new_session(), "a.example.com", PROJECT, "once")
-    state, session = egress.answer(state, session, "b.example.com", PROJECT, "no")
-    assert egress.decide("a.example.com", PROJECT, state, session) == "allow"
-    assert egress.decide("b.example.com", PROJECT, state, session) == "deny"
-    assert state == egress.load() == {"whitelist": {}, "blacklist": []}  # nothing durable: the file is never written
-    assert not (shared / "egress.json").exists()
-    assert egress.decide("a.example.com", PROJECT, state, egress.new_session()) == "ask"
-    assert egress.decide("b.example.com", PROJECT, state, egress.new_session()) == "ask"
+def test_once_and_no_last_for_the_analysis_only_and_write_no_project_file(checkout):
+    egress.respond("a.example.com", checkout, "once")
+    egress.respond("b.example.com", checkout, "no")
+    state, session = egress.load(checkout), egress.session(checkout)
+    assert egress.decide("a.example.com", checkout, state, session) == "allow"
+    assert egress.decide("b.example.com", checkout, state, session) == "deny"
+    assert state == EMPTY and not egress.project_file_of(checkout).exists()  # nothing durable
+    egress.end(checkout)
+    assert egress.decide("a.example.com", checkout, state, egress.session(checkout)) == "ask"
+    assert egress.decide("b.example.com", checkout, state, egress.session(checkout)) == "ask"
+
+
+def test_a_folder_that_is_no_checkout_of_the_app_has_no_lists_and_keeps_no_answer(tmp_path):
+    folder = tmp_path / "work" / "app"
+    (tmp_path / "project.daodan").write_bytes(b"")  # where `repository.project_path` would look: never read
+    assert egress.project_file_of(str(folder)) is None and egress.project_file_of(None) is None
+    assert egress.load(str(folder)) == egress.load(None) == EMPTY
+    for reply in ("always", "block"):
+        with pytest.raises(ValueError, match="no checkout of the app"):
+            egress.respond("x.example.com", str(folder), reply)
+    egress.respond("x.example.com", str(folder), "once")  # the analysis's answers need no project file
+    assert egress.session(str(folder))["allow"] == ["x.example.com"]
+
+
+def test_only_the_persons_own_answers_apply_and_a_confirmed_one_becomes_theirs(checkout):
+    """A file received from someone: their answers wait (`project_file.adopt`, the app's confirmation); MCP and the
+    command line read `load`, so they never apply them."""
+    path = egress.project_file_of(checkout)
+    project_file.create(path)
+    with closing(project_file.open_project(path, write=True)) as db:
+        for host, said in (("a.example.com", "always"), ("b.example.com", "block"), ("c.example.com", "always")):
+            project_file.keep_answer(db, host, said, f"not-{egress.person()}")
+    assert egress.load(checkout) == EMPTY
+    assert egress.decide("b.example.com", checkout, egress.load(checkout), egress.new_session()) == "ask"
+    with closing(project_file.open_project(path, write=True)) as db:
+        project_file.adopt(db, ["b.example.com", "A.example.com"], egress.person())
+    assert egress.load(checkout) == {"always": ["a.example.com"], "block": ["b.example.com"]}
+    own, others = _rows(checkout)
+    assert others == [] and {row["author"] for row in own} == {egress.person()}  # c asks again
 
 
 def test_the_latest_answer_of_the_analysis_stands():
-    state, session = egress.load(), egress.new_session()
+    state, session = egress.load(PROJECT), egress.new_session()
     state, session = egress.answer(state, session, "x.example.com", PROJECT, "no")
     state, session = egress.answer(state, session, "x.example.com", PROJECT, "once")
     assert egress.decide("x.example.com", PROJECT, state, session) == "allow"
@@ -64,54 +126,51 @@ def test_the_latest_answer_of_the_analysis_stands():
     assert egress.decide("x.example.com", PROJECT, state, session) == "deny"
 
 
-def test_block_refuses_everywhere_even_a_canonical_or_an_approved_host():
-    state, session = egress.answer(egress.load(), egress.new_session(), "x.example.com", PROJECT, "always")
+def test_block_refuses_in_its_project_even_a_canonical_or_an_approved_host():
+    state, session = egress.answer(EMPTY, egress.new_session(), "x.example.com", PROJECT, "always")
     for host in ("x.example.com", "pypi.org"):
         state, session = egress.answer(state, session, host, PROJECT, "block")
         assert egress.decide(host, PROJECT, state, session) == "deny"
-        assert egress.decide(host, "/work/other", state, egress.new_session()) == "deny"
+    assert egress.decide("pypi.org", "/work/other", EMPTY, egress.new_session()) == "allow"  # another project's lists
+    assert egress.decide("x.example.com", "/work/other", EMPTY, egress.new_session()) == "ask"
 
 
-def test_block_takes_the_host_out_of_the_whitelists_and_the_analysis_allowed_hosts():
-    state, session = egress.answer(egress.load(), egress.new_session(), "x.example.com", PROJECT, "always")
-    state, session = egress.answer(state, session, "x.example.com", "/work/other", "always")
+def test_a_host_is_in_one_list_the_latest_answer_and_block_takes_it_out_of_the_allowed_hosts():
+    state, session = egress.answer(EMPTY, egress.new_session(), "x.example.com", PROJECT, "always")
     state, session = egress.answer(state, session, "x.example.com", PROJECT, "once")
     state, session = egress.answer(state, session, "x.example.com", PROJECT, "block")
-    assert state["whitelist"] == {PROJECT: [], "/work/other": []} and session["allow"] == []
+    assert state == {"always": [], "block": ["x.example.com"]} and session["allow"] == []
+    state, session = egress.answer(state, session, "x.example.com", PROJECT, "always")
+    assert state == {"always": ["x.example.com"], "block": []}
 
 
 def test_answer_changes_nothing_it_was_given_and_refuses_an_unknown_reply():
-    state, session = egress.load(), egress.new_session()
+    state, session = egress.load(PROJECT), egress.new_session()
     egress.answer(state, session, "x.example.com", PROJECT, "always")
     egress.answer(state, session, "x.example.com", PROJECT, "block")
-    assert state == {"whitelist": {}, "blacklist": []} and session == {"allow": [], "deny": []}
+    assert state == EMPTY and session == {"allow": [], "deny": []}
     with pytest.raises(ValueError):
         egress.answer(state, session, "x.example.com", PROJECT, "maybe")
 
 
-@pytest.mark.parametrize("text", ["", "not json", "[]", '{"whitelist": [], "blacklist": {}}', '{"whitelist": {}}'])
-def test_an_unreadable_file_is_an_empty_state(shared, text):
+@pytest.mark.parametrize("content", [b"not a database, only some bytes" * 4, b""])
+def test_a_project_file_that_cannot_be_read_has_no_lists_and_no_answer_is_kept_over_it(checkout, content):
+    path = egress.project_file_of(checkout)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(content)
+    assert egress.load(checkout) == EMPTY
+    with pytest.raises(ValueError, match="non è un file di progetto"):
+        egress.respond("x.example.com", checkout, "always")
+    assert path.read_bytes() == content
+
+
+def test_the_shared_files_are_written_through_a_temporary_file_of_their_own_and_leave_none(shared):
     shared.mkdir(parents=True)
-    (shared / "egress.json").write_text(text, encoding="utf-8")
-    assert egress.load() == {"whitelist": {}, "blacklist": []}
-    with pytest.raises(ValueError, match="cannot be read"):  # an answer is not saved over what could not be read
-        egress.respond("x.example.com", PROJECT, "always")
-    assert (shared / "egress.json").read_text(encoding="utf-8") == text
-
-
-def test_save_writes_through_a_temporary_file_of_its_own_and_leaves_none(shared):
-    shared.mkdir(parents=True)
-    (shared / "egress.partial").mkdir()  # a fixed temporary name another writer holds
-    egress.save({"whitelist": {PROJECT: ["a.example.com"]}, "blacklist": []})
-    assert egress.load()["whitelist"] == {PROJECT: ["a.example.com"]}
-    assert sorted(path.name for path in shared.iterdir()) == ["egress.json", "egress.partial"]
-
-
-def test_a_malformed_entry_is_dropped_and_the_rest_kept(shared):
-    shared.mkdir(parents=True)
-    (shared / "egress.json").write_text(json.dumps({"whitelist": {"p": ["a.example.com", 3], "q": "x"},
-                                                    "blacklist": ["b.example.com", None]}), encoding="utf-8")
-    assert egress.load() == {"whitelist": {"p": ["a.example.com"]}, "blacklist": ["b.example.com"]}
+    (shared / f"{egress.SESSION_FILE}.partial").mkdir()  # a fixed temporary name another writer holds
+    egress.respond("a.example.com", PROJECT, "once")
+    assert egress.session(PROJECT)["allow"] == ["a.example.com"]
+    assert sorted(path.name for path in shared.iterdir()) == [
+        egress.PENDING_FILE, egress.SESSION_FILE, f"{egress.SESSION_FILE}.partial", egress.LOCK]
 
 
 def test_the_refusals_of_a_proxy_log_are_read_in_order_and_once():
@@ -206,7 +265,7 @@ def test_the_requests_are_grouped_by_the_tool_that_asked_and_the_command_line_on
 
 def test_requests_split_the_refusals_into_requests_and_host_denied_gaps(monkeypatch):
     monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
-    state, session = egress.answer(egress.load(), egress.new_session(), "blocked.example.com", PROJECT, "block")
+    state, session = egress.answer(EMPTY, egress.new_session(), "blocked.example.com", PROJECT, "block")
     state, session = egress.answer(state, session, "no.example.com", PROJECT, "no")
     refused = [{"host": host, "port": "443"} for host in
                ("blocked.example.com", "no.example.com", "ask.example.com", "pypi.org")]
@@ -221,9 +280,10 @@ def test_requests_split_the_refusals_into_requests_and_host_denied_gaps(monkeypa
     assert (gap["kind"], gap["port"]) == ("host_denied", "8443") and "port 443 only" in gap["detail"]
 
 
-def test_collect_registers_the_requests_once_and_returns_them_with_the_gaps(monkeypatch):
+def test_collect_registers_the_requests_once_and_returns_them_with_the_gaps(monkeypatch, checkout):
     monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
-    egress.save({"whitelist": {}, "blacklist": ["blocked.example.com"]})
+    monkeypatch.setattr(sys.modules[__name__], "PROJECT", checkout)  # a checkout of the app: its lists are kept
+    egress.respond("blocked.example.com", PROJECT, "block")
     refused = [{"host": "ask.example.com", "port": "443"}, {"host": "blocked.example.com", "port": "443"}]
     asked, gaps = egress.collect(PROJECT, refused)
     assert [r["host"] for r in asked] == ["ask.example.com"] and [g["host"] for g in gaps] == ["blocked.example.com"]
@@ -243,9 +303,11 @@ def test_an_approval_gap_names_the_hosts_and_the_files_that_declare_them():
     assert "a.example.com:443 (declared in pom.xml)" in gap["detail"] and "b.example.com:80" in gap["detail"]
 
 
-def test_preflight_asks_for_the_hosts_nobody_decided_and_names_the_files_that_declare_them(monkeypatch):
+def test_preflight_asks_for_the_hosts_nobody_decided_and_names_the_files_that_declare_them(monkeypatch, checkout):
     monkeypatch.setattr(egress.socket, "getaddrinfo", lambda host, *_, **__: [(0, 0, 0, "", ("93.184.216.34", 0))])
-    egress.save({"whitelist": {PROJECT: ["ok.example.com"]}, "blacklist": ["blocked.example.com"]})
+    monkeypatch.setattr(sys.modules[__name__], "PROJECT", checkout)  # a checkout of the app: its lists are kept
+    egress.respond("ok.example.com", PROJECT, "always")
+    egress.respond("blocked.example.com", PROJECT, "block")
     egress.declare(PROJECT, {"10.1.1.1": ["pom.xml", "build.gradle"]})
     hosts = ("pypi.org", "ok.example.com", "blocked.example.com", "10.1.1.1", "Github.com", "10.1.1.1",
              "http://deb.example.com", "http://archive.ubuntu.com")
@@ -272,7 +334,7 @@ def test_an_approval_gap_says_whether_the_step_failed_did_not_start_or_ran():
 
 
 def test_an_apt_archive_is_approved_as_its_host_is():
-    state, session = egress.answer(egress.load(), egress.new_session(), "deb.example.com", PROJECT, "always")
+    state, session = egress.answer(EMPTY, egress.new_session(), "deb.example.com", PROJECT, "always")
     assert egress.decide("http://deb.example.com", PROJECT, state, session) == "allow"
     assert egress.decide("http://other.example.com", PROJECT, state, session) == "ask"
     assert egress.decide("http://archive.ubuntu.com", PROJECT, state, session) == "allow"  # a canonical archive
@@ -315,17 +377,18 @@ def test_a_request_one_process_makes_another_sees_and_answers_and_the_first_sees
     assert egress.pending(PROJECT) == []
     answered = egress.session(PROJECT)
     assert answered == {"allow": ["10.0.0.5"], "deny": ["93.184.216.34"]}
-    assert egress.decide("10.0.0.5", PROJECT, egress.load(), answered) == "allow"
+    assert egress.decide("10.0.0.5", PROJECT, egress.load(PROJECT), answered) == "allow"
     again = _process(f"import json; print(json.dumps(egress.session({PROJECT!r})))", shared)
     assert json.loads(again) == answered  # a child of the pass finds it
 
 
-def test_always_and_block_answered_elsewhere_reach_this_process(shared):
-    _process(f"egress.respond('git.example.com', {PROJECT!r}, 'always'); "
-             f"egress.respond('bad.example.com', {PROJECT!r}, 'block')", shared)
-    state = egress.load()
-    assert egress.decide("git.example.com", PROJECT, state, egress.session(PROJECT)) == "allow"
-    assert egress.decide("bad.example.com", "/work/other", state, egress.session("/work/other")) == "deny"
+def test_always_and_block_answered_elsewhere_reach_this_process_for_their_project_only(shared, checkout):
+    _process(f"egress.respond('git.example.com', {checkout!r}, 'always'); "
+             f"egress.respond('bad.example.com', {checkout!r}, 'block')", shared)
+    state = egress.load(checkout)
+    assert egress.decide("git.example.com", checkout, state, egress.session(checkout)) == "allow"
+    assert egress.decide("bad.example.com", checkout, state, egress.session(checkout)) == "deny"
+    assert egress.decide("bad.example.com", PROJECT, egress.load(PROJECT), egress.session(PROJECT)) == "ask"
 
 
 def test_a_pass_empties_its_requests_when_it_starts_and_its_answers_when_it_ends(shared):

@@ -219,7 +219,8 @@ def test_the_seed_s_proxy_serves_its_project_and_its_refusals_are_requests_and_h
     fake, volumes, phases = engine
     project, manifest = _node_project(tmp_path)
     key = str(project.resolve())
-    egress.save({"whitelist": {}, "blacklist": ["blocked.example.com"]})
+    monkeypatch.setattr(egress, "project_file_of", lambda project: tmp_path / "project.daodan")  # the project's lists
+    egress.respond("blocked.example.com", key, "block")
     started = _refusing(monkeypatch, ['{"host": "10.0.0.7", "port": "443"}',
                                       '{"host": "blocked.example.com", "port": "443"}'])
     with node_preparation.analysis():

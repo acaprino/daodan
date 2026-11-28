@@ -266,6 +266,7 @@ def test_a_premap_whose_run_asked_the_user_about_a_host_runs_again_with_the_answ
     it stays as it is."""
     import egress
     monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / "shared"))
+    monkeypatch.setattr(egress, "project_file_of", lambda project: tmp_path / "project.daodan")  # the project's lists
     runner = lambda commands: []  # noqa: E731 - any runner
     for case, gap in (("asked", {"kind": "approval_required", "hosts": ["api.github.com"], "detail": "asked"}),
                       ("port", {"kind": "host_denied", "host": "pypi.org", "port": "80", "detail": "443 only"}),

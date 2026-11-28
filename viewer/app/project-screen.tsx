@@ -1,12 +1,15 @@
 // The project file in the App: a node's name and description changed by hand in its details, with its conflicts and its history;
-// the project's history as details of its own; «Apri» and «Salva una copia» as commands of the palette.
+// the project's history as details of its own; «Apri» and «Salva una copia» as commands of the palette; the network answers of a
+// file received from someone, to confirm.
 import { useRef, useState } from 'react';
 import { Badge, Button, Cluster, Column, Icon, Input, Section, Text, Textarea } from '@acaprino/sigrid/primitives';
 import { DescriptionList, Dialog, FormField, Note } from '@acaprino/sigrid/components';
 import { useCommand } from '@acaprino/sigrid/assemblies';
-import { Listed } from '../src/listed.tsx';
+import { List, Listed } from '../src/listed.tsx';
 import type { Detail } from './frame.tsx';
-import { FIELDS, fieldLabel, historyOf, KEEPS, openConflicts, provenanceText, recordedText, revisionRow, valueText } from './project.ts';
+import {
+  answerRow, answersKey, FIELDS, fieldLabel, historyOf, KEEPS, openConflicts, provenanceText, recordedText, revisionRow, valueText,
+} from './project.ts';
 import type { Conflict, Field } from './project.ts';
 import { RunName } from './provenance.tsx';
 import { ctx } from './snapshot.ts';
@@ -91,6 +94,23 @@ function ProjectHistory() {
 }
 
 export const PROJECT_HISTORY: Detail = { id: 'project', title: 'Cronologia del file di progetto', icon: 'history', name: <RunName />, content: <ProjectHistory /> };
+
+// The network answers of a file received from someone: none applies until the person confirms them, once, all or none. Closed
+// without a choice, the window waits for other answers; the hosts keep asking meanwhile.
+export function NetworkAnswersDialog() {
+  const answers = useModelSlice(s => s.project?.answers) ?? [], busy = useModelSlice(s => s.projectBusy);
+  const [aside, setAside] = useState('');
+  const key = answersKey(answers);
+  return <Dialog open={answers.length > 0 && key !== aside} onOpenChange={open => { if (!open && !busy) setAside(key); }}
+    title="Risposte di rete di un file ricevuto"
+    description="Il file di progetto porta risposte di rete date da altri. Valgono solo se le confermi: diventano tue; quelle non confermate tornano a chiedere."
+    footer={<>
+      <Button variant="ghost" loading={busy === 'no answers'} disabled={busy !== ''} onClick={() => { model.confirmAnswers(false); }}>Non confermare</Button>
+      <Button loading={busy === 'answers'} disabled={busy !== ''} onClick={() => { model.confirmAnswers(true); }}>Conferma</Button>
+    </>}>
+    <List label="Risposte da confermare" items={answers.map(item => line(answerRow(item)))} />
+  </Dialog>;
+}
 
 // «Apri» and «Salva una copia»: the path of a file on this computer, where the local server reads and writes it.
 type FileWork = 'open' | 'save';

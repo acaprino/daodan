@@ -336,9 +336,9 @@ def test_the_plan_says_the_steps_and_actions_of_the_last_analysis(tmp_path, shar
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.read_project(root, manifest)
     pipeline.run(manifest, stop="find_entry_points", fast_scan=True)
-    state, _ = egress.answer(egress.load(), egress.new_session(), "git.example.com", egress.project_of(manifest), "always")
-    egress.save(state)
-    planned = planning.current(manifest)
+    with mock.patch.object(egress, "project_file_of", return_value=tmp_path / "project.daodan"):  # the project's lists
+        egress.respond("git.example.com", egress.project_of(manifest), "always")
+        planned = planning.current(manifest)
     assert _states(planned) == {"list_files": "done", "read_code": "done", "recognize_stack": "done",
                                 "find_modules": "done", "find_entry_points": "done", "link_calls": "pending",
                                 "run_and_observe": "pending", "assemble_graph": "pending"}

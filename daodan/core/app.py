@@ -28,7 +28,9 @@ tool and corrects them on what stays unlinked; what they link is the service's a
 When the selected run's pass ends fresh, the app finds the links and then maps the system by itself, once, and
 records the graph in the repository's project file (`project_file`, `repositories/<owner>/<name>/project.daodan`):
 a revision `analysis` each time, with the names and descriptions chosen by hand kept and shown on the graph, their
-conflicts and the history read and settled through `/api/app/project/*`. MCP reads the analysis as before.
+conflicts and the history read and settled through `/api/app/project/*`. The same file keeps the project's network
+answers «always» and «block» (`egress`); those of a file received from someone apply once the person confirms them
+(`/api/app/project/network`). MCP reads the analysis as before.
 """
 from __future__ import annotations
 
@@ -465,7 +467,7 @@ class App:
             envelope = self._built(run_dir)
             path = self._project_path(required=False)
             mark = None
-            if path is not None and path.exists():
+            if path is not None and project_file.started(path):
                 with self._opened(path) as db:
                     mark = (db.execute("SELECT project_uuid FROM project").fetchone(), project_file.head(db))
                     if self._levels.get("mark") != mark:
@@ -516,7 +518,7 @@ class App:
                         "config": {"run_id": run, **{key: envelope["meta"].get(key)
                                                      for key in ("snapshot_digest", "modules_digest", "cards_digest")}}}
             rows, path = project_rows.from_envelope(envelope, hashes), Path(context["project"])
-            if path.exists():
+            if project_file.started(path):
                 with self._opened(path, write=True) as db:
                     rev = project_file.analyse(db, rows=rows, hashes=hashes, source=source, analysis=analysis,
                                                author="daodan", summary=f"analisi di {run}")
@@ -536,7 +538,7 @@ class App:
 
     def _reading(self, write: bool = False):
         path = self._project_path()
-        if not path.exists():
+        if not project_file.started(path):  # absent, or the network's answers alone (`egress.keep`)
             raise ValueError("the project has no file yet: it is written when the analysis ends")
         return self._opened(path, write)
 
@@ -589,6 +591,29 @@ class App:
             raise ValueError("a confirmation is a proposal's id and a candidate's id or null, or two refs")
         with self._reading(write=True) as db:
             return {"rev": project_file.confirm(db, body["match"], body.get("same"), author=getpass.getuser())}
+
+    def project_network(self, query: dict) -> dict:
+        """The network's answers of the project file that are someone else's, from a file received
+        (`project_file.answers`): `{"answers": [{host, answer, author, answered_at}]}`. None applies until the person
+        confirms it (`network_confirm`); a file not written yet has none."""
+        path = self._project_path()
+        if not path.exists():
+            return {"answers": []}
+        with self._opened(path) as db:
+            return {"answers": project_file.answers(db, egress.person())[1]}
+
+    def network_confirm(self, body: dict) -> dict:
+        """The person confirms the answers of `{"hosts": [...]}` among those `project_network` lists: they become the
+        person's and apply; the others are dropped, and their hosts ask again (`project_file.adopt`)."""
+        hosts = body.get("hosts")
+        if not isinstance(hosts, list) or not all(isinstance(host, str) for host in hosts):
+            raise ValueError("hosts is the list of the hosts confirmed, empty for none")
+        path = self._project_path()
+        if not path.exists():
+            raise ValueError("the project has no file yet: it is written when the analysis ends")
+        with self._opened(path, write=True) as db:
+            project_file.adopt(db, hosts, egress.person())
+            return {"answers": project_file.answers(db, egress.person())[1]}
 
     def project_open(self, body: dict) -> dict:
         """A project file received from someone (`{"path": ...}`): recognised, then copied with `backup` in place of
@@ -933,13 +958,15 @@ class App:
         routes = {**visual.live_routes(active), "/api/app/state": self.state, "/api/app/answer": self.answer,
                   "/api/app/paths": self.paths, "/api/app/premap": self.premap, "/api/app/graph": self.graph, "/api/app/symbols": self.symbols,
                   "/api/app/flow": self.flow, "/api/app/project/history": self.project_history,
-                  "/api/app/project/conflicts": self.project_conflicts}
+                  "/api/app/project/conflicts": self.project_conflicts,
+                  "/api/app/project/network": self.project_network}
         actions = {**visual.live_actions(active), "/api/app/check": self.check, "/api/app/select": self.select,
                    "/api/app/retry": self.retry, "/api/app/egress": self.hosts, "/api/app/command": self.command,
                    "/api/app/engine": self.configure, "/api/app/probe": self.probe, "/api/app/ask": self.ask,
                    "/api/app/link": self.link, "/api/app/map": self.map, "/api/app/project/edit": self.project_edit,
                    "/api/app/project/resolve": self.project_resolve, "/api/app/project/confirm": self.project_confirm,
-                   "/api/app/project/open": self.project_open, "/api/app/project/save": self.project_save}
+                   "/api/app/project/open": self.project_open, "/api/app/project/save": self.project_save,
+                   "/api/app/project/network": self.network_confirm}
         stream = {"/api/stream": self.stream(visual.live_stream(active)["/api/stream"])}
         return visual.make_server(None, VIEWER, port, routes=routes, actions=actions, token=token, stream=stream,
                                   mounts={"app": PAGE},

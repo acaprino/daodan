@@ -670,6 +670,7 @@ def test_a_renovate_preset_on_a_host_is_asked_and_once_approved_the_extraction_r
     name = str(project.resolve())
     for reply in (None, "always", "no"):
         monkeypatch.setenv("DAODAN_SHARED_DIR", str(tmp_path / f"shared-{reply}"))  # the user's answers, each case its own
+        monkeypatch.setattr(egress, "project_file_of", lambda project, reply=reply: tmp_path / f"lists-{reply}.daodan")
         egress.begin(name)  # and no request of the case before, in this process either
         calls = []
 

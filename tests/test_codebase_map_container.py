@@ -183,9 +183,12 @@ class FakeEngineTest(unittest.TestCase):
         patcher = mock.patch.object(container, "volume_registry", return_value=self.registry)
         patcher.start()
         self.addCleanup(patcher.stop)
-        env = mock.patch.dict(os.environ, {"DAODAN_SHARED_DIR": str(self.scratch / "shared")})  # egress.json lives there
+        env = mock.patch.dict(os.environ, {"DAODAN_SHARED_DIR": str(self.scratch / "shared")})  # the analysis's answers
         env.start()
         self.addCleanup(env.stop)
+        lists = mock.patch.object(egress, "project_file_of", return_value=self.scratch / "project.daodan")
+        lists.start()  # the project's lists, as in the project file of an app's checkout
+        self.addCleanup(lists.stop)
         egress.PENDING.clear()
         lookup = mock.patch.object(egress, "resolve", side_effect=lambda rows, *_: [  # no lookup in a test
             {**row, "address": None, "network": False} for row in rows])
@@ -808,26 +811,24 @@ class FakeEngineTest(unittest.TestCase):
         project declares among them, is left to the proxy to refuse: it is a request to answer."""
         hosts = ("registry.npmjs.org", "git.example.com", "github.com", "http://deb.example.com", "blocked.example.com",
                  "http://archive.ubuntu.com")
-        egress.save({"whitelist": {str(self.project): ["git.example.com", "deb.example.com"]},
-                     "blacklist": ["blocked.example.com"]})
+        for host, reply in (("git.example.com", "always"), ("deb.example.com", "always"),
+                            ("blocked.example.com", "block")):
+            egress.respond(host, str(self.project), reply)
         self.assertEqual(self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=hosts)["state"], "done")
         [proxy, *_] = self.created()
         self.assertEqual(proxy[proxy.index("3128") + 1:], ["registry.npmjs.org", "git.example.com",
                                                           "http://deb.example.com", "http://archive.ubuntu.com",
                                                           "deb.example.com"])  # approved: open at 443 too
-        egress.save(egress.answer(egress.load(), egress.session(str(self.project)), "github.com",
-                                  str(self.project), "always")[0])
+        egress.respond("github.com", str(self.project), "always")
         self.assertEqual(self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=hosts)["state"], "done")
         self.assertIn("github.com", self.created()[3])  # the second run's proxy
 
     def test_a_host_approved_and_then_blocked_never_reaches_the_proxy(self):
-        """"Block" wins over every list: an approval for always or for this analysis no longer opens the host, nor does
-        a whitelist that still holds it (a file written by hand or before the block)."""
+        """"Block" wins over every list: an approval for always or for this analysis no longer opens the host."""
         project = str(self.project)
         egress.respond("git.example.com", project, "always")
         egress.respond("git.example.com", project, "once")
         egress.respond("git.example.com", project, "block")
-        egress.save({**egress.load(), "whitelist": {project: ["git.example.com"]}})
         self.assertEqual(self.run_operation(["exit", "0"], prepare=["exit", "0"],
                                             registries=("registry.npmjs.org", "git.example.com"))["state"], "done")
         [proxy] = [call for call in self.created() if "3128" in call]
@@ -837,7 +838,7 @@ class FakeEngineTest(unittest.TestCase):
         (self.state / "refused.log").write_text(
             '@@daodan-refused {"host": "git.example.com", "port": "443"}\n'
             '@@daodan-refused {"host": "blocked.example.com", "port": "443"}\n', encoding="utf-8")
-        egress.save({"whitelist": {}, "blacklist": ["blocked.example.com"]})
+        egress.respond("blocked.example.com", str(self.project), "block")
         done = self.run_operation(["exit", "0"], prepare=["exit", "0"])
         self.assertEqual(done["state"], "done")  # a step that succeeds keeps its result, the request stays visible
         self.assertEqual([row["host"] for row in done["asked"]], ["git.example.com"])
@@ -917,7 +918,7 @@ class FakeEngineTest(unittest.TestCase):
                                    and call[2].startswith("daodan-proxy-")))
 
     def test_an_approved_host_is_open_and_refused_at_another_port_is_a_host_denied_gap(self):
-        egress.save({"whitelist": {str(self.project): ["git.example.com"]}, "blacklist": []})
+        egress.respond("git.example.com", str(self.project), "always")
         (self.state / "refused.log").write_text('@@daodan-refused {"host": "git.example.com", "port": "8443"}\n',
                                                 encoding="utf-8")
         done = self.run_operation(["exit", "0"], prepare=["exit", "0"], registries=("registry.npmjs.org",))
@@ -1518,7 +1519,7 @@ def test_on_modal_the_git_recipe_installs_from_debian_s_archive_through_a_proxy_
     reaches the archive by plain HTTP and asks nothing else, no https tunnel the image could not verify."""
     import preparation
     hosts = preparation.NEEDS["git"]["hosts"]
-    assert all(egress.decide(host, "/work/p", egress.load()) == "allow" for host in hosts)
+    assert all(egress.decide(host, "/work/p", egress.load("/work/p")) == "allow" for host in hosts)
     server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", *hosts],
                               stdout=subprocess.PIPE, text=True)
     try:

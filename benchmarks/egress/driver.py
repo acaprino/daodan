@@ -55,8 +55,8 @@ def cli(engine, *args, **options):
 def start_smokescreen(engine, box, network, registries, project):
     """`container.start_proxy` with Smokescreen: the same hosts, filtered by `egress.decide` as it filters them, in an
     ACL with `action: enforce`; the role is missing (no client certificate), so its `default` rule decides."""
-    state, answers = egress.load(), egress.session(project)
-    hosts = [host.removeprefix("http://") for host in dict.fromkeys([*registries, *state["whitelist"].get(project, ()),
+    state, answers = egress.load(project), egress.session(project)
+    hosts = [host.removeprefix("http://") for host in dict.fromkeys([*registries, *state["always"],
                                                                      *answers["allow"]])
              if egress.decide(host, project, state, answers) == "allow"]
     folder = Path(tempfile.mkdtemp())
@@ -208,7 +208,7 @@ except ValueError:  # no request waits: the ask row says so; the answer is given
 yes_run, _, yes_log = run(asking, {**common, "mode": "fetch", "url": f"https://{ALLOWED}/approval-yes"})
 
 # Approval: a blocked host is refused with no request.
-blocked = project("blocked")
+blocked = project("blocked/c/source")  # laid out as the app's checkout: «Blocca» is kept in its project file
 egress.respond(OUTSIDE, str(blocked), "block")
 block_run, _, block_log = run(blocked, {**common, "mode": "fetch", "url": f"https://{OUTSIDE}/approval-block"})
 block_pending = egress.pending(str(blocked))
@@ -223,4 +223,5 @@ Path("/runs/result.json").write_text(json.dumps({
     "block": {"run": block_run, "pending": block_pending, "log": block_log},
     "proxy_logs": PROXY_LOGS, "listener_hits": HITS, "dns_wire": [line.rstrip() for line in wire if TOKEN in line],
     "dns_wire_lines": len(wire), "dns_wire_sample": [line.rstrip() for line in wire[:40]],
-    "egress_state": egress.load(), "seconds": round(time.monotonic() - started, 1)}, default=str), encoding="utf-8")
+    "egress_state": egress.load(str(blocked)), "seconds": round(time.monotonic() - started, 1)}, default=str),
+    encoding="utf-8")

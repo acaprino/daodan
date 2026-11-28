@@ -1,8 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createModel } from '../app/model.ts';
-import { editBody, historyOf, KEEPS, openConflicts, pathError, provenanceText, recordedText, revisionRow, valueText } from '../app/project.ts';
-import type { Conflict, Project, Revision } from '../app/project.ts';
+import {
+  answerRow, answersKey, confirmAnswersBody, confirmedAnswersWords, editBody, historyOf, KEEPS, openConflicts, pathError, provenanceText, recordedText,
+  revisionRow, valueText,
+} from '../app/project.ts';
+import type { Conflict, NetworkAnswer, Project, Revision } from '../app/project.ts';
 import { STORAGE } from '../app/storage.ts';
 
 const revision = (rev: number, more: Partial<Revision> = {}): Revision => ({
@@ -15,7 +18,10 @@ const conflict = (more: Partial<Conflict> = {}): Conflict => ({
   provenance: { analysis: 3, origin: 'declared', producer: 'daodan/visual@1' }, edit_id: 1, object_id: 'o1', key: 'component:server',
   field_path: '/name', base: { present: true, value: 'server' }, value: { present: true, value: 'Il server' }, ...more,
 });
-const project: Project = { head: 3, revisions: [revision(1), renamed, revision(3)], conflicts: [conflict(), conflict({ conflict_id: 2, open: false })] };
+const received: NetworkAnswer[] = [{ host: 'git.example.com', answer: 'always', author: 'bob', answered_at: '2026-11-28T09:00:00+00:00' },
+  { host: 'bad.example.com', answer: 'block', author: 'bob', answered_at: '2026-11-27T18:30:00+00:00' }];
+const project: Project = { head: 3, revisions: [revision(1), renamed, revision(3)], conflicts: [conflict(), conflict({ conflict_id: 2, open: false })],
+  answers: received };
 
 test('a revision says who made it, when, and which fields it changed from which revision', () => {
   assert.deepEqual(revisionRow(renamed), {
@@ -50,6 +56,18 @@ test('an edit carries the head it was made on; a path must be written; the state
   assert.equal(recordedText(undefined), 'Il file di progetto si scrive alla fine dell’analisi.');
 });
 
+test('the network answers of a received file say host, answer, author and date, and are confirmed all or none', () => {
+  assert.deepEqual(received.map(answerRow), [
+    { name: 'git.example.com', about: 'Sempre per questo progetto · bob · 2026-11-28 09:00:00 UTC' },  // the words of the answer
+    { name: 'bad.example.com', about: 'Blocca sempre · bob · 2026-11-27 18:30:00 UTC' },
+  ]);
+  assert.deepEqual(confirmAnswersBody(received, true), { hosts: ['git.example.com', 'bad.example.com'] });
+  assert.deepEqual(confirmAnswersBody(received, false), { hosts: [] });
+  assert.notEqual(confirmedAnswersWords(true), confirmedAnswersWords(false));
+  assert.equal(answersKey(received), answersKey([...received]));
+  assert.notEqual(answersKey(received), answersKey([{ ...received[0], author: 'carol' }, received[1]]));
+});
+
 // The model: the project is read with the graph, an edit is sent with its head and the two are read again.
 class Source {
   listeners: Record<string, ((message: { data: string }) => void)[]> = {};
@@ -66,6 +84,7 @@ test('the project is read with the graph, and a change made by hand is sent with
     '/api/app/graph': { grouping: 'modules', nodes: [], open: [], edges: [], files: 0, unassigned: { count: 0 } },
     '/api/app/project/history': { head: 3, revisions: project.revisions },
     '/api/app/project/conflicts': { head: 3, conflicts: project.conflicts },
+    '/api/app/project/network': { answers: project.answers },
     '/api/app/project/edit': { rev: 4 },
   };
   const model = createModel({
@@ -93,4 +112,13 @@ test('the project is read with the graph, and a change made by hand is sent with
   assert.deepEqual([asked('/api/app/graph'), asked('/api/app/project/history')], [before[0] + 1, before[1] + 1]);
   assert.ok(notices.includes('Modifica salvata nel file di progetto.'));
   assert.equal(model.snapshot().projectBusy, '');
+  // the answers of someone else, confirmed all: the server is told their hosts, and the file's answers are read again
+  const network = asked('/api/app/project/network');
+  answers['/api/app/project/network'] = { answers: [] };
+  await model.confirmAnswers(true);
+  for (let i = 0; i < 5; i++) await turn();
+  assert.deepEqual(calls.filter(call => call.path === '/api/app/project/network').at(-2)?.body, { hosts: ['git.example.com', 'bad.example.com'] });
+  assert.equal(asked('/api/app/project/network'), network + 2);
+  assert.deepEqual(model.snapshot().project?.answers, []);
+  assert.ok(notices.includes(confirmedAnswersWords(true)));
 });

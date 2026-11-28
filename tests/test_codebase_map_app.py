@@ -938,10 +938,11 @@ def test_the_first_level_and_an_opening_ask_the_readers_as_often_however_many_sy
 
 def test_the_state_shows_the_host_requests_by_tool_and_only_its_guarded_action_answers_them(tmp_path):
     """The requests of the selected checkout's analysis, one group a tool, with what the popup shows; the action
-    answers a group, under the server's guard, and only for hosts that wait for an answer."""
+    answers a group, under the server's guard, and only for hosts that wait for an answer; «Blocca» is kept in the
+    project file of the checkout, which holds no project before the first analysis."""
     import egress
-    project = tmp_path / "checkout"
-    project.mkdir()
+    project = tmp_path / "work" / "repositories" / "o" / "n" / "c" / repository.CHECKOUT
+    project.mkdir(parents=True)
     key = str(project.resolve())
     with egress.asking("mise"):
         egress.collect(key, [{"host": "10.0.0.1", "port": "443"}, {"host": "10.0.0.2", "port": "443"}])
@@ -952,7 +953,8 @@ def test_the_state_shows_the_host_requests_by_tool_and_only_its_guarded_action_a
     try:
         port = server.server_address[1]
         assert request(port, "/api/app/state")[1]["egress"] == []  # no checkout selected
-        app.context = {"path": str(project), "run_id": "app-aaaaaaaaaaaa"}
+        app.context = {"path": str(project), "run_id": "app-aaaaaaaaaaaa",
+                       "project": str(repository.project_path(project))}
         assert request(port, "/api/app/state")[1]["egress"] == [
             {"tool": "mise", "project": key, "requests": [
                 {"host": "10.0.0.1", "port": "443", "address": "10.0.0.1", "network": True, "declared_in": []},
@@ -969,7 +971,10 @@ def test_the_state_shows_the_host_requests_by_tool_and_only_its_guarded_action_a
         assert status == 200 and [g["tool"] for g in told["egress"]] == [""]
         assert egress.session(key)["allow"] == ["10.0.0.1", "10.0.0.2"]
         status, told = request(port, "/api/app/egress", {"hosts": ["10.0.0.3"], "reply": "block"})
-        assert status == 200 and told["egress"] == [] and egress.load()["blacklist"] == ["10.0.0.3"]
+        assert status == 200 and told["egress"] == [] and egress.load(key) == {"always": [], "block": ["10.0.0.3"]}
+        assert egress.project_file_of(key) == Path(app.context["project"]) and Path(app.context["project"]).exists()
+        assert request(port, "/api/app/project/history")[0] == 400  # the answers alone: no project yet
+        assert request(port, "/api/app/project/network") == (200, {"answers": []})
     finally:
         app.close()
         server.shutdown()
@@ -2061,6 +2066,40 @@ def test_the_graph_is_recorded_at_each_analysis_and_a_choice_made_by_hand_shows_
         assert [item["author"] for item in request(port, "/api/app/project/history")[1]["revisions"]][-1] == "bob"
         assert next(node for node in request(port, "/api/app/graph")[1]["nodes"] if node["id"] == group)["name"] == "Il backend"
         assert request(port, "/api/app/project/open", {"path": str(tmp_path / "none.daodan")})[0] == 400
+    finally:
+        app.close()
+        server.shutdown()
+        server.server_close()
+
+
+def test_the_network_answers_of_a_received_file_wait_until_the_person_confirms_them(levels, tmp_path):
+    """`/api/app/project/network` lists the answers of the project file that are someone else's (`egress` applies none
+    of them) and confirms some: those become the person's, the others go and ask again."""
+    import egress
+    app = recording(levels, tmp_path)
+    server = app.serve(token="t")
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        port = server.server_address[1]
+        assert request(port, "/api/app/project/network") == (200, {"answers": []})  # no file yet
+        app._record(app.context)
+        path = Path(app.context["project"])
+        with closing(project_file.open_project(path, write=True)) as db:
+            project_file.keep_answer(db, "a.example.com", "always", f"not-{egress.person()}")
+            project_file.keep_answer(db, "b.example.com", "block", f"not-{egress.person()}")
+            project_file.keep_answer(db, "c.example.com", "always", egress.person())
+        status, told = request(port, "/api/app/project/network")
+        assert status == 200 and [(row["host"], row["answer"], row["author"]) for row in told["answers"]] == [
+            ("a.example.com", "always", f"not-{egress.person()}"), ("b.example.com", "block", f"not-{egress.person()}")]
+        assert all(row["answered_at"].endswith("+00:00") for row in told["answers"])
+        assert request(port, "/api/app/project/network", {"hosts": ["a.example.com"]}, token=None)[0] == 403
+        assert request(port, "/api/app/project/network", {"hosts": "a.example.com"})[0] == 400
+        assert request(port, "/api/app/project/network", {"hosts": ["c.example.com"]})[0] == 400  # already the person's
+        assert request(port, "/api/app/project/network", {"hosts": ["a.example.com"]}) == (200, {"answers": []})
+        with closing(project_file.open_project(path)) as db:
+            own, others = project_file.answers(db, egress.person())
+        assert others == [] and [(row["host"], row["answer"]) for row in own] == [
+            ("a.example.com", "always"), ("c.example.com", "always")]
     finally:
         app.close()
         server.shutdown()

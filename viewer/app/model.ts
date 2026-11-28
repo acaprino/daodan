@@ -13,8 +13,8 @@ import { endName, graphKey, openWithout, rootOf, shownOpen } from './graph.ts';
 import type { Graph } from './graph.ts';
 import { firstStep, onPath, REPOSITORY, SHOWS_PREMAP } from './path.ts';
 import { accessible, preferredBranch, repositorySlug, urlError } from './repository.ts';
-import { editBody, pathError } from './project.ts';
-import type { Conflict, Field, Keep, Project, Revision } from './project.ts';
+import { confirmAnswersBody, confirmedAnswersWords, editBody, pathError } from './project.ts';
+import type { Conflict, Field, Keep, NetworkAnswer, Project, Revision } from './project.ts';
 import { createServer } from './server.ts';
 import type { AppState, Checked, Command, CommandKind, Cursors, Engine, EventsFrame, Host, RunEvent } from './server.ts';
 import { ctx, ORPHAN_WRITES, slug, viewingPaths } from './snapshot.ts';
@@ -206,11 +206,14 @@ export function createModel(host: Host) {
     const run = ctx(now)?.run_id, wanted = () => ctx(now)?.run_id === run;
     if (!run) return;
     try {
-      const [history, found] = await Promise.all([
+      const [history, found, network] = await Promise.all([
         whenFree(() => get<{ head: number; revisions: Revision[] }>('/api/app/project/history'), () => undefined, wanted),
         whenFree(() => get<{ conflicts: Conflict[] }>('/api/app/project/conflicts'), () => undefined, wanted),
+        whenFree(() => get<{ answers: NetworkAnswer[] }>('/api/app/project/network'), () => undefined, wanted),
       ]);
-      if (history && found && wanted()) set({ project: { ...history, conflicts: found.conflicts } satisfies Project, projectError: '' });
+      if (history && found && network && wanted()) {
+        set({ project: { ...history, conflicts: found.conflicts, answers: network.answers } satisfies Project, projectError: '' });
+      }
     } catch (error) {
       if (wanted()) set({ project: null, projectError: causeOf(error) });
     }
@@ -245,6 +248,11 @@ export function createModel(host: Host) {
   }
   async function resolveConflict(conflict: number, keep: Keep): Promise<void> {
     if (await projectWork(`resolve ${conflict}`, '/api/app/project/resolve', { conflict_id: conflict, keep }, 'Conflitto risolto.')) reread();
+  }
+  // The network answers of a file received from someone: all confirmed, which become the person's, or none, which ask again.
+  async function confirmAnswers(all: boolean): Promise<void> {
+    const body = confirmAnswersBody(now.project?.answers ?? [], all);
+    if (await projectWork(all ? 'answers' : 'no answers', '/api/app/project/network', body, confirmedAnswersWords(all))) loadProject();
   }
   // A file received from someone: it takes the place of the one of the repository it names, with its history.
   async function openProject(path: string): Promise<boolean> {
@@ -529,6 +537,6 @@ export function createModel(host: Host) {
     editEngine, saveEngine, probeEngine, forgetKey, setQuestion: (question: string) => set({ question }), ask,
     replyHosts, hideHosts, showHosts,
     showCommand, hideCommand, editCommand, setCommand, confirmCommand, removeCommand,
-    changeNode, resolveConflict, openProject, saveProject,
+    changeNode, resolveConflict, openProject, saveProject, confirmAnswers,
   };
 }

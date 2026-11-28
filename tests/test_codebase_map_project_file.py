@@ -39,13 +39,13 @@ def _node(db: sqlite3.Connection, number: int, species: str) -> None:
                "VALUES (?, ?, ?, 'interno', 'confermato', 'concreto')", (number, f"n{number}", species))
 
 
-def test_a_new_file_has_the_identity_the_version_and_the_21_tables(tmp_path):
+def test_a_new_file_has_the_identity_the_version_and_the_22_tables(tmp_path):
     path = tmp_path / "project.daodan"
     project_file.create(path)
     with closing(project_file.open_project(path)) as db:
         assert db.execute("PRAGMA application_id").fetchone()[0] == 0x44414F44
         assert db.execute("PRAGMA user_version").fetchone()[0] == 1
-        assert db.execute("SELECT count(*) FROM sqlite_schema WHERE type = 'table'").fetchone()[0] == 21
+        assert db.execute("SELECT count(*) FROM sqlite_schema WHERE type = 'table'").fetchone()[0] == 22
         assert db.execute("PRAGMA journal_mode").fetchone()[0] == "delete"
     assert sorted(item.name for item in tmp_path.iterdir()) == ["project.daodan"]
     with pytest.raises(ProjectError, match="esiste già"):
@@ -174,6 +174,63 @@ def test_a_project_that_breaks_its_integrity_is_never_created(tmp_path):
                             rows=[_node_row("file", "a.py", "file", "dir"), _node_row("dir", "src", "cartella", "gone"),
                                   {"id": "gone", "kind": "gap", "fields": {"description": "x", "cause": "x"}}])
     assert list(tmp_path.iterdir()) == []
+
+
+def test_the_network_answers_are_one_a_host_with_author_and_instant_and_the_ddl_refuses_another_answer(tmp_path):
+    path = tmp_path / "project.daodan"
+    project_file.create(path)
+    with closing(project_file.open_project(path, write=True)) as db:
+        project_file.keep_answer(db, "Git.Example.com", "always", "ada")
+        project_file.keep_answer(db, "bad.example.com", "always", "bob")
+        project_file.keep_answer(db, "bad.example.com", "block", "ada")  # the latest answer takes the host's row
+        own, others = project_file.answers(db, "ada")
+        assert [(row["host"], row["answer"], row["author"]) for row in own] == [
+            ("bad.example.com", "block", "ada"), ("git.example.com", "always", "ada")]
+        assert others == [] and all(row["answered_at"].endswith("+00:00") for row in own)
+        assert project_file.answers(db, "bob") == ([], own)
+        with pytest.raises(ProjectError, match="always, block"):
+            project_file.keep_answer(db, "x.example.com", "once", "ada")
+        for row in (("x.example.com", "maybe", "ada", "t"), ("X.example.com", "always", "ada", "t"),
+                    ("x.example.com", "always", "", "t")):
+            with pytest.raises(sqlite3.IntegrityError):
+                db.execute("INSERT INTO network_answers VALUES (?, ?, ?, ?)", row)
+
+
+def test_the_answers_of_someone_else_become_the_persons_once_confirmed_and_the_others_are_dropped(tmp_path):
+    path = tmp_path / "project.daodan"
+    project_file.create(path)
+    with closing(project_file.open_project(path, write=True)) as db:
+        for host, said in (("a.example.com", "always"), ("b.example.com", "block"), ("c.example.com", "always")):
+            project_file.keep_answer(db, host, said, "bob")
+        project_file.keep_answer(db, "d.example.com", "always", "ada")
+        with pytest.raises(ProjectError, match="nessuna risposta da confermare per d.example.com"):
+            project_file.adopt(db, ["a.example.com", "d.example.com"], "ada")  # all or nothing
+        assert len(project_file.answers(db, "ada")[1]) == 3
+        project_file.adopt(db, ["B.example.com", "a.example.com"], "ada")
+        own, others = project_file.answers(db, "ada")
+        assert others == [] and [(row["host"], row["answer"], row["author"]) for row in own] == [
+            ("a.example.com", "always", "ada"), ("b.example.com", "block", "ada"), ("d.example.com", "always", "ada")]
+        project_file.keep_answer(db, "e.example.com", "block", "bob")
+        project_file.adopt(db, [], "ada")  # none confirmed: they ask again
+        assert project_file.answers(db, "ada")[1] == []
+
+
+def test_a_file_with_the_network_answers_alone_is_no_project_yet_and_the_first_analysis_fills_it(tmp_path):
+    path = tmp_path / "project.daodan"
+    assert not project_file.started(path)
+    project_file.create(path)
+    with closing(project_file.open_project(path, write=True)) as db:
+        project_file.keep_answer(db, "git.example.com", "always", "ada")
+    assert not project_file.started(path)
+    project_file.create(path, name="demo", source=SOURCE, analysis=ANALYSIS, rows=_rows(), author="daodan")
+    assert project_file.started(path)
+    with closing(project_file.open_project(path)) as db:
+        assert project_file.head(db) == 1 and [row["host"] for row in project_file.answers(db, "ada")[0]] == [
+            "git.example.com"]
+    with pytest.raises(ProjectError, match="esiste già"):
+        project_file.create(path, name="demo", source=SOURCE, analysis=ANALYSIS, rows=_rows())
+    with pytest.raises(ProjectError, match="esiste già"):
+        project_file.create(path)
 
 
 STEP_S1 = {"id": "s1", "kind": "step", "fields": {"variant_id": "variant", "display_order": 0, "label": "chiama"},

@@ -257,7 +257,7 @@ def _asked(project: str | None):
     files stay in `egress.groups`."""
     import egress
     waiting = egress.pending(project) if project else []
-    state, answers = (egress.load(), egress.session(project)) if project else (None, None)
+    state, answers = (egress.load(project), egress.session(project)) if project else (None, None)
 
     def asked(tools, hosts=()) -> dict | None:
         held = sorted({row["host"] for row in waiting if row.get("tool") in tools})
@@ -470,17 +470,17 @@ def _project(manifest) -> str | None:
 
 def _policy(project: str | None) -> dict:
     """What a run may reach and where it runs: the canonical hosts of `package-managers.json` and the project's approved
-    ones are open, a blocked one is refused, every other asks, and only the app answers (`egress.reply`); the container
+    ones are open, one the project blocked is refused, every other asks (`egress.load`: the lists of its project file),
+    and only the app answers (`egress.reply`); the container
     engine is off with `DAODAN_CONTAINER=off`, else Daodan's own on Windows and the user's elsewhere
     (`container.find_engine`, asked when a run starts)."""
     import os
     import container
     import egress
-    state = egress.load()
+    state = egress.load(project)
     off = os.environ.get("DAODAN_CONTAINER") == "off"
-    return {"network": {"canonical": list(container.REGISTRIES),
-                        "approved": state["whitelist"].get(project, []) if project else [],
-                        "blocked": state["blacklist"], "other": "ask", "answered_in": "app"},
+    return {"network": {"canonical": list(container.REGISTRIES), "approved": state["always"],
+                        "blocked": state["block"], "other": "ask", "answered_in": "app"},
             "container": ({"engine": "off", "cause": container.OFF_CAUSE,
                            "remedy": "unset DAODAN_CONTAINER to run in a container"} if off else
                           {"engine": "daodan" if os.name == "nt" else "user"})}

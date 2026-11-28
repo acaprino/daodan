@@ -49,7 +49,8 @@ for port in (8001, 8002):
 
 image = (modal.Image.debian_slim(python_version="3.13")
          .apt_install("ca-certificates", "curl", "iptables", "xz-utils", "procps", "git", "tcpdump")
-         .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6")
+         .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6",
+                      "jsonpointer==3.0.0")  # `project_file`, where «Blocca» is kept
          .run_commands(f"curl -fsSL {DOCKER} -o /tmp/d.tgz && mkdir -p /opt/docker && "
                        "tar -xzf /tmp/d.tgz -C /opt/docker --strip-components=1")
          .add_local_dir(REPO / "daodan/core", "/daodan/map/core", copy=True, ignore=["**/__pycache__/**"])

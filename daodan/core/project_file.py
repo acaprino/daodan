@@ -1,6 +1,6 @@
 """The project file `.daodan` (`docs/specs/architettura.md`, «File di progetto»): a SQLite database of format version 1, its
 DDL in `project_schema.sql`, the one place it lives. This module creates, opens and recognises the file, writes its
-revisions and reads its state; it has no interface.
+revisions and reads its state, and keeps the project's network answers (`answers`, for `egress`); it has no interface.
 
 Standard library `sqlite3` only: the format's version is `PRAGMA user_version`, its identity `PRAGMA application_id`,
 and the expected schema is compared by SQLite itself with a database created in memory from the same DDL (no parser
@@ -26,9 +26,10 @@ from pathlib import Path
 from jsonpointer import JsonPointer, JsonPointerException, resolve_pointer, set_pointer  # RFC 6901: not in the stdlib
 from snapshot_store import _plain
 
-__all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "ProjectError", "analyse", "applied", "changes",
-           "commit", "confirm", "conflicts", "copy", "create", "edit", "find", "head", "history", "incoming", "key_of",
-           "open_project", "pair", "read", "release", "resolve", "source_of", "state"]
+__all__ = ["ABSENT", "APPLICATION_ID", "FORMAT_VERSION", "ProjectError", "adopt", "analyse", "answers", "applied",
+           "changes", "commit", "confirm", "conflicts", "copy", "create", "edit", "find", "head", "history", "incoming",
+           "keep_answer", "key_of", "open_project", "pair", "read", "release", "resolve", "source_of", "started",
+           "state"]
 
 SCHEMA_FILE = Path(__file__).with_name("project_schema.sql")
 APPLICATION_ID = 0x44414F44  # "DAOD"
@@ -149,40 +150,60 @@ def open_project(path: Path | str, write: bool = False) -> sqlite3.Connection:
 
 def create(path: Path | str, *, name: str | None = None, source: dict | None = None, analysis: dict | None = None,
            rows: list[dict] = (), author: str = "daodan") -> None:
-    """A project file of this version at `path`, which must not exist. With `source` and `analysis` it holds the
-    project: snapshot, analysis, revision 1 (`analysis`, by `author`) with `rows`, and the one row of `project`,
-    written together in a file beside `path` and moved onto it only once checked; without them, the empty schema.
-    `source` has the columns of `source_snapshots`; `analysis` has `daodan_version`, `config` (an object) and
-    optionally `started_at`."""
+    """A project file of this version at `path`. With `source` and `analysis` it holds the project: snapshot,
+    analysis, revision 1 (`analysis`, by `author`) with `rows`, and the one row of `project`, written together in a
+    file beside `path` and moved onto it only once checked, or in one transaction into a file at `path` that holds no
+    project yet (the network's answers given before the first analysis, `keep_answer`); without them, the empty
+    schema, where no file is. `source` has the columns of `source_snapshots`; `analysis` has `daodan_version`,
+    `config` (an object) and optionally `started_at`."""
     path = Path(path)
     _plain(path)
-    if path.exists():
-        raise ProjectError(f"il file esiste già: {path}")
     if source is None and analysis is None:
+        if path.exists():
+            raise ProjectError(f"il file esiste già: {path}")
         _initialize(path)
         return
     if source is None or analysis is None or name is None:
         raise ProjectError("un progetto nasce con nome, sorgenti e analisi")
+    if path.exists():
+        with closing(open_project(path, write=True)) as db:
+            _first(db, path, name, source, analysis, rows, author)
+        return
     staging = path.with_name(f".{path.name}.{uuid.uuid4().hex}.new")
     try:
         _initialize(staging)
         with closing(open_project(staging, write=True)) as db:
-            _begin(db)
-            try:
-                analysis_id = _analysis(db, source, analysis)
-                db.execute("INSERT INTO revisions VALUES (1, ?, NULL, ?, 'analysis', ?, ?, ?)",
-                           (str(uuid.uuid4()), analysis_id, author, _now(), "prima analisi"))
-                db.execute("INSERT INTO project VALUES (1, ?, ?, 1)", (str(uuid.uuid4()), name))
-                for row in rows:
-                    _open(db, 1, row, analysis_id)
-                check(db, 1)
-                db.execute("COMMIT")
-            except BaseException:
-                db.execute("ROLLBACK")
-                raise
+            _first(db, path, name, source, analysis, rows, author)
         os.replace(staging, path)
     finally:
         staging.unlink(missing_ok=True)
+
+
+def _first(db: sqlite3.Connection, path: Path, name: str, source: dict, analysis: dict, rows, author: str) -> None:
+    """Snapshot, analysis, revision 1 with `rows` and the row of `project`, all or nothing, in a file with none."""
+    _begin(db)
+    try:
+        if db.execute("SELECT 1 FROM project").fetchone():
+            raise ProjectError(f"il file esiste già: {path}")
+        analysis_id = _analysis(db, source, analysis)
+        db.execute("INSERT INTO revisions VALUES (1, ?, NULL, ?, 'analysis', ?, ?, ?)",
+                   (str(uuid.uuid4()), analysis_id, author, _now(), "prima analisi"))
+        db.execute("INSERT INTO project VALUES (1, ?, ?, 1)", (str(uuid.uuid4()), name))
+        for row in rows:
+            _open(db, 1, row, analysis_id)
+        check(db, 1)
+        db.execute("COMMIT")
+    except BaseException:
+        db.execute("ROLLBACK")
+        raise
+
+
+def started(path: Path | str) -> bool:
+    """Whether the file at `path` holds a project: none may be there yet, or one with the network's answers alone."""
+    if not Path(path).exists():
+        return False
+    with closing(open_project(path)) as db:
+        return db.execute("SELECT 1 FROM project").fetchone() is not None
 
 
 def head(db: sqlite3.Connection) -> int:
@@ -881,3 +902,51 @@ def copy(source: Path | str, target: Path | str) -> None:
         os.replace(staging, target)
     finally:
         staging.unlink(missing_ok=True)
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# The network's answers that last (`egress`): the project's approved and blocked hosts, one row a host
+
+NETWORK_ANSWERS = ("always", "block")
+
+
+def answers(db: sqlite3.Connection, person: str) -> tuple[list[dict], list[dict]]:
+    """The network's answers the file keeps, each `{host, answer, author, answered_at}` in the order of the hosts:
+    `person`'s own, which apply, and the others', from a file received from someone, which apply only once `person`
+    confirms them (`adopt`)."""
+    rows = [dict(zip(("host", "answer", "author", "answered_at"), row)) for row in db.execute(
+        "SELECT host, answer, author, answered_at FROM network_answers ORDER BY host")]
+    return [row for row in rows if row["author"] == person], [row for row in rows if row["author"] != person]
+
+
+def keep_answer(db: sqlite3.Connection, host: str, answer: str, author: str) -> None:
+    """`author`'s answer about `host` (one of `NETWORK_ANSWERS`), given now: it takes the place of the host's row."""
+    if answer not in NETWORK_ANSWERS:
+        raise ProjectError(f"una risposta che resta è una di {', '.join(NETWORK_ANSWERS)}: {answer!r}")
+    try:
+        db.execute("INSERT INTO network_answers VALUES (?, ?, ?, ?) ON CONFLICT (host) DO UPDATE SET"
+                   " answer = excluded.answer, author = excluded.author, answered_at = excluded.answered_at",
+                   (host.lower(), answer, author, _now()))
+    except sqlite3.IntegrityError as error:
+        raise ProjectError(f"risposta non valida per {host!r}: {error}") from error
+
+
+def adopt(db: sqlite3.Connection, hosts: list[str], person: str) -> None:
+    """`person` confirms the others' answers about `hosts`, which become `person`'s, given now; the others' answers
+    about any other host are dropped, and those hosts ask again. All or nothing."""
+    wanted = {host.lower() for host in hosts}
+    db.execute("BEGIN IMMEDIATE")
+    try:
+        _, others = answers(db, person)
+        if unknown := sorted(wanted - {row["host"] for row in others}):
+            raise ProjectError(f"nessuna risposta da confermare per {', '.join(unknown)}")
+        for row in others:
+            if row["host"] in wanted:
+                db.execute("UPDATE network_answers SET author = ?, answered_at = ? WHERE host = ?",
+                           (person, _now(), row["host"]))
+            else:
+                db.execute("DELETE FROM network_answers WHERE host = ?", (row["host"],))
+        db.execute("COMMIT")
+    except BaseException:
+        db.execute("ROLLBACK")
+        raise
