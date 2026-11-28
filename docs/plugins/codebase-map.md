@@ -505,11 +505,11 @@ Gli altri moduli sono librerie: `snapshot_store.py` e `semantic_store.py` (stora
 
 `daodan mcp --project <radice>` (`.mcp.json`): il comando dell'applicazione installata, che gira sul proprio interprete e non importa nulla dalla cartella in cui parte. Così il progetto analizzato non sceglie interprete né pacchetti del proprio analizzatore; l'hook parte allo stesso modo e legge il progetto dal suo input. Il progetto è fissato all'avvio da `--project` o, se manca, da `CLAUDE_PROJECT_DIR`; senza nessuno dei due il server si ferma con la causa, perché la cartella in cui parte non è un progetto dichiarato. Ogni target è relativo, ogni run-id seleziona esattamente `.daodan/map/runs/<run-id>/`; percorsi esterni, traversal, symlink e junction sono rifiutati. `--store <percorso>` sposta l'intero store in una dot directory del progetto, marcata da `.daodan-map-store.json`. La mappa va costruita con lo stesso runtime che la serve: l'indice lessicale registra versione di SQLite e impronta dei parser, e una mappa scritta da un altro Python risulta `stale` (`codebase_map_index` ricostruisce l'indice).
 
-Ventisei tool, tutti con risposta JSON (`references/mcp.md` ha i parametri completi):
+Ventisette tool, tutti con risposta JSON (`references/mcp.md` ha i parametri completi):
 
 | Gruppo | Tool |
 |---|---|
-| Run | `codebase_map_scope`, `codebase_map_create_run`, `codebase_map_runs`, `codebase_map_status`, `codebase_map_diff`, `codebase_map_artifact` |
+| Run | `codebase_map_scope`, `codebase_map_create_run`, `codebase_map_runs`, `codebase_map_status`, `codebase_map_set_command`, `codebase_map_diff`, `codebase_map_artifact` |
 | Navigazione | `codebase_map_search`, `codebase_map_index`, `codebase_map_outline`, `codebase_map_graph`, `codebase_map_read`, `codebase_map_modules`, `codebase_map_flows` |
 | Impatto | `codebase_map_edit_impact`, `codebase_map_symbols_at`, `codebase_map_stale_callers`, `codebase_map_meta_query`, `codebase_map_context` |
 | Ciclo di vita | `codebase_map_checkpoint`, `codebase_map_events`, `codebase_map_resume`, `codebase_map_stop`, `codebase_map_publish` |

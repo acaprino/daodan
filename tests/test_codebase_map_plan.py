@@ -469,10 +469,42 @@ def test_the_plan_of_the_viewer_s_tests_has_the_server_s_ids_states_kinds_and_ke
     assert all({"id", "state", "executes", "stops"} <= set(step) <= {"id", "state", "executes", "stops", "cause", "remedy",
                                                                      "started_at", "ended_at"} for step in fixture["steps"])
     base = set(planning._action("x", "x", "read", {}, False, False, {"state": "pending"}))
-    assert all(base <= set(action) <= base | {"tools", "network", "hosts", "gap", "cause", "remedy"}
+    assert all(base <= set(action) <= base | {"tools", "network", "hosts", "gap", "cause", "remedy", "by", "grade"}
                for action in fixture["actions"])
     assert {action["state"] for action in fixture["actions"]} <= set(planning.ACTION_STATES)
     assert {action["kind"] for action in fixture["actions"]} <= set(planning.ACTIONS)
     assert all(action["step"] == planning.KINDS[action["kind"]][0] for action in fixture["actions"])
     assert set(fixture["policy"]["network"]) == set(real["policy"]["network"])
     assert {"kind", "detail"} <= set(fixture["gaps"][-1]) and fixture["gaps"][-1] == planning.DOWNLOADS
+
+
+def test_an_app_the_person_or_the_assistant_starts_is_an_explore_action_with_who_said_it_and_its_grade(tmp_path, shared,
+                                                                                                    monkeypatch):
+    """The apps of the fresh pre-map and those a command of the user or the assistant starts (`commands`) are the
+    `explore` actions of `run_and_observe`; one with a stated command carries its `by` and `grade`."""
+    import json
+    import commands
+    import entry_points
+    import premap
+    import stack_recognition
+    planning = _planning()
+    record = tmp_path / "premap.json"
+    record.write_text(json.dumps({"sources": [], "starts": [
+        {"root": "web", "mode": "start", "runner": "npm", "declared_in": "web/package.json#scripts.start", "port": None,
+         "needs_build": False}]}), encoding="utf-8")
+    monkeypatch.setattr(premap, "state", lambda manifest: {"state": "fresh"})
+    monkeypatch.setattr(premap, "path", lambda manifest: record)
+    monkeypatch.setattr(entry_points, "state", lambda manifest: {"state": "stale"})
+    monkeypatch.setattr(stack_recognition, "state", lambda manifest: "stale")
+    project = tmp_path / "project"
+    (project / "api").mkdir(parents=True)
+    (project / "web").mkdir()
+    key = str(project.resolve())
+    commands.set(key, {"kind": "starts", "root": "api", "argv": ["npm", "run", "serve"]}, "assistant")
+    commands.set(key, {"kind": "starts", "root": "web", "argv": ["npm", "run", "dev"]}, "user")
+    found = planning._found(tmp_path / "manifest.sqlite", {}, {}, [], lambda tools, hosts=(): None, key)
+    assert [(action["id"], action["state"], action.get("by"), action.get("grade")) for action in found["explore"]] == [
+        ("run_and_observe:app:api", "pending", "assistant", "proposto"),
+        ("run_and_observe:app:web", "pending", "user", "confermato")]
+    alone = planning._found(tmp_path / "manifest.sqlite", {}, {}, [], lambda tools, hosts=(): None, None)
+    assert [(action["target"], "by" in action) for action in alone["explore"]] == [({"root": "web"}, False)]

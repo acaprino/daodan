@@ -8,7 +8,8 @@ observed rows' resolver is `NAME@VERSION`) and `LANGUAGES`, and gives:
     external(callee) -> {"manager", "package", "version"}          the package of a callee outside the project
 
 `plan` takes the command that runs the tests from what the project declares (the pre-map's `tests`); for a folder and
-a runner, an entry with an `argv` (`declared`: the user's, the assistant's, the CI's, in `PRECEDENCE`) comes before
+a runner, an entry with an `argv` (`declared`: the user's and the assistant's from `commands.merged`, the CI's, in
+`PRECEDENCE`) comes before
 the tool's convention (`go test ./...`); with nothing to run it says why, and no container starts. `observe` runs
 project code, so only through `container.run_in_container`: the dependencies restored the project's own way in the preparation, with the
 registries, the tests in the execution, with no network. `state` is `ran`, `gap` with `cause` and `remedy`
@@ -111,6 +112,12 @@ def malformed(result) -> str | None:
 PRECEDENCE = ("user", "assistant", "ci")  # who states a command (its `by`, else its `source`), the first wins
 
 
+def rank(entry: dict) -> int:
+    """Where a command stands in `PRECEDENCE`: one that names no one in it (a file of the project) comes after."""
+    who = entry.get("by") or entry.get("source")
+    return PRECEDENCE.index(who) if who in PRECEDENCE else len(PRECEDENCE)
+
+
 def declared(record: dict, runner: str, root: str) -> dict | None:
     """The pre-map's `tests` entry that runs `runner` in `root` with its own words (`argv`), the first by
     `PRECEDENCE`; None where there is none, and the observer's convention runs. The pre-map names the project's
@@ -118,10 +125,6 @@ def declared(record: dict, runner: str, root: str) -> dict | None:
     root = posixpath.normpath(root or ".")
     found = [test for test in record.get("tests") or () if test.get("runner") == runner
              and isinstance(test.get("argv"), list) and posixpath.normpath(test.get("root") or ".") == root]
-
-    def rank(test: dict) -> int:
-        who = test.get("by") or test.get("source")
-        return PRECEDENCE.index(who) if who in PRECEDENCE else len(PRECEDENCE)
     return min(found, key=rank, default=None)
 
 
@@ -514,6 +517,7 @@ def run(manifest: Path, bus) -> dict:
     `reason`. Completed commands are reused on the same snapshot, static analyzers, recorder and plan.
     """
     import code_graph
+    import commands
     import container
     import premap
     import egress
@@ -578,7 +582,7 @@ def run(manifest: Path, bus) -> dict:
                 except OSError:
                     return ""
 
-            record = premap.ensure(manifest)
+            record = commands.merged(premap.ensure(manifest), project)  # the user's and the assistant's first
             planned = module.plan(record, sorted(snapshot.checkout.values()), read)
             planned["declared"] = preparation.declared(record)  # the hosts its preparation reaches, as a CI does
             egress.declare(project, planned["declared"]["where"])  # the requests name the files
@@ -730,11 +734,12 @@ def _app(manifest: Path, snapshot, bus, say) -> dict:
     are kept beside the manifest for the entries. What did not run is a gap with its cause, never silence; a failure
     of the exploration stops no other part of the step. `{state, apps, kept}`, with `cause` and `remedy` where it did
     not run, and `reused` where the run of the same snapshot was kept."""
+    import commands
     import entry_points
     import premap
     from snapshot_store import logical_digest
     from . import app
-    record = premap.ensure(manifest)
+    record = commands.merged(premap.ensure(manifest), str(Path(snapshot.store["root"]).resolve()))
     try:  # the pages the frameworks declare, which the exploration opens too: none without the record of the entry points
         pages = entry_points.read_record(manifest).get("framework_entries", [])
     except (OSError, KeyError, TypeError, ValueError):
